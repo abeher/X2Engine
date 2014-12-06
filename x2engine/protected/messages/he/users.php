@@ -1,68 +1,54 @@
 <?php
-/*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
- * 
- * This program is free software; you can redistribute it and/or modify it under
- * the terms of the GNU Affero General Public License version 3 as published by the
- * Free Software Foundation with the addition of the following permission added
- * to Section 15 as permitted in Section 7(a): FOR ANY PART OF THE COVERED WORK
- * IN WHICH THE COPYRIGHT IS OWNED BY X2ENGINE, X2ENGINE DISCLAIMS THE WARRANTY
- * OF NON INFRINGEMENT OF THIRD PARTY RIGHTS.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU Affero General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU Affero General Public License along with
- * this program; if not, see http://www.gnu.org/licenses or write to the Free
- * Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
- * 02110-1301 USA.
- * 
- * You can contact X2Engine, Inc. P.O. Box 66752, Scotts Valley,
- * California 95067, USA. or at email address contact@x2engine.com.
- * 
- * The interactive user interfaces in modified source and object code versions
- * of this program must display Appropriate Legal Notices, as required under
- * Section 5 of the GNU Affero General Public License version 3.
- * 
- * In accordance with Section 7(b) of the GNU Affero General Public License version 3,
- * these Appropriate Legal Notices must retain the display of the "Powered by
- * X2Engine" logo. If the display of the logo is not reasonably feasible for
- * technical reasons, the Appropriate Legal Notices must display the words
- * "Powered by X2Engine".
- *****************************************************************************************/
-
 return array (
 // Users Attributes
-'ID'=>'זהות',
-'First Name'=>'שם פרטי',
-'Last Name'=>'שם משפחה',
-'Username'=>'שם משתמש',
-'Password'=>'סיסמה',
-'Title'=>'כותרת',
-'Department'=>'מחלקה',
-'Office Phone'=>'טלפון משרד',
-'Cell Phone'=>'טלפון סלולרי',
 'Home Phone'=>'טלפון בבית',
-'Address'=>'כתובת',
-'Background Info'=>'רקע מידע',
-'Email'=>'דוא"ל',
-'Status'=>'מצב',
+'Department'=>'מחלקה',
 'Update Password'=>'עדכון סיסמה',
-'Last Updated'=>'עדכון אחרון',
-'Updated By'=>'עודכן על ידי',
 'Recent Items'=>'פריטים אחרונים',
+'API Key'=>'API מפתח',
 
 // Users Actions
 'Create User'=>'צור משתמש',
 'View User'=>'הצג את המשתמש',
 'Update User'=>'עדכן משתמש',
-'Manage Users'=>'ניהול משתמשים',
 'Invite Users'=>'מזמין את המשתמשים',
+'Delete User'=>'מחק את המשתמש',
+'User:'=>'משתמש:',
+'Action History'=>'היסטורית פעולה',
 
 // Users Titles
 'User: {name}'=>'משתמש: {name}',
 'Update User: {name}'=>'עדכון משתמש: {name}',
+'Invite Users to X2Engine'=>'להזמין משתמשים לX2Engine',
+'Instructions'=>'הוראות',
+'Delete Unregistered'=>'מחק רשום',
+'Invited Users'=>'משתמשים שהוזמנו',
+
+// Misc Text
+'Please enter a list of e-mails separated by commas.'=>'אנא הכנס רשימה של הודעות דואר אלקטרוני מופרד בפסיקים.',
+'{n} user(s) have been invited but have not yet completed registration.'=>'{n} משתמש (ים) שהוזמן אך עדיין לא השלים את הרישום.',
+'To delete all users who have not completed their invite, click the button below.'=>'כדי למחוק את כל המשתמשים שלא סיימו את ההזמנה שלהם, לחץ על הכפתור למטה.',
+'Are you sure you want to delete these users?'=>'האם אתה בטוח שברצונך למחוק את המשתמשים האלה?',
+'Changing the username is NOT advised.'=>'שינוי שם המשתמש לא מומלץ.',
+'Passwords do not match.'=>'סיסמאות אינן תואמות.',
+'{attribute} is not secure enough (minimum length: {l})'=>'{attribute} אינו מאובטח מספיק (אורך מינימאלי: {l}',
+'{attribute} is not secure enough; it must contain at least {n} types of characters (upper case, lower case, number, etc)'=>'{attribute} אינה מאובטחת מספיק; זה חייב לכלול לפחות {n} סוגי תווים (אותיות גדולות, אותיות קטנות, מספרים, וכו &#39;)',
+'No user corresponding to that email address could be found.'=>'לא נמצא משתמש המתאים לכתובת דוא&quot;ל זו.',
+'The specified username is reserved.'=>'שם המשתמש שצוין שמורות.',
+'Can\'t remember your username or password?'=>'יכול \ לא זוכר את שם המשתמש או את הסיסמה שלך?',
+'Need general guidance in how to use this software?'=>'זקוק להדרכה כללית בכיצד להשתמש בתוכנה זו?',
+'You have requested to reset the password for user {user} in {appName}.'=>'שביקשת לאפס את הסיסמה עבור המשתמש {user} {appName}',
+'To finish resetting your password, please open the following link: '=>'כדי לסיים איפוס הסיסמה שלך, אנא פתח את הקישור הבא:',
+'If you did not make this request, please disregard this email.'=>'אם לא תעשה בקשה זו, אנא התעלם מהודעה זו.',
+'Almost Done!'=>'כמעט סיימתי!',
+'Check your email at {email} for '=>'בדוק את תיבת הדוא&quot;ל שלך {email} עבור',
+'Could not send email.'=>'לא ניתן לשלוח דואר אלקטרוני.',
+'Sending of the password reset verification email failed with message: {message}'=>'שליחה של דוא&quot;ל אימות איפוס סיסמא נכשל עם הודעה: {message}',
+'Enter a new password for user "{user}" ({name}):'=>'הזן את הסיסמה חדשה עבור משתמש {user} {name}',
+'Password Has Been Reset'=>'סיסמא אופסה',
+'You should now have access '=>'עכשיו צריכה להיות לך גישה',
+'Access Denied'=>'גישה נדחתה',
+'Invalid reset key.'=>'מפתח איפוס לא חוקי.',
+'The password reset link has expired.'=>'הקישור לאיפוס הסיסמה פג.',
+'Invalid reset link.'=>'קישור לאיפוס לא חוקי.',
 );

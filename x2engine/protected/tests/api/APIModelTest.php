@@ -7,19 +7,27 @@ Yii::import('application.modules.users.models.*');
 /**
  * Test suite for APIModel
  * 
- * @package X2CRM.tests.api
+ * @package application.tests.api
  * @author Demitri Morgan <demitri@x2engine.com>
  */
-class APIModelTest extends CURLTestCase {
+class APIModelTest extends CURLDbTestCase {
 
 	public function urlFormat() {
 		return '';
 	}
 
 	public $fixtures = array(
-		'contacts' => 'Contacts',
-		'users' => 'User',
+		'contacts' => 'Contacts'
 	);
+
+	public static function referenceFixtures() {
+		return array(
+            'users'=>'User',
+            'roles'=>array('Roles','.empty'),
+            'roleToUser' =>array('RoleToUser','.empty'),
+            'roleToPermission' => array('RoleToPermission','.empty'),
+        );
+	}
 
 	public function newModel() {
 		return new APIModel('testuser','5f4dcc3b5aa765d61d8327deb882cf99',rtrim(TEST_BASE_URL,'/'));
@@ -69,9 +77,10 @@ class APIModelTest extends CURLTestCase {
 	}
 
 	public function testContactCRUD() {
+        Yii::app()->cache->flush();
 		$model = $this->newModel();
 		// Trigger a validation error and test that the error feedback works
-		$model->attributes = array('firstName'=> 'John', 'lastName'=>'Doe','email'=>'lfdkjslfdjs');
+		$model->attributes = array('firstName'=> 'John', 'lastName'=>'Doe','email'=>'lfdkjslfdjs','visibility'=>1);
 		$model->contactCreate(false);
 		$this->assertEquals(500,$model->responseCode,'Failed asserting response code was correct for validation errors.');
 		$this->assertEquals(1,$model->responseObject['error'],'Failed asserting that the API reported validation errors.');
@@ -86,7 +95,7 @@ class APIModelTest extends CURLTestCase {
 		$contact = Contacts::model()->findByAttributes($oldAttr);
 		$this->assertNotEmpty($contact,'Failed asserting that the model was saved properly.');
 		foreach($contact->attributes as $name=>$noVal) {
-			$this->assertEquals($contact->$name,$model->$name,'Failed asserting that the API model received the attributes of the model from the server');
+			$this->assertEquals($contact->$name,$model->$name,"Failed asserting that the API model received the attributes of the model from the server; attribute $name does not match.");
 		}
 		$this->assertEquals('testuser',$contact->assignedTo,'Failed asserting proper assignment of the new model.');
 		// Now test updating... With validation error.
@@ -106,10 +115,18 @@ class APIModelTest extends CURLTestCase {
 		$lookupModel->contactLookup();
 //		var_dump($lookupModel->attributes);
 		foreach($contact->attributes as $name=>$value) {
-			$this->assertArrayHasKey($name, $lookupModel->attributes, "Failed asserting that attribute $name was set in contact lookup.");
+			$this->assertArrayHasKey($name, $lookupModel->attributes, "Failed asserting that attribute $name was set in contact lookup. Response: ".json_encode($lookupModel->responseObject));
 			$this->assertEquals($value,$lookupModel->$name, "Failed asserting that attribute is not the same between existing model and looked-up model. What the heck is happening here?");
 		}
-
+        // Test using the "view" method instead:
+        $id = $lookupModel->id;
+		$lookupModel = $this->newModel();
+		$lookupModel->id = $id;
+		$lookupModel->contactLookup();
+		foreach($contact->attributes as $name=>$value) {
+			$this->assertArrayHasKey($name, $lookupModel->attributes, "Failed asserting that attribute $name was set in contact lookup. Response: ".json_encode($lookupModel->responseObject));
+			$this->assertEquals($value,$lookupModel->$name, "Failed asserting that attribute is not the same between existing model and looked-up model. What the heck is happening here?");
+		}
 		// Test getting permissions.
 		$this->assertFalse($model->checkAccess('ContactsDelete'),'Failed asserting proper response regarding permissions of unprivileged user.');
 		// Test deleting with an unprivileged user (which should fail).

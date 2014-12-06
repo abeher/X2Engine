@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -40,7 +40,7 @@ defined('YII_DEBUG') or define('YII_DEBUG', true);
 defined('YII_TRACE_LEVEL') or define('YII_TRACE_LEVEL', 3);
 
 /**
- * @package X2CRM.modules.mobile
+ * @package application.modules.mobile
  */
 class MobileModule extends CWebModule {
 
@@ -55,7 +55,7 @@ class MobileModule extends CWebModule {
     {
         if ($this->_assetsUrl === null)
             $this->_assetsUrl = Yii::app()->getAssetManager()->publish(
-                Yii::getPathOfAlias('mobile.assets') );
+                Yii::getPathOfAlias('mobile.assets'), false, -1, true );
         return $this->_assetsUrl;
     }
 
@@ -71,22 +71,16 @@ class MobileModule extends CWebModule {
 
         // Set module specific javascript packages
         $this->packages = array(
-            'jquery' => array(
-                'basePath' => $this->getBasePath(),
-                'baseUrl' => $this->assetsUrl,
-                'js' => array(
-                    YII_DEBUG ? 'js/jquery-1.6.2.js' : 'js/jquery-1.6.2.min.js'
-                )
-            ),
             'jquerymobile' => array(
                 'basePath' => $this->getBasePath(),
                 'baseUrl' => $this->assetsUrl,
                 'css' => array(
-                    'css/jquery.mobile-1.0b2.css'
+                    'css/x2MobileTheme.css',
+                    'css/jquery.mobile.structure-1.3.2.css'
                 ),
                 'js' => array(
                     'js/x2mobile-init.js',
-                    'js/jquery.mobile-1.1.1.js'
+                    'js/jquery.mobile-1.3.2.js'
                 ),
                 'depends' => array('jquery'),
             ),

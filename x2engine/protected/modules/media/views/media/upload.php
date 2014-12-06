@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -34,10 +34,11 @@
  * "Powered by X2Engine".
  *****************************************************************************************/
 
-$this->actionMenu = $this->formatMenu(array(
-	array('label'=>Yii::t('media', 'All Media'), 'url'=>array('index')),
-	array('label'=>Yii::t('media', 'Upload')),
-));
+$menuOptions = array(
+    'index', 'upload',
+);
+$this->insertMenu($menuOptions);
+
 ?>
 <div class="page-title icon media">
 <h2><?php echo Yii::t('media','Upload Media File'); ?></h2>
@@ -59,8 +60,9 @@ $this->actionMenu = $this->formatMenu(array(
 					<tr class="formSectionRow">
 						<td style="background: #FAFAFA;">
 							<div class="x2-file-wrapper">
-							    <input type="file" class="x2-file-input" name="upload" onChange="var validName = mediaCheckName(this); if(validName) {mediaFileUpload(this.form, $(this), '<?php echo Yii::app()->createUrl('site/tmpUpload'); ?>', '<?php echo Yii::app()->createUrl('site/removeTmpUpload'); ?>'); }">
+							    <input type="file" class="x2-file-input" name="upload" onChange="x2.uploadMedia(this)">
 							    <input type="button" class="x2-button" value="<?php echo Yii::t('media', 'Choose File'); ?>">
+                                <span class="error"></span>
 							    <?php echo CHtml::image(Yii::app()->theme->getBaseUrl().'/images/loading.gif',Yii::t('app','Loading'),array('id'=>'choose-file-saving-icon', 'style'=>'position: absolute; width: 14px; height: 14px; filter: alpha(opacity=0); -moz-opacity: 0.00; opacity: 0.00;')); ?>
 							    <span class="filename"></span>
 							    <input type="hidden" class="temp-file-id" name="TempFileId" value="">
@@ -79,7 +81,30 @@ $this->actionMenu = $this->formatMenu(array(
 			</table>
 		</div>
 	</div>
-	
+
+	<div class="formSection showSection">
+		<div class="formSectionHeader">
+			<span class="sectionTitle"><?php echo Yii::t('media', 'Title'); ?></span>
+		</div>
+		<div class="tableWrapper">
+			<table>
+				<tbody>
+					<tr class="formSectionRow">
+						<td style="width: 300px">
+							<div class="formItem leftLabel">
+								<label><?php echo Yii::t('media', 'Title'); ?></label>
+								<div class="formInputBox" style="width: 200px; height: auto;">
+									<?php echo $form->textField($model,'name'); ?>
+								</div>
+							</div>
+							
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+	</div>
+
 	<div class="formSection showSection">
 		<div class="formSectionHeader">
 			<span class="sectionTitle"><?php echo Yii::t('media', 'Association'); ?></span>
@@ -241,7 +266,23 @@ $this->endWidget();
 <?php
 // place the saving icon over the 'Choose File' button (which starts invisible)
 Yii::app()->clientScript->registerScript('savingIcon',"
-$(function() {	
-	initX2FileInput();
-});");
+
+    x2.uploadMedia = function(elem) {
+        $('#choose-file-saving-icon').css({opacity: 1.0});
+        var validName = mediaCheckName(elem);
+        var tmpUploadUrl = '". Yii::app()->createUrl('/site/tmpUpload') ."';
+        var rmTmpUploadUrl = '". Yii::app()->createUrl('/site/removeTmpUpload') ."';
+        if (validName) {
+            var status = mediaFileUpload(
+                elem.form, $(elem),
+                tmpUploadUrl,
+                rmTmpUploadUrl
+            );
+        }
+    };
+
+    $(function() {
+	    x2.forms.initX2FileInput();
+    });
+");
 ?>

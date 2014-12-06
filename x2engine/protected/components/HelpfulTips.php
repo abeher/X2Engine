@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -39,40 +39,34 @@
  * 
  * Renders the actions widget with action statistics, i.e. how many actions total,
  * how many actions complete, how many incomplete, titled "My Actions"
- * @package X2CRM.components 
+ * @package application.components 
  */
 class HelpfulTips extends X2Widget {
 	public $visibility;
 	public function init() {
 		parent::init();
 	}
+
+    public function getNewTip(){
+        //opensource or pro
+        $edition = yii::app()->settings->edition;
+        //True or False
+        $admin = Yii::app()->params->isAdmin;
+        //Check user type and editon to deliever an appropriate tip
+        $command = Yii::app()->db->createCommand()
+                ->select('*')
+                ->from('x2_tips')
+                ->where("edition IN ('".implode("','", Yii::app()->editions)."')");
+        if(!Yii::app()->params->isAdmin){
+            $command->andWhere('admin = 0');
+        }
+        return $command->order('rand()')->queryRow();
+    }
 	/**
 	 * Creates the widget. 
 	 */
-	public function run() {
-            //opensource or pro
-            $edition = yii::app()->params->admin->edition;
-            //True or False
-            $admin = Yii::app()->params->isAdmin;
-            //Check user type and editon to deliever an appropriate tip
-            if($edition == 'pro'){
-                if($admin){
-                    $where = 'TRUE';
-                } else {
-                    $where = 'admin = 0';                
-                }   
-            } else if($admin){
-                $where = 'edition = "opensource"';
-            } else {
-                $where = 'admin = 0 AND edition = "opensource"';
-            }
-            $tip=Yii::app()->db->createCommand()
-                    ->select('*')
-                    ->from('x2_tips')
-                    ->where($where)
-                    ->order('rand()')
-                    ->queryRow(); 
-            $this->render('tip',$tip);
-	}
+	public function run(){
+        $this->render('tip', $this->getNewTip());
+    }
 }
 ?>

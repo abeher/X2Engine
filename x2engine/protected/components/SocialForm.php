@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -37,7 +37,7 @@
 /**
  * Widget for an input which posts text to a social feed.
  * 
- * @package X2CRM.components 
+ * @package application.components 
  */
 class SocialForm extends X2Widget {
 	public $vars;
@@ -55,7 +55,6 @@ class SocialForm extends X2Widget {
 				"$('#action-form').ready(gotoActionForm);
 				function gotoActionForm() {
 					$('#action-form').show();
-					//toggleForm('#action-form',400);
 					$('#action-form #Actions_actionDescription').focus();
 				}
 				",CClientScript::POS_HEAD);

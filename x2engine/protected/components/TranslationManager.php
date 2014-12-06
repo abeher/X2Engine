@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -65,6 +65,11 @@ if(!isset($messagePath))
 
 // die($messagePath);
 $targetFile = '';
+if(isset($_GET['file'])){
+    if(strpos($_GET['file'],'/')!==false){
+        throw new CHttpException(400,'This file is not within allowed translations paths. Do not repeat this request.');
+    }
+}
 if(isset($_GET['file']) && file_exists($messagePath.'/template/'.$_GET['file']))
 	$targetFile = $_GET['file'];
 
@@ -158,7 +163,7 @@ return array (
 <head>
 <meta name="language" content="en" />
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<title>X2Contacts Translation Manager</title>
+<title>X2Engine Translation Manager</title>
 <link rel="stylesheet" type="text/css" href="<?php echo Yii::app()->baseUrl; ?>/css/translationManager.css" />
 <script type="text/javascript" src="<?php echo Yii::app()->baseUrl; ?>/js/jquery-1.6.2.min.js"></script>
 <script type="text/javascript" src="<?php echo Yii::app()->baseUrl; ?>/js/jquery-ui-1.8.16.custom.min.js"></script>
@@ -273,7 +278,7 @@ function addLine(object) {
 		</td>\
 		<td>';
 
-	for(i=0; i<langPacks.length; i++) {
+	for(var i=0; i<langPacks.length; i++) {
 		newEntry += '\
 			<div class="language '+langPacks[i]+'">'+langPacks[i]+'</div>\
 			<div class="translation '+langPacks[i]+'">\
@@ -374,7 +379,7 @@ function removeLine(object) {
 <!-- Main window - view, edit and translations -->
 <div class="content-container">
 <div class="content">
-<form method="POST" action="<?php echo Yii::app()->request->scriptUrl.'/admin/translationManager?file='.$targetFile; ?>" id="translationForm">
+<form method="POST" action="<?php echo Yii::app()->controller->createAbsoluteUrl('/admin/translationManager',array('file'=>$targetFile)); ?>" id="translationForm">
 <input type="hidden" name="file" value="<?php echo $_GET['file']; ?>">
 <table class="rounded" style="table-layout:fixed;">
 	<tr>
@@ -457,16 +462,16 @@ function removeLine(object) {
 	<div id="footer-logos">
 		<?php
 		$imghtml = CHtml::image(Yii::app()->theme->baseUrl.'/images/x2footer.png','');
-		echo CHtml::link($imghtml,array('site/page','view'=>'about')); // Yii::app()->request->baseURL.'/index.php');
+		echo CHtml::link($imghtml,array('/site/page','view'=>'about')); // Yii::app()->request->baseURL.'/index.php');
 		?>
 	</div>
 	Copyright &copy; <?php echo date('Y').' '.CHtml::link('X2Engine Inc.','http://www.x2engine.com');?>
-	<?php echo Yii::t('app','Rights reservered.'); ?>
+	<?php echo Yii::t('app','Rights reserved.'); ?>
 	<?php
 	$baseUrl = Yii::app()->getBaseUrl();
-	echo Yii::t('app','The Program is provided AS IS, without warranty.<br>Licensed under {BSD}.',
+	echo Yii::t('app','The Program is provided AS IS, without warranty.<br>Licensed under {GPL}.',
 	array(
-		'{BSD}'=>CHtml::link('BSD License',$baseUrl.'/LICENSE.txt'),
+		'{GPL}'=>CHtml::link('GNU Affero GPL License',$baseUrl.'/LICENSE.txt'),
 		'{GPLv3long}'=>CHtml::link(Yii::t('app','GNU General Public License version 3'),$baseUrl.'/GPL-3.0 License.txt')
 	));?>
 	<?php echo Yii::t('app','Generated in {time} seconds',array('{time}'=>round(Yii::getLogger()->getExecutionTime(),3))); ?>

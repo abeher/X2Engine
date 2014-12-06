@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -37,7 +37,7 @@
 /**
  * Class for the widget that displays which users are online.
  *
- * @package X2CRM.components
+ * @package application.components
  */
 class OnlineUsers extends X2Widget {
 
@@ -47,7 +47,7 @@ class OnlineUsers extends X2Widget {
 	}
 
 	public function run() {
-		x2base::cleanUpSessions();
+		Session::cleanUpSessions();
 
 		// $criteria = new CDbCriteria(array('condition'=>'','distinct'=>true)
 

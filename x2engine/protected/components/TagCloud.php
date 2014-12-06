@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -37,7 +37,7 @@
 /**
  * Widget that renders a tag cloud
  * 
- * @package X2CRM.components 
+ * @package application.components 
  */
 class TagCloud extends X2Widget {
 	
@@ -48,15 +48,18 @@ class TagCloud extends X2Widget {
 
 	public function run() {
         $hiddenTags=json_decode(Yii::app()->params->profile->hiddenTags,true);
+        $params = array ();
         if(count($hiddenTags)>0){
-            $str1=" AND tag NOT IN ('".implode("','",$hiddenTags)."')";
+            $tagParams = AuxLib::bindArray ($hiddenTags);
+            $params = array_merge ($params, $tagParams);
+            $str1=" AND tag NOT IN (".implode (',', array_keys ($tagParams)).")";
         }else{
             $str1="";
         }
 		$myTags = Yii::app()->db->createCommand()
 			->select('COUNT(*) AS count, tag')
 			->from('x2_tags')
-			->where('taggedBy=:user AND tag IS NOT NULL'.$str1,array(':user'=>Yii::app()->user->getName()))
+			->where('taggedBy=:user AND tag IS NOT NULL'.$str1,array_merge ($params, array(':user'=>Yii::app()->user->getName())))
 			->group('tag')
 			->order('count DESC')
 			->limit(20)
@@ -66,7 +69,7 @@ class TagCloud extends X2Widget {
 			->select('COUNT(*) AS count, tag')
 			->from('x2_tags')
 			->group('tag')
-            ->where('tag IS NOT NULL'.$str1)
+            ->where('tag IS NOT NULL'.$str1, $params)
 			->order('count DESC')
 			->limit(20)
 			->queryAll();

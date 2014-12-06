@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -33,24 +33,18 @@
  * technical reasons, the Appropriate Legal Notices must display the words
  * "Powered by X2Engine".
  *****************************************************************************************/
-$authParams['assignedTo'] = $model->assignedTo;
-$this->actionMenu = $this->formatMenu(array(
-	array('label'=>Yii::t('opportunities','Opportunities List'), 'url'=>array('index')),
-	array('label'=>Yii::t('opportunities','Create'), 'url'=>array('create')),
-	array('label'=>Yii::t('app', 'Create Multiple'), 'url'=>array('/site/createRecords', 'ret'=>'opportunities'), 'linkOptions'=>array('id'=>'x2-create-multiple-records-button', 'class'=>'x2-hint', 'title'=>Yii::t('app', 'Create a Contact, Account, and Opportunity.'))),
-	array('label'=>Yii::t('module','View'), 'url'=>array('view', 'id'=>$model->id)),
-	array('label'=>Yii::t('opportunities','Edit Opportunity')),
-	array('label'=>Yii::t('opportunities','Add A User'), 'url'=>array('addUser', 'id'=>$model->id)),
-	array('label'=>Yii::t('opportunities','Remove A User'), 'url'=>array('removeUser', 'id'=>$model->id)),
-	array('label'=>Yii::t('opportunities','Remove A Contact'), 'url'=>array('removeContact', 'id'=>$model->id)),
-	array('label'=>Yii::t('accounts','Share Opportunity'),'url'=>array('shareOpportunity','id'=>$model->id)),
-	array('label'=>Yii::t('opportunities','Delete'), 'url'=>'#', 'linkOptions'=>array('submit'=>array('delete','id'=>$model->id),'confirm'=>'Are you sure you want to delete this item?')),
-),$authParams);
+
+$authParams['X2Model'] = $model;
+$menuOptions = array(
+    'index', 'create', 'view', 'edit', 'share', 'delete', 'quick',
+);
+$this->insertMenu($menuOptions, $model, $authParams);
+
 ?>
 <?php //echo CHtml::link('['.Yii::t('contacts','Show All').']','javascript:void(0)',array('id'=>'showAll','class'=>'right hide','style'=>'text-decoration:none;')); ?>
 <?php //echo CHtml::link('['.Yii::t('contacts','Hide All').']','javascript:void(0)',array('id'=>'hideAll','class'=>'right','style'=>'text-decoration:none;')); ?>
 <div class="page-title icon opportunities">
-	<h2><span class="no-bold"><?php echo Yii::t('module','Update'); ?>:</span> <?php echo $model->name; ?></h2>
+	<h2><span class="no-bold"><?php echo Yii::t('module','Update'); ?>:</span> <?php echo CHtml::encode($model->name); ?></h2>
 	<a class="x2-button highlight right" href="javascript:void(0);" onclick="$('#save-button').click();"><?php echo Yii::t('app','Save'); ?></a>
 </div>
 <?php echo $this->renderPartial('application.components.views._form', array('model'=>$model, 'modelName'=>'Opportunity')); ?>

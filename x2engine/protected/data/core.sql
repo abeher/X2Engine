@@ -1,6 +1,6 @@
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -38,20 +38,27 @@ CREATE TABLE x2_admin(
 	id						INT				NOT NULL AUTO_INCREMENT PRIMARY KEY,
 	timeout					INT,
 	webLeadEmail			VARCHAR(255),
+	webLeadEmailAccount		INT NOT NULL DEFAULT -1,
 	webTrackerCooldown		INT				DEFAULT 60,
 	enableWebTracker		TINYINT			DEFAULT 1,
 	currency				VARCHAR(3)		NULL,
 	chatPollTime			INT				DEFAULT 2000,
+    defaultTheme            INT             NULL,
 	ignoreUpdates			TINYINT			DEFAULT 0,
 	rrId					INT				DEFAULT 0,
 	leadDistribution		VARCHAR(255),
 	onlineOnly				TINYINT,
-	emailFromName			VARCHAR(255)	NOT NULL DEFAULT "X2CRM",
+    actionPublisherTabs     TEXT,
+	emailBulkAccount		INT	NOT NULL DEFAULT -1,
+	emailNotificationAccount	INT NOT NULL DEFAULT -1,
+	emailFromName			VARCHAR(255)	NOT NULL DEFAULT "X2Engine",
 	emailFromAddr			VARCHAR(255)	NOT NULL DEFAULT '',
 	emailBatchSize			INT				NOT NULL DEFAULT 200,
 	emailInterval			INT				NOT NULL DEFAULT 60,
+    emailCount              INT             NOT NULL DEFAULT 0,
+    emailStartTime          BIGINT          DEFAULT NULL,
 	emailUseSignature		VARCHAR(5)		DEFAULT "user",
-	emailSignature			VARCHAR(512),
+	emailSignature			TEXT,
 	emailType				VARCHAR(20)		DEFAULT "mail",
 	emailHost				VARCHAR(255),
 	emailPort				INT				DEFAULT 25,
@@ -59,6 +66,8 @@ CREATE TABLE x2_admin(
 	emailUser				VARCHAR(255),
 	emailPass				VARCHAR(255),
 	emailSecurity			VARCHAR(10),
+	enableColorDropdownLegend   TINYINT         DEFAULT 0,
+    enforceDefaultTheme     TINYINT         DEFAULT 0,
 	installDate				BIGINT			NOT NULL,
 	updateDate				BIGINT			NOT NULL,
 	updateInterval			INT				NOT NULL DEFAULT 0,
@@ -73,6 +82,7 @@ CREATE TABLE x2_admin(
 	workflowBackdateReassignment	TINYINT		NOT NULL DEFAULT 1,
 	unique_id		VARCHAR(32) NOT NULL DEFAULT "none",
 	edition			VARCHAR(10) NOT NULL DEFAULT "opensource",
+	serviceCaseEmailAccount		INT NOT NULL DEFAULT -1,
 	serviceCaseFromEmailAddress	TEXT,
 	serviceCaseFromEmailName	TEXT,
 	serviceCaseEmailSubject		TEXT,
@@ -82,7 +92,7 @@ CREATE TABLE x2_admin(
 	serviceDistribution			varchar(255),
 	serviceOnlineOnly			TINYINT,
     corporateAddress            TEXT,
-    eventDeletionTime           INT,
+    eventDeletionTime           INT, 
     eventDeletionTypes          TEXT,
     properCaseNames             INT             DEFAULT 1,
     contactNameFormat           VARCHAR(255),
@@ -90,12 +100,37 @@ CREATE TABLE x2_admin(
 	gaTracking_internal			VARCHAR(20) NULL,
     sessionLog                  TINYINT         DEFAULT 0,
     userActionBackdating        TINYINT         DEFAULT 0,
-	emailDropbox_alias			VARCHAR(50) DEFAULT NULL,
-	emailDropbox_createContact	TINYINT	DEFAULT 1,
-	emailDropbox_zapLineBreaks	TINYINT DEFAULT 0,
-	emailDropbox_emptyContact	TINYINT DEFAULT 1,
-	emailDropbox_logging		TINYINT DEFAULT 0
-) COLLATE = utf8_general_ci;
+    historyPrivacy              VARCHAR(20) DEFAULT "default",
+    batchTimeout                INT DEFAULT 300,
+    massActionsBatchSize        INT DEFAULT 10,
+    externalBaseUrl             VARCHAR(255) DEFAULT NULL,
+    externalBaseUri             VARCHAR(255) DEFAULT NULL,
+    appName                     VARCHAR(255) DEFAULT NULL,
+    appDescription              VARCHAR(255) DEFAULT NULL,
+    /* If set to 1, prevents X2Flow from sending emails to contacts that have doNotEmail set to 1 */
+    x2FlowRespectsDoNotEmail    TINYINT DEFAULT 0,
+    /* This is the rich text that gets displayed to contacts after they've clicked a do not email 
+       link */
+    doNotEmailPage   LONGTEXT DEFAULT NULL,
+    doNotEmailLinkText          VARCHAR(255) DEFAULT NULL,
+    twitterCredentialsId        INT UNSIGNED,
+    twitterRateLimits           TEXT DEFAULT NULL
+) ENGINE=InnoDB, COLLATE = utf8_general_ci;
+/*&*/
+DROP TABLE IF EXISTS x2_api_hooks;
+/*&*/
+CREATE TABLE x2_api_hooks (
+    id              INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    event           VARCHAR(50), -- Event name. Should be named after an X2Flow trigger.
+    modelName       VARCHAR(100), -- Class of the model to which the hook corresponds.
+    target_url      VARCHAR(255), -- Target URL that the REST hook will ping.
+    userId          INT NOT NULL DEFAULT 1, -- ID of user who created the subscription.
+    directPayload   TINYINT DEFAULT 0, -- Send the model directly, as part of the payload.
+    createDate  BIGINT DEFAULT NULL, -- Creation timestamp
+    INDEX(event,modelName),
+    INDEX(createDate),
+    INDEX(target_url)
+) ENGINE=InnoDB COLLATE = utf8_general_ci;
 /*&*/
 DROP TABLE IF EXISTS x2_changelog;
 /*&*/
@@ -113,6 +148,8 @@ CREATE TABLE x2_changelog(
 	timestamp				INT				NOT NULL DEFAULT 0
 ) COLLATE = utf8_general_ci;
 /*&*/
+DROP TABLE IF EXISTS x2_email_inboxes;
+/*&*/
 DROP TABLE IF EXISTS x2_credentials;
 /*&*/
 CREATE TABLE x2_credentials(
@@ -126,7 +163,9 @@ CREATE TABLE x2_credentials(
 	lastUpdated	BIGINT DEFAULT NULL,
 	auth		TEXT, -- encrypted (hopefully) authentication data
 	INDEX(userId)
-) COLLATE = utf8_general_ci;
+) ENGINE=InnoDB COLLATE = utf8_general_ci;
+/*&*/
+ALTER TABLE `x2_admin` ADD CONSTRAINT FOREIGN KEY (`twitterCredentialsId`) REFERENCES x2_credentials(`id`) ON UPDATE CASCADE ON DELETE SET NULL;
 /*&*/
 DROP TABLE IF EXISTS x2_credentials_default;
 /*&*/
@@ -155,6 +194,7 @@ CREATE TABLE x2_dropdowns (
 	id						INT				NOT NULL AUTO_INCREMENT PRIMARY KEY,
 	name					VARCHAR(250),
 	options					TEXT,
+	multi					TINYINT DEFAULT 0,
     parent                  INT,
     parentVal               VARCHAR(250)
 ) AUTO_INCREMENT=1000 COLLATE = utf8_general_ci;
@@ -170,11 +210,16 @@ CREATE TABLE x2_fields (
 	custom					INT				DEFAULT 1,
 	type					VARCHAR(20)		DEFAULT "varchar",
 	required				TINYINT			DEFAULT 0,
+    uniqueConstraint        TINYINT         DEFAULT 0,
+    safe                    TINYINT         DEFAULT 1,
 	readOnly				TINYINT			DEFAULT 0,
 	linkType				VARCHAR(250),
 	searchable				TINYINT			DEFAULT 0,
 	relevance				VARCHAR(250),
 	isVirtual				TINYINT			DEFAULT 0,
+    defaultValue            TEXT,
+    keyType                 CHAR(3) DEFAULT NULL,
+    data                    TEXT,
 	INDEX (modelName),
 	UNIQUE (modelName, fieldName)
 ) COLLATE = utf8_general_ci;
@@ -204,53 +249,6 @@ CREATE TABLE x2_lead_routing(
 	groupType				INT
 ) COLLATE = utf8_general_ci;
 /*&*/
-/* These have foreign key constraints in them and should thus be dropped first: */
-DROP TABLE IF EXISTS x2_list_criteria,x2_list_items;
-/*&*/
-DROP TABLE IF EXISTS x2_lists;
-/*&*/
-CREATE TABLE x2_lists (
-	id						INT UNSIGNED	NOT NULL AUTO_INCREMENT PRIMARY KEY,
-	assignedTo				VARCHAR(255),
-	name					VARCHAR(100)	NOT NULL,
-	description				VARCHAR(250)	NULL,
-	type					VARCHAR(20)		NULL,
-	logicType				VARCHAR(20)		DEFAULT "AND",
-	modelName				VARCHAR(100)	NOT NULL,
-	visibility				INT NOT NULL	DEFAULT 1,
-	count					INT UNSIGNED	NOT NULL DEFAULT 0,
-	createDate				BIGINT			NOT NULL,
-	lastUpdated				BIGINT			NOT NULL,
-	INDEX(assignedTo),
-	INDEX(type)
-) ENGINE InnoDB COLLATE utf8_general_ci;
-/*&*/
-CREATE TABLE x2_list_criteria (
-	id						INT				NOT NULL AUTO_INCREMENT PRIMARY KEY,
-	listId					INT				UNSIGNED NOT NULL,
-	type					VARCHAR(20)		NULL,
-	attribute				VARCHAR(40)		NULL,
-	comparison				VARCHAR(10)		NULL,
-	value					VARCHAR(100)	NOT NULL,
-	INDEX (listId),
-	FOREIGN KEY (listId) REFERENCES x2_lists(id) ON UPDATE CASCADE ON DELETE CASCADE
-) ENGINE InnoDB COLLATE utf8_general_ci;
-/*&*/
-CREATE TABLE x2_list_items (
-	id						INT UNSIGNED	NOT NULL AUTO_INCREMENT PRIMARY KEY,
-	emailAddress			VARCHAR(255)	NULL,
-	contactId				INT				UNSIGNED,
-	listId					INT				UNSIGNED NOT NULL,
-	uniqueId				VARCHAR(32)		NULL,
-	sent					INT				UNSIGNED NOT NULL DEFAULT 0,
-	opened					INT				UNSIGNED NOT NULL DEFAULT 0,
-	clicked					INT				UNSIGNED NOT NULL DEFAULT 0,
-	unsubscribed			INT				UNSIGNED NOT NULL DEFAULT 0,
-	INDEX (listId),
-	INDEX (uniqueId),
-	FOREIGN KEY (listId) REFERENCES x2_lists(id) ON UPDATE CASCADE ON DELETE CASCADE
-) ENGINE InnoDB COLLATE utf8_general_ci;
-/*&*/
 DROP TABLE IF EXISTS x2_modules;
 /*&*/
 CREATE TABLE x2_modules (
@@ -263,7 +261,10 @@ CREATE TABLE x2_modules (
 	toggleable				INT,
 	adminOnly				INT,
 	editable				INT,
-	custom					INT
+	custom					INT,
+	enableRecordAliasing    TINYINT 	    DEFAULT 0,
+	itemName				VARCHAR(100),
+    pseudoModule            TINYINT         DEFAULT 0
 ) COLLATE = utf8_general_ci;
 /*&*/
 DROP TABLE IF EXISTS x2_notifications;
@@ -332,6 +333,7 @@ CREATE TABLE x2_profile(
 	fullName				VARCHAR(255)	NOT NULL,
 	username				VARCHAR(50)		NOT NULL,
 	officePhone				VARCHAR(40),
+    extension               VARCHAR(40),
 	cellPhone				VARCHAR(40),
 	emailAddress			VARCHAR(255)	NOT NULL,
 	notes					TEXT,
@@ -341,35 +343,35 @@ CREATE TABLE x2_profile(
 	updatedBy				VARCHAR(255),
 	avatar					TEXT,
 	allowPost				TINYINT			DEFAULT 1,
+	disablePhoneLinks       TINYINT			DEFAULT 0,
+	disableNotifPopup		TINYINT			DEFAULT 0,
+	disableAutomaticRecordTagging		TINYINT			DEFAULT 0,
+    disableTimeInTitle      TINYINT DEFAULT 0,
 	language				VARCHAR(40)		DEFAULT "",
 	timeZone				VARCHAR(100)	DEFAULT "",
 	resultsPerPage			INT DEFAULT		20,
 	widgets					VARCHAR(255),
 	widgetOrder				TEXT,
 	widgetSettings			TEXT,
+	defaultEmailTemplates	TEXT,
 	activityFeedOrder       TINYINT         DEFAULT 0,
-    /*backgroundColor			VARCHAR(6)		NULL,
-	menuBgColor				VARCHAR(6)		NULL,
-	menuTextColor			VARCHAR(6)		NULL,
-	pageHeaderBgColor		VARCHAR(6)		NULL,
-	pageHeaderTextColor		VARCHAR(6)		NULL,
-    activityFeedWidgetBgColor       VARCHAR(6)              NULL,
-    activityFeedWidgetTextColor     VARCHAR(6)              NULL,
-	backgroundImg			VARCHAR(100)	NULL DEFAULT "",
-	backgroundTiling		VARCHAR(10)		NULL DEFAULT "",
-	pageOpacity				INT				NULL,*/
     theme                   TEXT,
+    showActions				VARCHAR(20),
+    profileWidgetLayout     TEXT,
+    recordViewWidgetLayout  TEXT,
+    dataWidgetLayout	    TEXT,
+    miscLayoutSettings      TEXT,
     notificationSound       VARCHAR(100)    NULL DEFAULT "X2_Notification.mp3",
     loginSound              VARCHAR(100)    NULL DEFAULT "",
 	startPage				VARCHAR(30)		NULL,
 	showSocialMedia			TINYINT			NOT NULL DEFAULT 0,
 	showDetailView			TINYINT			NOT NULL DEFAULT 1,
 	gridviewSettings		TEXT,
+	generalGridViewSettings	TEXT,
 	formSettings			TEXT,
 	emailUseSignature		VARCHAR(5)		DEFAULT "user",
 	emailSignature			LONGTEXT,
 	enableFullWidth			TINYINT			DEFAULT 1,
-	showActions				VARCHAR(20),
 	syncGoogleCalendarId	TEXT,
 	syncGoogleCalendarAccessToken TEXT,
 	syncGoogleCalendarRefreshToken TEXT,
@@ -393,6 +395,7 @@ CREATE TABLE x2_profile(
     historyShowAll          TINYINT         DEFAULT 0,
     historyShowRels         TINYINT         DEFAULT 0,
     googleRefreshToken      VARCHAR(255),
+	leadRoutingAvailability	TINYINT			DEFAULT 1,
 	UNIQUE(username, emailAddress),
 	INDEX (username)
 ) COLLATE = utf8_general_ci;
@@ -403,8 +406,10 @@ CREATE TABLE x2_relationships (
 	id						INT				NOT NULL AUTO_INCREMENT PRIMARY KEY,
 	firstType				VARCHAR(100),
 	firstId					INT,
+	firstLabel				VARCHAR(100),
 	secondType				VARCHAR(100),
-	secondId				INT
+	secondId				INT,
+	secondLabel				VARCHAR(100)
 ) COLLATE = utf8_general_ci;
 /*&*/
 /* The following needs to be dropped first; there is a foreign key constraint */
@@ -415,8 +420,9 @@ DROP TABLE IF EXISTS x2_roles;
 CREATE TABLE x2_roles (
 	id						INT				NOT NULL AUTO_INCREMENT PRIMARY KEY,
 	name					VARCHAR(250),
-	users					TEXT
-) ENGINE InnoDB COLLATE = utf8_general_ci;
+	users					TEXT,
+        timeout                                 INT
+) ENGINE=InnoDB COLLATE = utf8_general_ci;
 /*&*/
 DROP TABLE IF EXISTS x2_role_exceptions;
 /*&*/
@@ -424,8 +430,8 @@ CREATE TABLE x2_role_exceptions (
 	id						INT				NOT NULL AUTO_INCREMENT primary key,
 	workflowId				INT,
 	stageId					INT,
-	roleId					INT,
-	replacementId int
+	roleId					INT, /* points to id of an x2_roles record */
+	replacementId           int /* points to id of a dummy x2_roles record */
 ) COLLATE = utf8_general_ci;
 /*&*/
 DROP TABLE IF EXISTS x2_role_to_permission;
@@ -433,8 +439,10 @@ DROP TABLE IF EXISTS x2_role_to_permission;
 CREATE TABLE x2_role_to_permission (
 	id						INT				NOT NULL AUTO_INCREMENT PRIMARY KEY,
 	roleId					INT,
-	fieldId					INT,
-	permission				INT
+	fieldId					INT NOT NULL,
+	`permission`				INT,
+    INDEX(`fieldId`),
+    INDEX(`roleId`)
 ) COLLATE = utf8_general_ci;
 /*&*/
 DROP TABLE IF EXISTS x2_role_to_user;
@@ -449,7 +457,7 @@ CREATE TABLE x2_role_to_user (
 DROP TABLE IF EXISTS x2_sessions;
 /*&*/
 CREATE TABLE x2_sessions(
-	id						CHAR(40)		PRIMARY KEY,
+	id						CHAR(128)		PRIMARY KEY,
 	user					VARCHAR(255),
 	lastUpdated				BIGINT,
 	IP						VARCHAR(40)		NOT NULL,
@@ -563,19 +571,6 @@ CREATE TABLE x2_tips(
     module              VARCHAR(255)
 ) COLLATE = utf8_general_ci;
 /*&*/
-DROP TABLE IF EXISTS x2_flows;
-/*&*/
-CREATE TABLE x2_flows(
-	id						INT				AUTO_INCREMENT PRIMARY KEY,
-	active					TINYINT			NOT NULL DEFAULT 1,
-	name					VARCHAR(100)	NOT NULL,
-	triggerType				VARCHAR(40)		NOT NULL,
-	modelClass				VARCHAR(40),
-	flow					TEXT,
-	createDate				BIGINT			NOT NULL,
-	lastUpdated				BIGINT			NOT NULL
-) COLLATE = utf8_general_ci;
-/*&*/
 DROP TABLE IF EXISTS x2_like_to_post;
 /*&*/
 CREATE TABLE `x2_like_to_post` (
@@ -593,3 +588,60 @@ CREATE TABLE `x2_view_log` (
 	recordId				INT,
 	timestamp				BIGINT
 ) COLLATE = utf8_general_ci;
+/*&*/
+DROP TABLE IF EXISTS x2_chart_settings;
+/*&*/
+CREATE TABLE `x2_chart_settings` (
+  `id`                      int(11)         NOT NULL AUTO_INCREMENT,
+  `userId`                  int(11)         NOT NULL,
+  `name`                    varchar(100)    NOT NULL,
+  `chartType`               varchar(100)    NOT NULL,
+  `settings`                TEXT,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `userId` (`userId`,`name`)
+) COLLATE = utf8_general_ci;
+/*&*/
+/* This table has a foreign key constraint in it and should thus be dropped first: */
+DROP TABLE IF EXISTS x2_trigger_logs;
+/*&*/
+DROP TABLE IF EXISTS x2_flows;
+/*&*/
+CREATE TABLE x2_flows(
+    id                        INT                AUTO_INCREMENT PRIMARY KEY,
+    active                    TINYINT            NOT NULL DEFAULT 1,
+    name                    VARCHAR(100)    NOT NULL,
+    triggerType                VARCHAR(40)        NOT NULL,
+    modelClass                VARCHAR(40),
+    flow                    LONGTEXT,
+    createDate                BIGINT            NOT NULL,
+    lastUpdated                BIGINT            NOT NULL
+) ENGINE=InnoDB, COLLATE = utf8_general_ci;
+/*&*/
+CREATE TABLE `x2_trigger_logs` (
+  `id`                          INT             NOT NULL AUTO_INCREMENT,
+  `flowId`                      INT             NOT NULL,
+  `triggeredAt`                 BIGINT          NOT NULL,
+  `triggerLog`                  TEXT,
+  PRIMARY KEY (`id`),
+  FOREIGN KEY (`flowId`) REFERENCES x2_flows(`id`) ON UPDATE CASCADE ON DELETE CASCADE
+) ENGINE=InnoDB, COLLATE = utf8_general_ci;
+/*&*/
+DROP TABLE IF EXISTS `x2_record_aliases`;
+/*&*/
+CREATE TABLE `x2_record_aliases` (
+  `id`                          INT             NOT NULL AUTO_INCREMENT,
+  `recordId`                    INT             NOT NULL,
+  `recordType`                  VARCHAR(100)    NOT NULL,
+  `alias`                       VARCHAR(100)    NOT NULL,
+  `aliasType`                   VARCHAR(100)    NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB, COLLATE = utf8_general_ci;
+/*&*/
+DROP TABLE IF EXISTS `x2_failed_logins`;
+/*&*/
+CREATE TABLE x2_failed_logins (
+	IP VARCHAR(40) NOT NULL PRIMARY KEY,
+    attempts INTEGER UNSIGNED,
+	lastAttempt BIGINT DEFAULT NULL,
+    INDEX(IP)
+) COLLATE = utf8_general_ci, ENGINE=INNODB;

@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -37,17 +37,13 @@
 
 class ServiceRoutingBehavior extends CBehavior {
 
-	public function cleanUpSessions() {
-		X2Model::model('Session')->deleteAll('lastUpdated < :cutoff', array(':cutoff'=>time() - Yii::app()->params->admin->timeout));
-	}
-
 	/**
 	 * Picks the next asignee based on the routing type
 	 * 
 	 * @return string Username that should be assigned the next lead
 	 */
 	public function getNextAssignee() {
-		$admin = &Yii::app()->params->admin;
+		$admin = &Yii::app()->settings;
 		$type = $admin->serviceDistribution;
 		if ($type == "") {
 			return "Anyone";
@@ -79,9 +75,9 @@ class ServiceRoutingBehavior extends CBehavior {
 	 * @return mixed
 	 */
 	public function evenDistro() {
-		$admin = &Yii::app()->params->admin;
+		$admin = &Yii::app()->settings;
 		$online = $admin->serviceOnlineOnly;
-		$this->cleanUpSessions();
+		Session::cleanUpSessions();
 		$usernames = array();
 		$sessions = Session::getOnlineUsers();
 		$users = X2Model::model('User')->findAll();
@@ -101,7 +97,8 @@ class ServiceRoutingBehavior extends CBehavior {
 		$numbers = array();
 		foreach ($users as $user) {
 			if ($user != 'admin' && $user!='api') {
-				$actions = X2Model::model('Actions')->findAllByAttributes(array('assignedTo' => $user, 'complete' => 'No'));
+				$actions = X2Model::model('Actions')
+                    ->findAllByAttributes(array('assignedTo' => $user, 'complete' => 'No'));
 				if (isset($actions))
 					$numbers[$user] = count($actions);
 				else
@@ -123,9 +120,9 @@ class ServiceRoutingBehavior extends CBehavior {
 	 * @return mixed 
 	 */
 	public function roundRobin() {
-		$admin = &Yii::app()->params->admin;
+		$admin = &Yii::app()->settings;
 		$online = $admin->serviceOnlineOnly;
-		$this->cleanUpSessions();
+		Session::cleanUpSessions();
 		$usernames = array();
 		$sessions = Session::getOnlineUsers();
 		$users = X2Model::model('User')->findAll();
@@ -157,7 +154,7 @@ class ServiceRoutingBehavior extends CBehavior {
 	 * @return integer
 	 */
 	public function getRoundRobin() {
-		$admin = &Yii::app()->params->admin;
+		$admin = &Yii::app()->settings;
 		$srrId = $admin->srrId;
 		return $srrId;
 	}
@@ -166,7 +163,7 @@ class ServiceRoutingBehavior extends CBehavior {
 	 * Stores the round-robin state. 
 	 */
 	public function updateRoundRobin() {
-		$admin = &Yii::app()->params->admin;
+		$admin = &Yii::app()->settings;
 		$admin->srrId = $admin->srrId + 1;
 		$admin->save();
 	}

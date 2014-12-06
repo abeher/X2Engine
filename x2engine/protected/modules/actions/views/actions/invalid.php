@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -34,5 +34,9 @@
  * "Powered by X2Engine".
  *****************************************************************************************/
 ?>
-<div class="page-title icon actions"><h2><?php echo Yii::t('actions','That action is not assigned to you.'); ?></h2></div>
-<?php echo CHtml::link(Yii::t('app','Click here to return to where you were'),Yii::app()->user->returnUrl.'/actions/viewAll/'); ?>
+<div class="page-title icon actions"><h2>
+    <?php echo Yii::t('actions','That {action} is not assigned to you.', array(
+        '{action}' => Modules::displayName(false),
+    )); ?>
+</h2></div>
+<?php echo CHtml::link(Yii::t('app','Click here to return to where you were'),isset($_SERVER['HTTP_REFERER'])?$_SERVER['HTTP_REFERER']:Yii::app()->controller->createUrl('/actions/actions/index')); ?>

@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -36,19 +36,12 @@
 
 $this->pageTitle = $model->name;
 
-$authParams['assignedTo'] = $model->createdBy;
-$this->actionMenu = $this->formatMenu(array(
-	array('label'=>Yii::t('marketing','All Campaigns'), 'url'=>array('index')),
-	array('label'=>Yii::t('module','Create'), 'url'=>array('create')),
-	array('label'=>Yii::t('module','View'), 'url'=>array('view', 'id'=>$model->id)),
-	array('label'=>Yii::t('module','Update')),
-	array('label'=>Yii::t('module','Delete'), 'url'=>'#', 'linkOptions'=>array('submit'=>array('delete','id'=>$model->id),'confirm'=>Yii::t('app','Are you sure you want to delete this item?'))),
-	array('label'=>Yii::t('contacts','Contact Lists'), 'url'=>array('/contacts/lists')),
-	array('label'=>Yii::t('marketing','Newsletters'), 'url'=>array('weblist/index')),
-	array('label'=>Yii::t('marketing','Web Lead Form'), 'url'=>array('webleadForm')),
-	array('label'=>Yii::t('marketing','Web Tracker'), 'url'=>array('webTracker')),
-	array('label'=>Yii::t('app','X2Flow'),'url'=>array('/studio/flowIndex'),'visible'=>(Yii::app()->params->edition==='pro')),
-),$authParams);
+$authParams['X2Model'] = $model;
+$menuOptions = array(
+    'all', 'create', 'view', 'edit', 'delete', 'lists', 'newsletters',
+    'weblead', 'webtracker', 'x2flow',
+);
+$this->insertMenu($menuOptions, $model, $authParams);
 
 $form = $this->beginWidget('CActiveForm', array(
 	'id'=>'campaign-form',
@@ -56,7 +49,7 @@ $form = $this->beginWidget('CActiveForm', array(
 ));
 ?>
 <div class="page-title icon marketing">
-	<h2><?php echo $model->name; ?></h2>
+	<h2><?php echo CHtml::encode($model->name); ?></h2>
 	<?php echo CHtml::submitButton(Yii::t('app','Save'),array('class'=>'x2-button highlight right')); ?>
 </div>
 <?php

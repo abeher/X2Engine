@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -33,16 +33,12 @@
  * technical reasons, the Appropriate Legal Notices must display the words
  * "Powered by X2Engine".
  *****************************************************************************************/
-$authParams['assignedTo']=$model->assignedTo;
+$authParams['X2Model'] = $model;
 $this->actionMenu = $this->formatMenu(array(
 	array('label'=>Yii::t('quotes','Quotes List'), 'url'=>array('index')),
 	array('label'=>Yii::t('quotes','Create Quote'), 'url'=>array('create')),
 	array('label'=>Yii::t('quotes','View Quote')),
 	array('label'=>Yii::t('quotes','Update Quote'), 'url'=>array('update', 'id'=>$model->id)),
-	array('label'=>Yii::t('quotes','Add A User'), 'url'=>array('addUser', 'id'=>$model->id)),
-	array('label'=>Yii::t('quotes','Add A Contact'), 'url'=>array('addContact', 'id'=>$model->id)),
-	array('label'=>Yii::t('quotes','Remove A User'), 'url'=>array('removeUser', 'id'=>$model->id)),
-	array('label'=>Yii::t('quotes','Remove A Contact'), 'url'=>array('removeContact', 'id'=>$model->id)),
 	array('label'=>Yii::t('quotes','Delete Quote'), 'url'=>'#', 'linkOptions'=>array('submit'=>array('delete','id'=>$model->id),'confirm'=>'Are you sure you want to delete this item?')),
 ),$authParams);
 ?>

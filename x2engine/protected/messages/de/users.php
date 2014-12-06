@@ -1,68 +1,54 @@
 <?php
-/*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
- * 
- * This program is free software; you can redistribute it and/or modify it under
- * the terms of the GNU Affero General Public License version 3 as published by the
- * Free Software Foundation with the addition of the following permission added
- * to Section 15 as permitted in Section 7(a): FOR ANY PART OF THE COVERED WORK
- * IN WHICH THE COPYRIGHT IS OWNED BY X2ENGINE, X2ENGINE DISCLAIMS THE WARRANTY
- * OF NON INFRINGEMENT OF THIRD PARTY RIGHTS.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU Affero General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU Affero General Public License along with
- * this program; if not, see http://www.gnu.org/licenses or write to the Free
- * Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
- * 02110-1301 USA.
- * 
- * You can contact X2Engine, Inc. P.O. Box 66752, Scotts Valley,
- * California 95067, USA. or at email address contact@x2engine.com.
- * 
- * The interactive user interfaces in modified source and object code versions
- * of this program must display Appropriate Legal Notices, as required under
- * Section 5 of the GNU Affero General Public License version 3.
- * 
- * In accordance with Section 7(b) of the GNU Affero General Public License version 3,
- * these Appropriate Legal Notices must retain the display of the "Powered by
- * X2Engine" logo. If the display of the logo is not reasonably feasible for
- * technical reasons, the Appropriate Legal Notices must display the words
- * "Powered by X2Engine".
- *****************************************************************************************/
-
 return array (
 // Users Attributes
-'ID'=>'ID',
-'First Name'=>'Vorname',
-'Last Name'=>'Nachname',
-'Username'=>'Benutzername',
-'Password'=>'Kennwort',
-'Title'=>'Titel',
-'Department'=>'Abteilung',
-'Office Phone'=>'Büro Telefon',
-'Cell Phone'=>'Handy',
 'Home Phone'=>'Privat Telefon',
-'Address'=>'Adresse',
-'Background Info'=>'Hintergrund-Infos',
-'Email'=>'E-Mail',
-'Status'=>'Status',
+'Department'=>'Abteilung',
 'Update Password'=>'Passwort Aktualisieren',
-'Last Updated'=>'Zuletzt Aktualisiert',
-'Updated By'=>'Aktualisiert Von',
 'Recent Items'=>'Zuletzt Verwendet',
+'API Key'=>'API Key',
 
 // Users Actions
 'Create User'=>'Benutzer Erstellen',
 'View User'=>'Benutzer Erstellen',
 'Update User'=>'Benutzer Aktualisieren',
-'Manage Users'=>'Benutzer Verwalten',
 'Invite Users'=>'Einladen Benutzer',
+'Delete User'=>'Benutzer löschen',
+'User:'=>'Benutzer:',
+'Action History'=>'Aktion History',
 
 // Users Titles
 'User: {name}'=>'Benutzer: {name}',
 'Update User: {name}'=>'Benutzer Aktualisieren: {name}',
+'Invite Users to X2Engine'=>'Einladen von Benutzern zu X2Engine',
+'Instructions'=>'Anleitung',
+'Delete Unregistered'=>'Löschen unregistriert',
+'Invited Users'=>'Eingeladene Benutzer',
+
+// Misc Text
+'Please enter a list of e-mails separated by commas.'=>'Bitte geben Sie eine Liste von E-Mails durch Komma getrennt.',
+'{n} user(s) have been invited but have not yet completed registration.'=>'{n} (r) Benutzer sind eingeladen worden, aber noch nicht die Registrierung abgeschlossen.',
+'To delete all users who have not completed their invite, click the button below.'=>'Um alle Benutzer, die ihre Einladung abgeschlossen haben zu löschen, klicken Sie auf den Button unten.',
+'Are you sure you want to delete these users?'=>'Sind Sie sicher, dass Sie diese Benutzer löschen?',
+'Changing the username is NOT advised.'=>'Ändern des Benutzernamens wird nicht empfohlen.',
+'Passwords do not match.'=>'Passwörter stimmen nicht überein.',
+'{attribute} is not secure enough (minimum length: {l})'=>'{attribute} ist nicht sicher genug (Mindestlänge: {l} )',
+'{attribute} is not secure enough; it must contain at least {n} types of characters (upper case, lower case, number, etc)'=>'{attribute} ist nicht sicher genug; es muss mindestens {n} Arten von Zeichen (Großbuchstaben, Kleinbuchstaben, Anzahl, etc.)',
+'No user corresponding to that email address could be found.'=>'Kein Benutzer entsprechend dieser E-Mail-Adresse gefunden werden konnte.',
+'The specified username is reserved.'=>'Der angegebene Benutzername ist reserviert.',
+'Can\'t remember your username or password?'=>'Kann \ &#39;t erinnern Sie Ihren Benutzernamen oder Passwort vergessen?',
+'Need general guidance in how to use this software?'=>'Brauchen Sie eine allgemeine Anleitung, wie man diese Software verwenden?',
+'You have requested to reset the password for user {user} in {appName}.'=>'Sie haben angefordert, um das Passwort für den Benutzer zurückgesetzt {user} in {appName} .',
+'To finish resetting your password, please open the following link: '=>'Zum Abschluss Zurücksetzen des Passworts, öffnen Sie bitte den folgenden Link:',
+'If you did not make this request, please disregard this email.'=>'Wenn Sie diese Anforderung nicht zu machen, bitte diese E-Mail ignorieren.',
+'Almost Done!'=>'Fast fertig!',
+'Check your email at {email} for '=>'Überprüfen Sie Ihre E-Mail an {email} für',
+'Could not send email.'=>'E-Mail konnte nicht gesendet werden.',
+'Sending of the password reset verification email failed with message: {message}'=>'Senden des Passwort-Reset-E-Mail mit Bestätigungs-Nachricht ist fehlgeschlagen: {message}',
+'Enter a new password for user "{user}" ({name}):'=>'Geben Sie ein neues Kennwort für den Benutzer &quot; {user} &quot;( {name} ):',
+'Password Has Been Reset'=>'Passwort wurde zurückgesetzt',
+'You should now have access '=>'Sie haben nun Zugang',
+'Access Denied'=>'Zugriff verweigert',
+'Invalid reset key.'=>'Ungültige Reset-Taste.',
+'The password reset link has expired.'=>'Das Passwort-Reset-Link ist abgelaufen.',
+'Invalid reset link.'=>'Ungültige Reset-Link.',
 );

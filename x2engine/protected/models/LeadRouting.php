@@ -1,8 +1,8 @@
 <?php
 
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -38,7 +38,7 @@
 /**
  * This is the model class for table "x2_lead_routing".
  *
- * @package X2CRM.models
+ * @package application.models
  * @property integer $id
  * @property string $field
  * @property string $value
@@ -90,9 +90,10 @@ class LeadRouting extends CActiveRecord {
      */
     public function attributeLabels() {
 	return array(
-	    'id' => 'ID',
-	    'criteria' => 'Criteria',
-	    'users' => 'Users',
+	    'id' => Yii::t('admin','ID'),
+	    'criteria' => Yii::t('admin','Criteria'),
+	    'users' => Yii::t('admin','Users'),
+        'priority' => Yii::t('admin','Priority'),
 	);
     }
 
@@ -113,9 +114,9 @@ class LeadRouting extends CActiveRecord {
 
     /**
      * Turns a list of lead routing criteria into a human-readable list of rules.
-     * 
+     *
      * @param string $str
-     * @return string 
+     * @return string
      */
     public static function humanizeText($str) {
 	$array = json_decode($str);

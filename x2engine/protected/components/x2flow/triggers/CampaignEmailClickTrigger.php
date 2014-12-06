@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -35,24 +35,35 @@
  *****************************************************************************************/
 
 /**
- * X2FlowTrigger 
- * 
- * @package X2CRM.components.x2flow.actions
+ * X2FlowTrigger
+ *
+ * @package application.components.x2flow.actions
  */
 class CampaignEmailClickTrigger extends X2FlowTrigger {
 	public $title = 'Campaign Email Clicked';
 	public $info = 'Triggers when a contact clicks a tracking link in a campaign email.';
-	
+
 	public function paramRules() {
 		return array(
 			'title' => Yii::t('studio',$this->title),
 			'info' => Yii::t('studio',$this->info),
 			'modelClass' => 'Contacts',
 			'options' => array(
-				array('name'=>'campaign','label'=>Yii::t('studio','Campaign'),'type'=>'link','linkType'=>'Campaign','optional'=>1,'linkSource'=>Yii::app()->controller->createUrl(
-					CActiveRecord::model('Campaign')->autoCompleteSource
+				array(
+                    'name'=>'campaign',
+                    'label'=>Yii::t('studio', 'Campaign'),
+                    'type'=>'link',
+                    'linkType'=>'Campaign',
+                    'optional'=>1,
+                    'linkSource'=>Yii::app()->createUrl(
+					    CActiveRecord::model('Campaign')->autoCompleteSource
 				)),
-				array('name'=>'url','label'=>'URL','operators'=>array('=','<>','list','notList','contains','noContains'),'optional'=>1),
+				array(
+                    'name'=>'url',
+                    'label'=>Yii::t('studio', 'URL'),
+                    'operators'=>array('=', '<>', 'list','notList','contains','noContains'), 
+                    'optional'=>1
+                ),
 			));
 	}
 }

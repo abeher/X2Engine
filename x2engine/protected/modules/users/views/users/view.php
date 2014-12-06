@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -34,18 +34,17 @@
  * "Powered by X2Engine".
  *****************************************************************************************/
 
-$this->actionMenu = $this->formatMenu(array(
-	array('label'=>Yii::t('profile','Social Feed'),'url'=>array('/profile')),
-	array('label'=>Yii::t('users','Manage Users'), 'url'=>array('admin')),
-	array('label'=>Yii::t('users','Create User'), 'url'=>array('create')),
-	array('label'=>Yii::t('users','Invite Users'), 'url'=>array('inviteUsers')),
-	array('label'=>Yii::t('users','View User')),
-	array('label'=>Yii::t('users','Update User'), 'url'=>array('update', 'id'=>$model->id)),
-	array('label'=>Yii::t('contacts','Delete User'), 'url'=>'#', 'linkOptions'=>array('submit'=>array('delete','id'=>$model->id),'confirm'=>Yii::t('app','Are you sure you want to delete this item?'))),
-));
+$menuOptions = array(
+    'feed', 'admin', 'create', 'invite', 'view', 'profile', 'edit', 'delete',
+);
+$this->insertMenu($menuOptions, $model);
+
 ?>
 <div class="page-title icon users">
-	<h2><span class="no-bold"><?php echo Yii::t('users','User:'); ?></span> <?php echo $model->firstName,' ',$model->lastName; ?></h2>
+    <h2><span class="no-bold">
+        <?php echo Yii::t('users','{user}:', array(
+            '{user}' => Modules::displayName(false),
+        )); ?></span> <?php echo $model->firstName,' ',$model->lastName; ?></h2>
 </div>
 <?php $this->widget('zii.widgets.CDetailView', array(
 	'data'=>$model,
@@ -53,7 +52,7 @@ $this->actionMenu = $this->formatMenu(array(
 	'attributes'=>array(
 		'firstName',
 		'lastName',
-		'username',
+		empty($model->userAlias)?'username':'userAlias',
 		'title',
 		'department',
 		'officePhone',
@@ -70,7 +69,11 @@ $this->actionMenu = $this->formatMenu(array(
 	),
 )); ?>
 <br>
-<div class="page-title"><h2><?php echo Yii::t('users','Action History'); ?></h2></div>
+<div class="page-title rounded-top"><h2>
+    <?php echo Yii::t('users','{action} History', array(
+        '{action}' => Modules::displayName(false, "Actions"),
+    )); ?>
+</h2></div>
 
 
 <?php
@@ -82,11 +85,17 @@ foreach($actionHistory as $action) {
 			array(
 				'label'=>'Action Description',
 				'type'=>'raw',
-				'value'=>CHtml::link(CHtml::encode($action->actionDescription),
-							 array('/actions/actions/view','id'=>$action->id)),
+				'value'=> in_array($action->type,Actions::$emailTypes)
+                   ? CHtml::link(Yii::t('actions','View Email'),'javascript:void(0)',array(
+                       'class' => 'action-frame-link',
+                       'data-action-id' => $action->id,
+                   ))
+                   : CHtml::link($action->actionDescription,
+                        		 array('/actions/actions/view','id'=>$action->id))
+                
 			),
 			'assignedTo',
-                        array(  
+                        array(
                                 'name'=>'dueDate',
 				'label'=>'Due Date',
 				'type'=>'raw',
@@ -99,7 +108,7 @@ foreach($actionHistory as $action) {
 			),
 			'priority',
 			'type',
-                        array(  
+                        array(
                                 'name'=>'createDate',
 				'label'=>'Create Date',
 				'type'=>'raw',

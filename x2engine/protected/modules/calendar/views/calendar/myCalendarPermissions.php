@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -33,33 +33,19 @@
  * technical reasons, the Appropriate Legal Notices must display the words
  * "Powered by X2Engine".
  *****************************************************************************************/
-?>
 
-<?php
-if(Yii::app()->params->admin->googleIntegration) { // menu if google integration is enables has additional options
-	$menuItems = array(
-		array('label'=>Yii::t('calendar','Calendar'), 'url'=>array('index')),
-		array('label'=>Yii::t('calendar', 'My Calendar Permissions')),
-//		array('label'=>Yii::t('calendar', 'List'),'url'=>array('list')),
-//		array('label'=>Yii::t('calendar','Create'), 'url'=>array('create')),
-		array('label'=>Yii::t('calendar', 'Sync My Actions To Google Calendar'), 'url'=>array('syncActionsToGoogleCalendar')),
-	);
-} else {
-	$menuItems = array(
-		array('label'=>Yii::t('calendar','Calendar'), 'url'=>array('index')),
-		array('label'=>Yii::t('calendar', 'My Calendar Permissions')),
-//		array('label'=>Yii::t('calendar', 'List'),'url'=>array('list')),
-//		array('label'=>Yii::t('calendar','Create'), 'url'=>array('create')),
-	);
-}
-$this->actionMenu = $this->formatMenu($menuItems);
-?>
+$menuOptions = array(
+    'index', 'myPermissions',
+);
+if (Yii::app()->params->isAdmin)
+    $menuOptions[] = 'userPermissions';
+if (Yii::app()->settings->googleIntegration)
+    $menuOptions[] = 'sync';
+$this->insertMenu($menuOptions);
 
-
-
-<?php
-
-$users = User::model()->findAll(array('select'=>'id, username, firstName, lastName', 'index'=>'id'));
+$users = User::model()->findAllByAttributes(array('status'=>User::STATUS_ACTIVE));
+$users = array_combine(array_map(function($u){return $u->fullName;},$users),$users);
+ksort($users);
 
 $this->beginWidget('CActiveForm', array(
     'id'=>'user-permission-form',
@@ -84,16 +70,23 @@ $(function() {
 ",CClientScript::POS_HEAD);
 
 $names = array();
-foreach($users as $user)
-    if($user->username != 'admin' && $user->id != Yii::app()->user->id)
-    	$names[$user->id] = $user->firstName . ' ' . $user->lastName;
-    	
+foreach($users as $name=>$user) {
+    if(!Yii::app()->authManager->checkAccess('administrator', $user->id)
+            && $user->id != Yii::app()->getSuId()){
+        $names[$user->id] = $name;
+    }
+
+}
+
 $viewPermission = X2CalendarPermissions::getUserIdsWithViewPermission(Yii::app()->user->id);
 $editPermission = X2CalendarPermissions::getUserIdsWithEditPermission(Yii::app()->user->id);
 ?>
 <div class="page-title"><h2><?php echo Yii::t('calendar', 'View Permission'); ?></h2></div>
 <div class="form">
-	<?php echo Yii::t('calendar', 'These users can view your calendar.'); ?>
+    <?php echo Yii::t('calendar', 'These users can view your {module}.', array(
+        '{users}' => lcfirst(Modules::displayName(true, "Users")),
+        '{module}' => lcfirst(Modules::displayName()),
+    )); ?>
 	<?php
 	echo CHtml::listBox('view-permission', $viewPermission, $names, array(
 		'class'=>'user-permission',
@@ -103,9 +96,12 @@ $editPermission = X2CalendarPermissions::getUserIdsWithEditPermission(Yii::app()
 	?>
 	<br>
 </div>
-<div class="page-title"><h2><?php echo Yii::t('calendar', 'Edit Permission'); ?></h2></div>
+<div class="page-title rounded-top"><h2><?php echo Yii::t('calendar', 'Edit Permission'); ?></h2></div>
 <div class="form">
-	<?php echo Yii::t('calendar', 'These users can edit your calendar.'); ?>
+    <?php echo Yii::t('calendar', 'These {users} can edit your {module}.', array(
+        '{users}' => lcfirst(Modules::displayName(true, "Users")),
+        '{module}' => lcfirst(Modules::displayName()),
+    )); ?>
 	<?php
 	echo CHtml::listBox('edit-permission', $editPermission, $names, array(
 		'class'=>'user-permission',

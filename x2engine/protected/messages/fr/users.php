@@ -1,68 +1,54 @@
 <?php
-/*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
- * 
- * This program is free software; you can redistribute it and/or modify it under
- * the terms of the GNU Affero General Public License version 3 as published by the
- * Free Software Foundation with the addition of the following permission added
- * to Section 15 as permitted in Section 7(a): FOR ANY PART OF THE COVERED WORK
- * IN WHICH THE COPYRIGHT IS OWNED BY X2ENGINE, X2ENGINE DISCLAIMS THE WARRANTY
- * OF NON INFRINGEMENT OF THIRD PARTY RIGHTS.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU Affero General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU Affero General Public License along with
- * this program; if not, see http://www.gnu.org/licenses or write to the Free
- * Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
- * 02110-1301 USA.
- * 
- * You can contact X2Engine, Inc. P.O. Box 66752, Scotts Valley,
- * California 95067, USA. or at email address contact@x2engine.com.
- * 
- * The interactive user interfaces in modified source and object code versions
- * of this program must display Appropriate Legal Notices, as required under
- * Section 5 of the GNU Affero General Public License version 3.
- * 
- * In accordance with Section 7(b) of the GNU Affero General Public License version 3,
- * these Appropriate Legal Notices must retain the display of the "Powered by
- * X2Engine" logo. If the display of the logo is not reasonably feasible for
- * technical reasons, the Appropriate Legal Notices must display the words
- * "Powered by X2Engine".
- *****************************************************************************************/
-
 return array (
 // Users Attributes
-'ID'=>'ID',
-'First Name'=>'Prénom',
-'Last Name'=>'Nom',
-'Username'=>'Nom d\'Utilisateur',
-'Password'=>'Mot de Passe',
-'Title'=>'Titre',
-'Department'=>'Département',
-'Office Phone'=>'Téléphone au Bureau',
-'Cell Phone'=>'Téléphone Cellulaire',
 'Home Phone'=>'Téléphone à la Maison',
-'Address'=>'Adresse',
-'Background Info'=>'Information de Base',
-'Email'=>'Email',
-'Status'=>'Statut',
+'Department'=>'Département',
 'Update Password'=>'Mise à Jour Mot de Passe',
-'Last Updated'=>'Dernière Mise à Jour',
-'Updated By'=>'Mis à Jour Par',
 'Recent Items'=>'Articles Récents',
+'API Key'=>'API Key',
 
 // Users Actions
 'Create User'=>'Créer un Utilisateur',
 'View User'=>'Voir l\'Utilisateur',
 'Update User'=>'Mise à Jour de l\'Utilisateur',
-'Manage Users'=>'Gérer les Utilisateurs',
 'Invite Users'=>'Inviter des Utilisateurs',
+'Delete User'=>'Supprimer l&#39;utilisateur',
+'User:'=>'Utilisateur:',
+'Action History'=>'Histoire d&#39;action',
 
 // Users Titles
 'User: {name}'=>'Utilisateur: {name}',
 'Update User: {name}'=>'L\'Atilisateur Mise à Jour: {name}',
+'Invite Users to X2Engine'=>'Invitons les utilisateurs à X2Engine',
+'Instructions'=>'Directives',
+'Delete Unregistered'=>'Supprimer non enregistré',
+'Invited Users'=>'Les utilisateurs invités',
+
+// Misc Text
+'Please enter a list of e-mails separated by commas.'=>'S&#39;il vous plaît entrer une liste de courriels séparé par des virgules.',
+'{n} user(s) have been invited but have not yet completed registration.'=>'{n} utilisateur (s) ont été invités mais n&#39;ont pas encore terminé l&#39;enregistrement.',
+'To delete all users who have not completed their invite, click the button below.'=>'Pour supprimer tous les utilisateurs qui n&#39;ont pas terminé leur invitation, cliquez sur le bouton ci-dessous.',
+'Are you sure you want to delete these users?'=>'Etes-vous sûr de vouloir supprimer ces utilisateurs?',
+'Changing the username is NOT advised.'=>'Changer le nom d&#39;utilisateur n&#39;est pas conseillé.',
+'Passwords do not match.'=>'Les mots de passe ne correspondent pas.',
+'{attribute} is not secure enough (minimum length: {l})'=>'{attribute} n&#39;est pas assez sécurisé (longueur minimale: {l} )',
+'{attribute} is not secure enough; it must contain at least {n} types of characters (upper case, lower case, number, etc)'=>'{attribute} n&#39;est pas assez sûr; il doit contenir au moins {n} types de caractères (majuscules, minuscules, nombre, etc)',
+'No user corresponding to that email address could be found.'=>'Aucun utilisateur correspondant à cette adresse n&#39;a pu être trouvée.',
+'The specified username is reserved.'=>'Le nom d&#39;utilisateur spécifié est réservé.',
+'Can\'t remember your username or password?'=>'Peut \ &#39;t vous souvenir de votre nom d&#39;utilisateur ou mot de passe?',
+'Need general guidance in how to use this software?'=>'Besoin d&#39;orientations générales sur la façon d&#39;utiliser ce logiciel?',
+'You have requested to reset the password for user {user} in {appName}.'=>'Vous avez demandé à réinitialiser le mot de passe pour l&#39;utilisateur {user} en {appName} .',
+'To finish resetting your password, please open the following link: '=>'Pour terminer la réinitialisation de votre mot de passe, s&#39;il vous plaît ouvrir le lien suivant:',
+'If you did not make this request, please disregard this email.'=>'Si vous n&#39;avez pas fait cette demande, s&#39;il vous plaît ne pas tenir compte de ce mail.',
+'Almost Done!'=>'Presque fait!',
+'Check your email at {email} for '=>'Vérifiez votre courrier électronique à {email} pour',
+'Could not send email.'=>'Impossible d&#39;envoyer e-mail.',
+'Sending of the password reset verification email failed with message: {message}'=>'Envoi de l&#39;e-mail de vérification de réinitialisation de mot de passe échouée avec le message: {message}',
+'Enter a new password for user "{user}" ({name}):'=>'Entrez un nouveau mot de passe pour l&#39;utilisateur &quot; {user} &quot;( {name} ):',
+'Password Has Been Reset'=>'Mot de passe a été réinitialisé',
+'You should now have access '=>'Vous devriez maintenant avoir accès',
+'Access Denied'=>'Accès refusé',
+'Invalid reset key.'=>'Invalid touche de réinitialisation.',
+'The password reset link has expired.'=>'Le lien de réinitialisation de mot de passe a expiré.',
+'Invalid reset link.'=>'Lien de réinitialisation valide.',
 );

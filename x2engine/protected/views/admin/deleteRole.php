@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -34,13 +34,16 @@
  * "Powered by X2Engine".
  *****************************************************************************************/
 ?>
-<div class="page-title"><h2><?php echo Yii::t('admin','Delete A Role'); ?></h2></div>
-<br /> <span style="color:red;"><b>WARNING:</b> this operation is not reversible, all users will have this role removed from them.</span>
-<form name="deleteRoles" action="deleteRole" method="POST">
-	<br />
-	<select name="role">
-		<?php foreach($roles as $key=>$value) echo "<option value='$key'>$value</option>"; ?>
-	</select>
-	<br /><br />
-	<input class="x2-button" type="submit" value="<?php echo Yii::t('admin','Delete');?>" />
-</form>
+<div class="page-title rounded-top"><h2><?php echo Yii::t('admin', 'Delete A Role'); ?></h2></div>
+<div class="form">
+    <br /> <span style="color:red;"><?php echo Yii::t('admin','<b>WARNING:</b> this operation is not reversible, all users will have this role removed from them.');?></span>
+    <form name="deleteRoles" action="deleteRole" method="POST">
+        <br />
+        <select name="role">
+            <?php foreach($roles as $key => $value)
+                echo "<option value='$key'>$value</option>"; ?>
+        </select>
+        <br /><br />
+        <input class="x2-button" type="submit" value="<?php echo Yii::t('admin', 'Delete'); ?>" />
+    </form>
+</div>

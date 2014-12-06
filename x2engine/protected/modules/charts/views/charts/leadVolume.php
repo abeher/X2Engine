@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -33,26 +33,26 @@
  * technical reasons, the Appropriate Legal Notices must display the words
  * "Powered by X2Engine".
  *****************************************************************************************/
-?>
-<?php
-$this->actionMenu = $this->formatMenu(array(
-	array('label' => Yii::t('charts', 'Lead Volume')),
-	// array('label' => Yii::t('charts', 'Lead Activity'), 'url' => array('leadActivity')),
-	// array('label' => Yii::t('charts', 'Lead Performance'), 'url' => array('leadPerformance')),
-	// array('label' => Yii::t('charts', 'Lead Sources'), 'url' => array('leadSources')),
-	// array('label' => Yii::t('charts', 'Workflow'), 'url' => array('workflow')),
-	array('label' => Yii::t('charts', 'Marketing'), 'url' => array('marketing')),
-	array('label' => Yii::t('charts', 'Pipeline'), 'url' => array('pipeline')),
-	array('label' => Yii::t('charts', 'Opportunities'), 'url' => array('sales')),
-));
+
+$menuOptions = array(
+    'leadVolume', 'marketing', 'pipeline', 'opportunities',
+);
+$this->insertMenu($menuOptions);
+
 Yii::app()->clientScript->registerScript('leadVolume',"
 	$('#startDate,#endDate').change(function() {
 		$('#dateRange').val('custom');
 	});
 ",CClientScript::POS_READY);
 ?>
+<div class="page-title icon charts"><h2>
+    <?php
+    echo Yii::t('charts', '{lead} Volume', array(
+        '{lead}' => Modules::displayName(false, "X2Leads"),
+    )); ?>
+</h2></div>
+
 <div class="form">
-	<div class="page-title icon charts"><h2><?php echo Yii::t('charts', 'Lead Volume'); ?></h2></div>
 
 	<?php
 	$form = $this->beginWidget('CActiveForm', array(
@@ -163,7 +163,9 @@ Yii::app()->clientScript->registerScript('leadVolume',"
 				),
 				'leads'=>array(
 					'name'=>'count',
-					'header'=>Yii::t('contacts','Leads'),
+                    'header'=>Yii::t('contacts','{leads}', array(
+                        '{leads}'=>Modules::displayName(true, "X2Leads"),
+                    )),
 				)
 			),
 		));

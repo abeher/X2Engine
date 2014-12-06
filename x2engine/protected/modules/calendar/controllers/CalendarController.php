@@ -1,8 +1,7 @@
 <?php
-
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -35,12 +34,17 @@
  * "Powered by X2Engine".
  *****************************************************************************************/
 
+Yii::import('application.components.Ical');
+
 /**
  *  Calendar lets you create calendar events, view actions from other modules, and sync to google calendar.
  *
- * @package X2CRM.modules.calendar.controllers
+ * @property User $currentUser The currently logged-in user who is accessing the calendar
+ * @package application.modules.calendar.controllers
  */
 class CalendarController extends x2base {
+
+    private $_currentUser;
 
     public $modelClass = 'X2Calendar';
     public $calendarUsers = null; // list of users for choosing whose calendar to view
@@ -90,6 +94,7 @@ class CalendarController extends x2base {
                     'syncActionsToGoogleCalendar',
                     'toggleUserCalendarsVisible',
                     'togglePortletVisible',
+                    //'uploadToGoogle'
                 ),
                 'users' => array('@'),
             ),
@@ -109,8 +114,10 @@ class CalendarController extends x2base {
      * Show Calendar
      */
     public function actionIndex(){
+        // Yii::app()->params->profile->syncAllEvents();
+        // $events = $this->feedAll(); // Submits prerendered list of events to the calendar.        
         $this->initCheckedCalendars(); // ensure user has a list to save checked calendars
-        $this->render('calendar');
+        $this->render('calendar', array());
     }
 
     /**
@@ -129,6 +136,8 @@ class CalendarController extends x2base {
             parent::view($model, 'calendar');
         }
     }
+
+    
 
     /**
      * Set who can view/edit current user's calendar
@@ -176,14 +185,14 @@ class CalendarController extends x2base {
           if(isset($_POST['save-button'])) {
           if(isset($_POST['User']['calendarViewPermission'])) {
           $model->calendarViewPermission = $_POST['User']['calendarViewPermission'];
-          $model->calendarViewPermission = Accounts::parseUsers($model->calendarViewPermission);
+          $model->calendarViewPermission = Fields::parseUsers($model->calendarViewPermission);
           } else {
           $model->calendarViewPermission = '';
           }
 
           if(isset($_POST['User']['calendarEditPermission'])) {
           $model->calendarEditPermission = $_POST['User']['calendarEditPermission'];
-          $model->calendarEditPermission = Accounts::parseUsers($model->calendarEditPermission);
+          $model->calendarEditPermission = Fields::parseUsers($model->calendarEditPermission);
           } else {
           $model->calendarEditPermission = '';
           }
@@ -253,7 +262,7 @@ class CalendarController extends x2base {
                     $model->$field = $_POST['X2Calendar'][$field];
                     $fieldData = Fields::model()->findByAttributes(array('modelName' => 'Calendar', 'fieldName' => $field));
                     if(isset($fieldData) && $fieldData->type == 'assignment' && $fieldData->linkType == 'multiple'){
-                        $model->$field = Accounts::parseUsers($model->$field);
+                        $model->$field = Fields::parseUsers($model->$field);
                     }elseif(isset($fieldData) && $fieldData->type == 'date'){
                         $model->$field = strtotime($model->$field);
                     }
@@ -275,7 +284,7 @@ class CalendarController extends x2base {
             $this->redirect(array('index'));
         }
 
-        $admin = Yii::app()->params->admin;
+        $admin = Yii::app()->settings;
         $googleIntegration = $admin->googleIntegration;
 
         // if google integration is activated let user choose if they want to link this calendar to a google calendar
@@ -348,7 +357,7 @@ class CalendarController extends x2base {
                     $model->$field = $_POST['X2Calendar'][$field];
                     $fieldData = Fields::model()->findByAttributes(array('modelName' => 'Calendar', 'fieldName' => $field));
                     if($fieldData->type == 'assignment' && $fieldData->linkType == 'multiple'){
-                        $model->$field = Accounts::parseUsers($model->$field);
+                        $model->$field = Fields::parseUsers($model->$field);
                     }elseif($fieldData->type == 'date'){
                         $model->$field = strtotime($model->$field);
                     }
@@ -362,7 +371,7 @@ class CalendarController extends x2base {
             $this->redirect(array('view', 'id' => $model->id));
         }
 
-        $admin = Yii::app()->params->admin;
+        $admin = Yii::app()->settings;
         $googleIntegration = $admin->googleIntegration;
 
         $this->render('update', array('model' => $model, 'googleIntegration' => $googleIntegration));
@@ -387,8 +396,7 @@ class CalendarController extends x2base {
       Returns:
       A string containing a SQL boolean expression
      */
-
-    private function constructFilterClause($filter){
+    private function constructFilterClause(array $filter){
         $clause = "";
         $clause .= "((complete != \"Yes\") "; // add completed actions
         if(in_array('contacts', $filter))
@@ -413,272 +421,196 @@ class CalendarController extends x2base {
         return $clause;
     }
 
+    /** 
+    * Retrieves a JSON of calendar events to send to the calendar view, which renders the events immediately
+    * @return - array of JSON strings
+    */
+
+    /*public function actionJsonFeedAll($start=null, $end=null){
+            echo CJSON::encode($this->feedAll($start, $end));
+    }*/
+
     /**
-     * $user - string - username
-     * $start, $end - unix timestamp - fetch actions between these dates
-     *
-     * return a json string of actions associated with the specified user
+     * @param string $user username to fetch events for
+     * @param int    $start unix time to for start of window
+     * @param int    $end unix ending time
      */
     public function actionJsonFeed($user, $start, $end){
-        $loggedInUser = User::model()->findByPk(Yii::app()->user->id); // get logged in user profile
-        $filter = explode(',', $loggedInUser->calendarFilter); // action types user doesn't want filtered
-        $possibleFilters = X2Calendar::getCalendarFilterNames(); // action types that can be filtered
-        // SQL where clause
-        $where = "(assignedTo=\"$user\") "; // must be assigned to $user
-        $where .= "AND ".self::constructFilterClause($filter);
-        $where .= " AND (type IS NULL OR type != \"quotes\") ";
-        $where .= "AND (";
-        $where .= "(dueDate >= $start AND dueDate <= $end) OR (completeDate >= $start AND completeDate <= $end)"; // actions that happen between $start and $end
-        $where .= ")";
+        echo CJSON::encode($this->feedUser($user, $start, $end));
 
-        // get actions assigned to user
-        $actions = Yii::app()->db->createCommand()
-                ->select('id, visibility, assignedTo, complete, type, (SELECT text FROM x2_action_text a WHERE a.actionId = id) AS actionDescription, dueDate, completeDate, associationType, associationName, associationId, allDay, color')
-                ->from('x2_actions')
-                ->where($where)
-                ->queryAll();
-
-        $events = array();
-        foreach($actions as $action){
-            if($action['visibility'] >= 1 || // don't show private actions,
-                    $action['assignedTo'] == Yii::app()->user->name || // unless they belong to current user
-                    Yii::app()->params->isAdmin){ // admin sees all
-                $description = strip_tags($action['actionDescription']);
-                $title = mb_substr($description, 0, 30, 'UTF-8');
-                if($action['type'] == 'event'){
-                    $events[] = array(
-                        'title' => $title,
-                        'description' => $description,
-                        'start' => date('Y-m-d H:i', $action['dueDate']),
-                        'id' => $action['id'],
-                        'complete' => $action['complete'],
-                        'associationType' => $action['associationType'],
-                        'type' => 'event',
-                        'allDay' => false,
-                    );
-                    end($events);
-                    $last = key($events);
-                    if($action['completeDate'])
-                        $events[$last]['end'] = date('Y-m-d H:i', $action['completeDate']);
-                    if($action['allDay'])
-                        $events[$last]['allDay'] = $action['allDay'];
-                    if($action['color'])
-                        $events[$last]['color'] = $action['color'];
-                    if($action['associationType'] == 'contacts'){
-                        $events[$last]['associationUrl'] = $this->createUrl('/contacts/contacts/view/id/'.$action['associationId']);
-                        $events[$last]['associationName'] = $action['associationName'];
-                    }
-                }else if($action['associationType'] == 'contacts'){
-                    $events[] = array(
-                        'title' => $title,
-                        'description' => $description,
-                        'start' => date('Y-m-d H:i', $action['dueDate']),
-                        'id' => $action['id'],
-                        'complete' => $action['complete'],
-                        'associationType' => 'contacts',
-                        'associationUrl' => $this->createUrl('/contacts/contacts/view/id/'.$action['associationId']),
-                        'associationName' => $action['associationName'],
-                        'allDay' => false,
-                    );
-                    end($events);
-                    $last = key($events);
-                    if($action['allDay'])
-                        $events[$last]['allDay'] = $action['allDay'];
-                    if($action['color'])
-                        $events[$last]['color'] = $action['color'];
-                } else{
-                    $events[] = array(
-                        'title' => $title,
-                        'description' => $description,
-                        'start' => date('Y-m-d H:i', $action['dueDate']),
-                        'id' => $action['id'],
-                        'complete' => $action['complete'],
-                        'allDay' => false,
-                    );
-                    end($events);
-                    $last = key($events);
-                    if($action['allDay'])
-                        $events[$last]['allDay'] = $action['allDay'];
-                    if($action['color'])
-                        $events[$last]['color'] = $action['color'];
-                }
-            }
-        }
-        echo CJSON::encode($events);
     }
 
     public function actionJsonFeedGroup($groupId, $start, $end){
-
-        $user = User::model()->findByPk(Yii::app()->user->id); // get user profile
-        $filter = explode(',', $user->calendarFilter); // action types user doesn't want filtered
-        $possibleFilters = X2Calendar::getCalendarFilterNames(); // action types that can be filtered
-        // SQL where clause
-        $where = "(assignedTo=\"$groupId\") "; // must be assigned to $user
-        $where .= "AND ".self::constructFilterClause($filter);
-        $where .= " AND (type IS NULL OR type != \"quotes\") ";
-        $where .= "AND (";
-        $where .= "(dueDate >= $start AND dueDate <= $end) OR (completeDate >= $start AND completeDate <= $end)"; // actions that happen between $start and $end
-        $where .= ")";
-
-        // get actions assigned to user
-        $actions = Yii::app()->db->createCommand()
-                ->select('a.id, a.visibility, a.assignedTo, a.complete, a.type, a.dueDate, a.completeDate, a.associationType, a.associationName, a.associationId, a.allDay, a.color,t.text')
-                ->from('x2_actions AS a')
-                ->join('x2_action_text AS t', 't.actionId=a.id')
-                ->where($where)
-                ->queryAll();
-
-        $events = array();
-        foreach($actions as $action){
-            if($action['visibility'] >= 1 || // don't show private actions,
-                    $action['assignedTo'] == Yii::app()->user->name || // unless they belong to current user
-                    Yii::app()->params->isAdmin){ // admin sees all
-                $description = $action['actionDescription'];
-                $title = mb_substr($description, 0, 30, 'UTF-8');
-                if($action['type'] == 'event'){
-                    $events[] = array(
-                        'title' => $title,
-                        'description' => $description,
-                        'start' => date('Y-m-d H:i', $action['dueDate']),
-                        'id' => $action['id'],
-                        'complete' => $action['complete'],
-                        'associationType' => $action['associationType'],
-                        'type' => 'event',
-                        'allDay' => false,
-                    );
-                    end($events);
-                    $last = key($events);
-                    if($action['completeDate'])
-                        $events[$last]['end'] = date('Y-m-d H:i', $action['completeDate']);
-                    if($action['allDay'])
-                        $events[$last]['allDay'] = $action['allDay'];
-                    if($action['color'])
-                        $events[$last]['color'] = $action['color'];
-                    if($action['associationType'] == 'contacts'){
-                        $events[$last]['associationUrl'] = $this->createUrl('/contacts/contacts/view/id/'.$action['associationId']);
-                        $events[$last]['associationName'] = $action['associationName'];
-                    }
-                }else if($action['associationType'] == 'contacts'){
-                    $events[] = array(
-                        'title' => $title,
-                        'description' => $description,
-                        'start' => date('Y-m-d H:i', $action['dueDate']),
-                        'id' => $action['id'],
-                        'complete' => $action['complete'],
-                        'associationType' => 'contacts',
-                        'associationUrl' => $this->createUrl('/contacts/contacts/view/id/'.$action['associationId']),
-                        'associationName' => $action['associationName'],
-                        'allDay' => false,
-                    );
-                    end($events);
-                    $last = key($events);
-                    if($action['allDay'])
-                        $events[$last]['allDay'] = $action['allDay'];
-                    if($action['color'])
-                        $events[$last]['color'] = $action['color'];
-                } else{
-                    $events[] = array(
-                        'title' => $title,
-                        'description' => $description,
-                        'start' => date('Y-m-d H:i', $action['dueDate']),
-                        'id' => $action['id'],
-                        'complete' => $action['complete'],
-                        'allDay' => false,
-                    );
-                    end($events);
-                    $last = key($events);
-                    if($action['allDay'])
-                        $events[$last]['allDay'] = $action['allDay'];
-                    if($action['color'])
-                        $events[$last]['color'] = $action['color'];
-                }
-            }
-        }
-        echo CJSON::encode($events);
-    }
-
-    /**
-     * return a json string of actions associated with the specified shared calendar
-     */
-    public function actionJsonFeedShared($calendarId){
-        $actions = Actions::model()->findAllByAttributes(array('calendarId' => $calendarId));
-        $events = array();
-        $user = User::model()->findByPk(Yii::app()->user->id); // get user profile
-        $filter = explode(',', $user->calendarFilter); // action types user doesn't want filtered
-        $possibleFilters = X2Calendar::getCalendarFilterNames(); // action types that can be filtered
-        foreach($actions as $action){
-            if($action->visibility >= 1 || $action->assignedTo == Yii::app()->user->name || Yii::app()->params->isAdmin){ // don't show private actions, unless they belong to current user
-                if(in_array($action->type, $possibleFilters)) // type of action user might filter?
-                    if(!in_array($action->type, $filter)) // filter actions user doesn't want to see
-                        continue;
-                if(!in_array('completed', $filter)) // filter completed actions if user doesn't want to see them
-                    if($action->complete == 'Yes')
-                        continue;
-                $description = $action->actionDescription;
-                $title = mb_substr($description, 0, 30, 'UTF-8');
-                if($action->type == 'event'){
-                    $events[] = array(
-                        'title' => $title,
-                        'description' => $description,
-                        'start' => date('Y-m-d H:i', $action->dueDate),
-                        'id' => $action->id,
-                        'complete' => $action->complete,
-                        'associationType' => $action->associationType,
-                        'type' => 'event',
-                        'allDay' => false,
-                    );
-                    end($events);
-                    $last = key($events);
-                    if($action->completeDate)
-                        $events[$last]['end'] = date('Y-m-d H:i', $action->completeDate);
-                    if($action->allDay)
-                        $events[$last]['allDay'] = $action->allDay;
-                    if($action->color)
-                        $events[$last]['color'] = $action->color;
-                    if($action->associationType == 'contacts'){
-                        $events[$last]['associationUrl'] = $this->createUrl('/contacts/contacts/view/id/'.$action->associationId);
-                        $events[$last]['associationName'] = $action->associationName;
-                    }
-                }else if($action->associationType == 'contacts'){
-                    $events[] = array(
-                        'title' => $title,
-                        'description' => $description,
-                        'start' => date('Y-m-d H:i', $action->dueDate),
-                        'id' => $action->id,
-                        'complete' => $action->complete,
-                        'associationType' => 'contacts',
-                        'associationUrl' => $this->createUrl('/contacts/contacts/view/id/'.$action->associationId),
-                        'associationName' => $action->associationName,
-                        'allDay' => false,
-                    );
-                    end($events);
-                    $last = key($events);
-                    if($action->allDay)
-                        $events[$last]['allDay'] = $action->allDay;
-                    if($action->color)
-                        $events[$last]['color'] = $action->color;
-                } else{
-                    $events[] = array(
-                        'title' => $title,
-                        'description' => $description,
-                        'start' => date('Y-m-d H:i', $action->dueDate),
-                        'id' => $action->id,
-                        'complete' => $action->complete,
-                        'allDay' => false,
-                    );
-                    end($events);
-                    $last = key($events);
-                    if($action->allDay)
-                        $events[$last]['allDay'] = $action->allDay;
-                    if($action->color)
-                        $events[$last]['color'] = $action->color;
-                }
-            }
-        }
-        echo CJSON::encode($events);
+        echo CJSON::encode($this->feedGroup($groupId, $start, $end));
     }
 
     public function actionJsonFeedGoogle($calendarId){
+        echo CJSON::encode($this->feedGoogle($calendarId));
+    }
+
+    public function formatActionToEvent($action, $id){
+        if( !($action->visibility >= 1 || // don't show private actions,
+                $action->assignedTo == Yii::app()->user->name ||  // unless they belong to current user
+                Yii::app()->params->isAdmin) ) // admin sees all
+            return false;
+
+
+        $linked = !empty($action->associationType) && 
+            strtolower($action->associationType) != 'none' && 
+            class_exists(X2Model::getModelName($action->associationType));
+        if ($linked) {
+            $associatedModel = X2Model::getMOdelOfTypeWithId (
+                X2Model::getModelName($action->associationType), $action->associationId);
+            if ($associatedModel) {
+                $associationUrl = $associatedModel->getUrl ();
+            } else {
+                $associationUrl = '';
+            }
+        }
+        
+        $title = $action->shortActionText;
+
+        //Email formatting
+        $title = preg_replace('/<b>/', '', $title);
+        $title = preg_replace('/<\/b>/', '', $title);
+        $title = preg_replace('/\n\n/', "\n", $title);
+        $title = preg_replace('/<!--EndSig-->/', '', $title);
+        $title = preg_replace('/<!--BeginOpenedEmail-->/', '', $title);
+        $title = preg_replace('/<!--BeginSignature-->/', '', $title);
+
+        if(in_array($action->type, array(
+                'email', 'emailFrom', 'email_quote', 'email_invoice', 'emailOpened',
+                'emailOpened_quote', 'emailOpened_invoice'))){
+            $title = 'Email: '.$title;
+        }
+
+        $event = array(
+            'title' => $title,
+            'description' => $title,
+            'start' => date('Y-m-d H:i', $action->dueDate),
+            'id' => $action->id,
+            'complete' => $action->complete,
+            'calendarAssignment' => $id,
+            'allDay' => false,
+        );
+
+        if($action->allDay)
+            $event['allDay'] = $action->allDay;
+
+        if($action->color)
+            $event['color'] = $action->color;
+
+        if($action->type == 'event'){
+            if($action->completeDate)
+                $event['end'] = date('Y-m-d H:i', $action->completeDate);
+
+            $event['type'] = 'event';
+            $event['associationType'] = $action->associationType;
+        }
+
+        $event['linked'] = $linked;
+        if($linked){
+            $event['associationType'] = $action->associationType;
+            $event['associationUrl'] = $associationUrl;
+            $event['associationName'] = $action->associationName;
+        }
+        
+        $editable = X2CalendarPermissions::getEditableUserCalendarNames();
+        // If it is a group id, we don't need to check this
+        $userEditable = !is_int($id) && isset($editable[$id]);
+
+        $event['editable'] = $userEditable &&
+            Yii::app()->user->checkAccess('ActionsUpdate',array('X2Model'=>$action));
+        
+        return $event;
+
+    }
+
+    /** 
+     * Retrives all checked calendar events
+     * @param int $start starting unix time to fetch events between
+     * @param int $end ending unix time to fetch events between
+     */
+
+    public function feedAll($start=null, $end=null){
+
+        // default window is +/- one month
+        if(!isset($start))
+            $start = strtotime("-1 month");
+            $end = strtotime("+1 month");
+
+
+        $this->calendarUsers = X2CalendarPermissions::getViewableUserCalendarNames();
+        $this->groupCalendars = X2Calendar::getViewableGroupCalendarNames();
+        $this->calendarFilter = X2Calendar::getCalendarFilters();
+
+        $user = User::model()->findByPk(Yii::app()->user->getId());
+        $showCalendars = json_decode($user->showCalendars, true);
+
+        //fix showCalendars['groupCalendars']
+        if(!isset($showCalendars['groupCalendars'])){
+            $showCalendars['groupCalendars'] = array();
+            $user->showCalendars = json_encode($showCalendars);
+            $user->update();
+        }
+
+        // get a list of all calendars to show
+        $events = array();
+        foreach($showCalendars['userCalendars'] as $cal){
+            $events = array_merge($events, $this->feedUser( $cal, $start, $end)); 
+        }
+
+        foreach($showCalendars['groupCalendars'] as $cal){
+            $events = array_merge($events, $this->feedGroup( $cal, $start, $end)); 
+        }
+
+        return $events;
+    }
+
+    /**
+     * Fetches events assigned to a user between two timestamps
+     * @param string $user username to fetch events for 
+     * @param int $start UNIX timestamp for the beginning time 
+     * @param int $end UNIX timestamp for the end time
+     * @return array an array of fetched events
+     */
+    public function feedUser($user, $start, $end){
+        // These arent being used, but they look useful for something
+        // $loggedInUser = $this->currentUser; // User::model()->findByPk(Yii::app()->user->id); // get logged in user profile
+        // $filter = explode(',', $loggedInUser->calendarFilter); // action types user doesn't want filtered
+        // $possibleFilters = X2Calendar::getCalendarFilterNames(); // action types that can be filtered
+
+        $actions = $this->calendarActions($user,$start,$end);
+
+        $events = array();
+        foreach($actions as $action){
+            $event = $this->formatActionToEvent($action, $user);
+
+            if($event)
+                $events[] = $event;
+        }
+
+        return $events;
+    }
+
+    /**
+    * See {@link CalendarController::feedUser}
+    * @param int $groupId ID of the group assigned 
+    * @param int $start UNIX timestamp for the beginning time 
+    * @param int $end UNIX timestamp for the end time
+    * @return array An array of fetched events
+    */
+    public function feedGroup($groupId, $start, $end){
+        return $this->feedUser($groupId, $start, $end);
+    }
+
+    /*public function actionUpdateGoogleEvents(){
+        Yii::app()->params->profile->fetchGoogleEvents();
+    }*/
+
+
+    // Deprecated, dont use.
+    public function feedGoogle($calendarId){
         $calendar = X2Calendar::model()->findByPk($calendarId);
         $events = array();
         if($calendar->googleCalendarId){
@@ -727,7 +659,7 @@ class CalendarController extends x2base {
             }
         }
 
-        echo CJSON::encode($events);
+        return $events;
     }
 
     /**
@@ -758,7 +690,12 @@ class CalendarController extends x2base {
 
             Yii::app()->clientScript->scriptMap['*.js'] = false;
             Yii::app()->clientScript->scriptMap['*.css'] = false;
-            $this->renderPartial('viewAction', array('model' => $model, 'isEvent' => $isEvent), false, true);
+            $this->renderPartial(
+                'viewAction',
+                array(
+                    'model' => $model,
+                    'isEvent' => $isEvent
+                ), false, true);
         }
     }
 
@@ -852,7 +789,7 @@ class CalendarController extends x2base {
             if($action->completeDate)
                 $action->completeDate += ($dayDelta * 86400) + ($minuteDelta * 60);
 
-            $profile = ProfileChild::model()->findByAttributes(array('username' => $action->assignedTo));
+            $profile = Profile::model()->findByAttributes(array('username' => $action->assignedTo));
             if(isset($profile))
                 $profile->updateGoogleCalendarEvent($action); // update action in Google Calendar if user has a Google Calendar
 
@@ -938,7 +875,7 @@ class CalendarController extends x2base {
             else if($action->type == 'event') // event without end date? give it one
                 $action->completeDate = $action->dueDate + ($dayDelta * 86400) + ($minuteDelta * 60);
 
-            $profile = ProfileChild::model()->findByAttributes(array('username' => $action->assignedTo));
+            $profile = Profile::model()->findByAttributes(array('username' => $action->assignedTo));
             if(isset($profile))
                 $profile->updateGoogleCalendarEvent($action); // update action in Google Calendar if user has a Google Calendar
 
@@ -1067,7 +1004,7 @@ class CalendarController extends x2base {
 
             $action = Actions::model()->findByPk($id);
 
-            $profile = ProfileChild::model()->findByAttributes(array('username' => $action->assignedTo));
+            $profile = Profile::model()->findByAttributes(array('username' => $action->assignedTo));
             if(isset($profile))
                 $profile->deleteGoogleCalendarEvent($action); // update action in Google Calendar if user has a Google Calendar
             X2Model::model('Events')->deleteAllByAttributes(array('associationType' => 'Actions', 'type' => 'calendar_event', 'associationId' => $action->id));
@@ -1079,17 +1016,9 @@ class CalendarController extends x2base {
     // if not, create the list
     public function initCheckedCalendars(){
         $user = User::model()->findByPk(Yii::app()->user->getId());
-        if($user->showCalendars == null){ // calendar list not initialized?
-            $showCalendars = array(
-                'userCalendars' => array('Anyone', $user->username),
-                'groupCalendars' => array(),
-                'sharedCalendars' => array(),
-                'googleCalendars' => array()
-            );
-            $user->showCalendars = CJSON::encode($showCalendars);
-
-            $user->update();
-        }
+        // calendar list not initialized?
+        if($user->showCalendars == null)
+            $user->initCheckedCalendars();
     }
 
     // if a user checked/unchecked a calendar, remember for the next to the user visits the page
@@ -1111,7 +1040,7 @@ class CalendarController extends x2base {
                 if(($key = array_search($calendar, $showCalendars[$calendarType])) !== false) // find calendar in list of shown calendars
                     unset($showCalendars[$calendarType][$key]);
 
-            print_r($showCalendars);
+            /**/print_r($showCalendars);
             $user->showCalendars = CJSON::encode($showCalendars);
             $user->update();
         }
@@ -1137,7 +1066,12 @@ class CalendarController extends x2base {
         }
     }
 
+    /*public function actionUploadToGoogle(){
+        Yii::app()->params->profile->syncAllEvents();
+    }*/
+
     public function actionSyncActionsToGoogleCalendar(){
+        $errors = array();
         $model = Yii::app()->params->profile;
         $client = null;
         if(isset($_POST['Profile'])){
@@ -1149,17 +1083,27 @@ class CalendarController extends x2base {
 
             if($model->syncGoogleCalendarId && isset($_SESSION['token'])){
                 $token = json_decode($_SESSION['token'], true);
-                //$model->syncGoogleCalendarRefreshToken = $token['refresh_token']; // used for accessing this google calendar at a later time
+                // used for accessing this google calendar at a later time
+                //$model->syncGoogleCalendarRefreshToken = $token['refresh_token']; 
                 $model->syncGoogleCalendarAccessToken = $_SESSION['token'];
             }
 
             $model->update();
+
         }
 
-        $admin = Yii::app()->params->admin;
+        if(isset($_SESSION['calendarForceRefresh']) && $_SESSION['calendarForceRefresh']){
+            unset($_SESSION['calendarForceRefresh']);
+            Yii::app()->user->setFlash(
+                'error',
+                'Your Refresh Token was invalid and needed to be refreshed. The last action you ' .
+                'attempted to Sync with Google did not successfully synchronize.');
+        }
+        $admin = Yii::app()->settings;
         $googleIntegration = $admin->googleIntegration;
 
-        // if google integration is activated let user choose if they want to link this calendar to a google calendar
+        /* if google integration is activated let user choose if they want to link this calendar 
+        to a google calendar */
         if($googleIntegration){
 //            $timezone = date_default_timezone_get();
 //            require_once "protected/extensions/google-api-php-client/src/Google_Client.php";
@@ -1168,37 +1112,85 @@ class CalendarController extends x2base {
 //            date_default_timezone_set($timezone);
 
             $auth = new GoogleAuthenticator();
-            $syncGoogleCalendarName = null; // name of the Google Calendar that current user's actions are being synced to if it has been set
+
+            /* name of the Google Calendar that current user's actions are being synced to if it 
+            has been set */
+            $syncGoogleCalendarName = null; 
             try{
-                if(isset($_GET['unlinkGoogleCalendar'])){ // user changed thier mind about linking their google calendar
+                if(isset($_GET['unlinkGoogleCalendar'])){ 
+                    // user changed their mind about linking their google calendar
+
                     unset($_SESSION['token']);
                     $model->syncGoogleCalendarId = null;
-                    //$model->syncGoogleCalendarRefreshToken = null; // used for accessing this google calendar at a later time
+                    // used for accessing this google calendar at a later time
+                    //$model->syncGoogleCalendarRefreshToken = null; 
                     $model->syncGoogleCalendarAccessToken = null;
                     $model->update();
                     $googleCalendarList = null;
-                    if(!is_null($auth->getAccessToken())){
+                    if($auth->getAccessToken()){
                         $googleCalendar = $auth->getCalendarService();
-                        $calList = $googleCalendar->calendarList->listCalendarList();
-                        $googleCalendarList = array();
-                        foreach($calList['items'] as $cal)
-                            $googleCalendarList[$cal['id']] = $cal['summary'];
+                        try{
+                            $calList = $googleCalendar->calendarList->listCalendarList();
+                            $googleCalendarList = array();
+                            foreach($calList['items'] as $cal){
+                                $googleCalendarList[$cal['id']] = $cal['summary'];
+                            }
+                        }catch(Google_ServiceException $e){
+                            if($e->getCode() == '403'){
+                                $errors[] = $e->getMessage();
+                                Yii::app()->user->setFlash('error', $e->getMessage());
+                                $googleCalendarList = null;
+                                //$auth->flushCredentials();
+                            }elseif($e->getCode() == '401'){
+                                $errors[] = 'Invalid user credentials provided. Please try again.';
+                                Yii::app()->user->setFlash(
+                                    'error',
+                                    'Invalid user credentials. Please ensure your account is ' . 
+                                    'able to use this service or delete the access permissions ' .
+                                    'and try again.');
+                                $googleCalendarList = null;
+                                $auth->flushCredentials();
+                            }
+                        }
                     }else{
                         $googleCalendarList = null;
                     }
                 }else{
-                    if(!is_null($auth->getAccessToken())){
+                    if($auth->getAccessToken()){
                         $googleCalendar = $auth->getCalendarService();
-                        $calList = $googleCalendar->calendarList->listCalendarList();
-                        $googleCalendarList = array();
-                        foreach($calList['items'] as $cal)
-                            $googleCalendarList[$cal['id']] = $cal['summary'];
+                        try{
+                            $calList = $googleCalendar->calendarList->listCalendarList();
+                            $googleCalendarList = array();
+                            foreach($calList['items'] as $cal){
+                                $googleCalendarList[$cal['id']] = $cal['summary'];
+                            }
+
+
+                        }catch(Google_ServiceException $e){
+                            if($e->getCode() == '403'){
+                                $errors[] = 'Google Calendar API access has not been configured.';
+                                Yii::app()->user->setFlash(
+                                    'error',
+                                    'Google Calendar API access has not been configured.');
+                                $googleCalendarList = null;
+                                //$auth->flushCredentials();
+                            }elseif($e->getCode() == '401'){
+                                $errors[] = 'Invalid user credentials provided. Please try again.';
+                                Yii::app()->user->setFlash(
+                                    'error',
+                                    'Invalid user credentials. Please ensure your account is ' .
+                                    'able to use this service or delete the access permissions ' .
+                                    'and try again.');
+                                $googleCalendarList = null;
+                                $auth->flushCredentials();
+                            }
+                        }
                     }else{
                         $googleCalendarList = null;
                     }
                 }
             }catch(Google_AuthException $e){
-                unset($_SESSION['access_token']);
+                $auth->flushCredentials();
                 $auth->setErrors($e->getMessage());
                 $client = null;
                 $googleCalendarList = null;
@@ -1209,16 +1201,17 @@ class CalendarController extends x2base {
             $googleCalendarList = null;
             $syncGoogleCalendarName = null;
         }
+        $syncGoogleCalendarId = Yii::app()->params->profile->syncGoogleCalendarId;   
 
         $this->render('syncActionsToGoogleCalendar', array(
-            'auth' => isset($auth)? $auth : null,
+            'errors' => $errors,
+            'auth' => isset($auth) ? $auth : null,
             'model' => $model,
             'googleIntegration' => $googleIntegration,
             'client' => $client,
             'googleCalendarList' => $googleCalendarList,
-            'syncGoogleCalendarName' => $syncGoogleCalendarName,
-                )
-        );
+            'syncGoogleCalendarName' => $syncGoogleCalendarId,
+        ));
     }
 
     public function actionToggleUserCalendarsVisible(){
@@ -1250,4 +1243,99 @@ class CalendarController extends x2base {
         return $model;
     }
 
+    /**
+     * Retrieve calendar events for a given user happening between two specified
+     * dates.
+     * @param string|integer $calendarUser Username or group ID whose calendar
+     *  events are to be loaded and returned
+     * @param type $start Beginning time range
+     * @param type $end End time range
+     * @param mixed $includePublic Set to 1 or boolean true to include all
+     *  calendar events 
+     * @return array An array of action records
+     */
+    public function calendarActions($calendarUser, $start, $end){
+        $filter = explode(',', $this->currentUser->calendarFilter); // action types user doesn't want filtered
+        $staticAction = Actions::model();
+        // View permissions for the viewing user
+        $criteria = $staticAction->getAccessCriteria();
+        // Assignment condition: all events for the user whose calendar is being viewed:
+        $criteria->addCondition('`assignedTo` REGEXP BINARY :unameRegex');
+        $criteria->params[':unameRegex'] = X2PermissionsBehavior::getUserNameRegex($calendarUser);
+        // Action type filters:
+        $criteria->addCondition(self::constructFilterClause($filter));
+        $criteria->addCondition("`type` IS NULL OR `type`='' OR `type`!='quotes'");
+        $criteria->addCondition('(`dueDate` >= :start1 AND `dueDate` <= :end1) '
+                .'OR (`completeDate` >= :start2 AND `completeDate` <= :end2)');
+        $criteria->params = array_merge($criteria->params, array(
+            ':start1' => $start,
+            ':start2' => $start,
+            ':end1' => $end,
+            ':end2' => $end
+        ));
+        return Actions::model()->findAllWithoutActionText($criteria);
+    }
+
+    /**
+     * Getter function for {@link $currentUser}
+     * @return type
+     */
+    public function getCurrentUser() {
+        if(!isset($this->_currentUser)) {
+            $this->_currentUser = User::model()->findByPk(Yii::app()->user->id);
+        }
+        return $this->_currentUser;
+    }
+
+    /**
+     * Create a menu for the Calendar
+     * @param array Menu options to remove
+     * @param X2Model Model object passed to the view
+     * @param array Additional menu parameters
+     */
+    public function insertMenu($selectOptions = array(), $model = null, $menuParams = null) {
+        $Calendar = Modules::displayName();
+        $Actions = Modules::displayName(true, "Actions");
+        $User = Modules::displayName(false, "Users");
+
+        /**
+         * To show all options:
+         * $menuOptions = array(
+         *     'index', 'myPermissions', 'userPermissions', 'sync',
+         * );
+         */
+
+        $menuItems = array(
+            array(
+                'name'=>'index',
+                'label'=>Yii::t('calendar', '{calendar}', array('{calendar}'=>$Calendar)),
+                'url'=>array('index')
+            ),
+            array(
+                'name'=>'myPermissions',
+                'label'=>Yii::t('calendar', 'My {calendar} Permissions', array(
+                    '{calendar}'=>$Calendar,
+                )),
+                'url'=>array('myCalendarPermissions')
+            ),
+            array(
+                'name'=>'userPermissions',
+                'label'=>Yii::t('calendar', '{user} {calendar} Permissions', array(
+                    '{calendar}'=>$Calendar,
+                    '{user}'=>$User,
+                )),
+                'url'=>array('userCalendarPermissions'),
+            ),
+            array(
+                'name'=>'sync',
+                'label'=>Yii::t('calendar', 'Sync My {actions} To Google Calendar', array(
+                    '{actions}' => $Actions,
+                )),
+                'url'=>array('syncActionsToGoogleCalendar'),
+            ),
+        );
+
+        $this->prepareMenu($menuItems, $selectOptions);
+        $this->actionMenu = $this->formatMenu($menuItems, $menuParams);
+    }
 }

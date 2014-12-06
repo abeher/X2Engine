@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -39,13 +39,13 @@
 	<?php $form = $this->beginWidget('CActiveForm', array(
 	'id'=>'feed-form',
 	'enableAjaxValidation'=>false,
-	'action'=>array('profile/addPost','id'=>Yii::app()->user->getId()),
+	'action'=>array('/profile/addPost','id'=>Yii::app()->user->getId()),
 	
 	)); ?>	
 	<div class="float-row">
 		<?php
 		$feed->text = Yii::t('app','Enter text here...');
-		echo $form->textArea($feed,'data',array('onfocus'=>'toggleText(this);','onblur'=>'toggleText(this);','style'=>'width:558px;height:50px;color:#aaa;'));
+		echo $form->textArea($feed,'data',array('onfocus'=>'x2.forms.toggleText(this);','onblur'=>'x2.forms.toggleText(this);','style'=>'width:558px;height:50px;color:#aaa;'));
 		echo $form->dropDownList($feed,'associationId',$users);
 		echo CHtml::submitButton(Yii::t('app','Post'),array('class'=>'x2-button'));
 		?>

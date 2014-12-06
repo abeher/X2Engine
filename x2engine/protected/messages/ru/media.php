@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -37,26 +37,26 @@
 return array (
 // Attribute Labels
 'ID'=>'ID',
-'Association Type'=>'Ассоциация Тип',
-'Association Name'=>'Ассоциация название',
-'Association'=>'ассоциация',
+'Association Type'=>'Тип связи',
+'Association Name'=>'Привязать к',
+'Association'=>'Связано с',
 'File Name'=>'Имя файла',
 'Uploaded By'=>'Загружено',
 'Create Date'=>'Дата создания',
-'Description'=>'описание',
-'Private'=>'частный',
-'Permission'=>'разрешение',
+'Description'=>'Описание',
+'Private'=>'личный',
+'Permission'=>'Доступ',
 
 
 // Actions
 'View Attachment'=>'Просмотр вложения',
-'Delete Media'=>'Удалить Медиа',
-'List'=>'список',
-'Upload'=>'загружать',
-'View'=>'смотреть',
-'Update'=>'обновление',
-'Delete'=>'удалять',
-'All Media'=>'Все СМИ',
+'Delete Media'=>'Удалить файл',
+'List'=>'Список',
+'Upload'=>'Загрузить',
+'View'=>'Смотреть',
+'Update'=>'Обновить',
+'Delete'=>'Удалить',
+'All Media'=>'Все файлы',
 
 // Misc
 'File:'=>'Файл:',
@@ -65,14 +65,26 @@ return array (
 'Uploaded by {name}'=>'Автор {name}',
 'Download File'=>'Скачать файл',
 'Update File: '=>'Загрузить файл',
-'Media & File Library'=>'Медиа-файла библиотеки',
-'Max'=>'максимальный',
-'Forbidden File Extensions:'=>'Запретный расширений файлов',
-'Choose File'=>'Выберите File',
-'Select File'=>'Выберите File',
+'Media & File Library'=>'Библиотека',
+'Max'=>'Максимальный размер',
+'Forbidden File Extensions:'=>'Запрещенные расширения файлов',
+'Choose File'=>'Выберите файл',
+'Select File'=>'Выберите файл',
 'Upload Media File: '=>'Загрузить файл:',
-'Background'=>'фон',
+'Background'=>'Фон',
 
 // Errors
 'Are you sure you want to delete this item?'=>'Вы действительно хотите удалить этот элемент?',
+'Failed to upload file.'=>'Не удалось загрузить файл.',
+'Attachments:'=>'Вложения:',
+'Upload Media File'=>'Загружать мультимедийные файлы',
+'File Size'=>'Размер файла',
+'Dimensions'=>'Размеры',
+'View in Google Drive'=>'Посмотреть в Google Drive',
+'Dimensions:'=>'Размеры:',
+'MIME Info:'=>'MIME Информация:',
+'File is hosted on Google Drive'=>'Файл размещается на Google Drive',
+'Google Drive:'=>'Google Drive:',
+'File was not sent to server.'=>'Файл не был отправлен на сервер.',
+'MIME Info'=>'MIME информация',
 );

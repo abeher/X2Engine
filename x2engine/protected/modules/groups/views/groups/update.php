@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -34,16 +34,14 @@
  * "Powered by X2Engine".
  *****************************************************************************************/
 
-$this->actionMenu = $this->formatMenu(array(
-	array('label'=>'Manage Groups', 'url'=>array('index')),
-	array('label'=>'Create Group', 'url'=>array('create')),
-	array('label'=>'View', 'url'=>array('view', 'id'=>$model->id)),
-	array('label'=>'Edit Group'),
-	array('label'=>'Delete Group', 'url'=>'#', 'linkOptions'=>array('submit'=>array('delete','id'=>$model->id),'confirm'=>'Are you sure you want to delete this item?')),
-));
+$menuOptions = array(
+    'index', 'create', 'view', 'edit', 'delete',
+);
+$this->insertMenu($menuOptions, $model);
+
 ?>
 <div class="page-title icon groups">
-	<h2><span class="no-bold"><?php echo Yii::t('modules','Update'); ?>:</span> <?php echo $model->name; ?></h2>
+	<h2><span class="no-bold"><?php echo Yii::t('groups','Update'); ?>:</span> <?php echo $model->name; ?></h2>
 </div>
 
 <?php echo $this->renderPartial('_form', array('model'=>$model, 'users'=>$users, 'selected'=>$selected)); ?>

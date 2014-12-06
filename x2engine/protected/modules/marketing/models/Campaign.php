@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -38,14 +38,17 @@
  * A Campaign represents a one time mailing to a list of contacts.
  *
  * When a campaign is created, a contact list must be specified. When a campaing is 'launched'
- * a duplicate list is created leaving the original unchanged. The duplicate 'campaign' list 
+ * a duplicate list is created leaving the original unchanged. The duplicate 'campaign' list
  * will keep track of which contacts were sent email, who opened the mail, and who unsubscribed.
  * A campaign is 'active' after it has been launched and ready to send mail. A campaign is 'complete'
  * when all applicable email has been sent. This is the model class for table "x2_campaigns".
  *
- * @package X2CRM.modules.marketing.models
+ * @package application.modules.marketing.models
  */
 class Campaign extends X2Model {
+
+    public $supportsWorkflow = false;
+
 	public static function model($className=__CLASS__) {
 		return parent::model($className);
 	}
@@ -68,7 +71,7 @@ class Campaign extends X2Model {
 
 	public function relations() {
 		return array_merge(parent::relations(),array(
-			'list'=>array(self::BELONGS_TO, 'X2List', 'listId'),
+			'list'=>array(self::BELONGS_TO, 'X2List', array('listId'=>'nameId')),
 			'attachments'=>array(self::HAS_MANY, 'CampaignAttachment', 'campaign'),
 		));
 	}
@@ -76,20 +79,20 @@ class Campaign extends X2Model {
 	//Similar to X2Model but we had a special case with 'marketing'
 	public function attributeLabels() {
 		$this->queryFields();
-		
+
 		$labels = array();
-			
+
 		foreach(self::$_fields[$this->tableName()] as &$_field)
 			$labels[ $_field->fieldName ] = Yii::t('marketing',$_field->attributeLabel);
 
 		return $labels;
 	}
-		
+
 	//Similar to X2Model but we had a special case with 'marketing'
 	public function getAttributeLabel($attribute) {
-	
+
 		$this->queryFields();
-		
+
 		// don't call attributeLabels(), just look in self::$_fields
 		foreach(self::$_fields[$this->tableName()] as &$_field) {
 			if($_field->fieldName == $attribute)
@@ -119,19 +122,6 @@ class Campaign extends X2Model {
 	 * @return Campaign
 	 */
 	public static function load($id) {
-		// $condition = '';
-		// if(Yii::app()->user->getName() != 'admin') {
-			// $condition = 't.visibility="1" OR t.assignedTo="Anyone"  OR t.assignedTo="'.Yii::app()->user->getName().'"';
-				// /* x2temp */
-				// $groupLinks = Yii::app()->db->createCommand()->select('groupId')->from('x2_group_to_user')->where('userId='.Yii::app()->user->getId())->queryColumn();
-				// if(!empty($groupLinks))
-					// $condition .= ' OR t.assignedTo IN ('.implode(',',$groupLinks).')';
-
-				// $condition .= 'OR (t.visibility=2 AND t.assignedTo IN 
-					// (SELECT username FROM x2_group_to_user WHERE groupId IN
-						// (SELECT groupId FROM x2_group_to_user WHERE userId='.Yii::app()->user->getId().')))';
-		// }
-		
 		$model = X2Model::model('Campaign');
 		return $model->with('list')->findByPk((int)$id,$model->getAccessCriteria());
 	}
@@ -144,39 +134,60 @@ class Campaign extends X2Model {
 	public function search() {
 		$criteria=new CDbCriteria;
 		$condition = '';
-		if(Yii::app()->user->getName() != 'admin') {
-			$condition = 't.visibility="1" OR t.assignedTo="Anyone"  OR t.assignedTo="'.Yii::app()->user->getName().'"';
+		if(!Yii::app()->user->checkAccess('MarketingAdminAccess')) {
+			$condition = 't.visibility="1" OR t.assignedTo="Anyone" OR 
+                t.assignedTo="'.Yii::app()->params->profile->username.'"';
 				/* x2temp */
-				$groupLinks = Yii::app()->db->createCommand()->select('groupId')->from('x2_group_to_user')->where('userId='.Yii::app()->user->getId())->queryColumn();
+				$groupLinks = Yii::app()->db->createCommand()
+                    ->select('groupId')
+                    ->from('x2_group_to_user')
+                    ->where('userId='.Yii::app()->params->profile->user->id)->queryColumn();
 				if(!empty($groupLinks))
 					$condition .= ' OR t.assignedTo IN ('.implode(',',$groupLinks).')';
 
-				$condition .= 'OR (t.visibility=2 AND t.assignedTo IN 
+				$condition .= 'OR (t.visibility=2 AND t.assignedTo IN
 					(SELECT username FROM x2_group_to_user WHERE groupId IN
-						(SELECT groupId FROM x2_group_to_user WHERE userId='.Yii::app()->user->getId().')))';
-		}
-        if(Yii::app()->user->getName()!='admin')
+						(SELECT groupId FROM x2_group_to_user 
+                         WHERE userId='.Yii::app()->params->profile->user->id.')))';
+
             $criteria->addCondition($condition);
+		}
 		return $this->searchBase($criteria);
 	}
-	
+
 	/**
 	 * Returns a CDbCriteria containing record-level access conditions.
 	 * @return CDbCriteria
 	 */
 	public function getAccessCriteria() {
 		$criteria = new CDbCriteria;
-		
-		$accessLevel = 0;
+
+		$accessLevel = X2PermissionsBehavior::QUERY_NONE;
 		if(Yii::app()->user->checkAccess('MarketingAdmin'))
-			$accessLevel = 3;
+			$accessLevel = X2PermissionsBehavior::QUERY_ALL;
 		elseif(Yii::app()->user->checkAccess('MarketingView'))
-			$accessLevel = 2;
+			$accessLevel = X2PermissionsBehavior::QUERY_PUBLIC;
 		elseif(Yii::app()->user->checkAccess('MarketingViewPrivate'))
-			$accessLevel = 1;
-			
-		$criteria->addCondition(X2Model::getAccessConditions($accessLevel));
+			$accessLevel = X2PermissionsBehavior::QUERY_SELF;
+
+        $conditions=$this->getAccessConditions($accessLevel);
+		foreach($conditions as $arr){
+            $criteria->addCondition($arr['condition'],$arr['operator']);
+            if (is_array($arr['params']))
+                $criteria->params = array_merge($criteria->params,$arr['params']);
+        }
 
 		return $criteria;
 	}
+
+    /**
+     * Override of {@link X2Model::setX2Fields}
+     *
+     * Skips HTML purification for the content so that tracking links will work.
+     */
+    public function setX2Fields(&$data, $filter = false, $bypassPermissions=false) {
+        $originalContent = isset($data['content'])?$data['content']:null;
+        parent::setX2Fields($data, $filter, $bypassPermissions);
+        $this->content = $originalContent;
+    }
 }

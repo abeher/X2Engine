@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -92,8 +92,8 @@ foreach($fields as $field) {
 			        'maxlength'=>40,
 			        'class'=>'resizable',
 			        'style'=>($default?'color:#aaa;':'')."height:".$height.";width:".$width.";",
-			        'onfocus'=>$default? 'toggleText(this);' : null,
-			        'onblur'=>$default? 'toggleText(this);' : null,
+			        'onfocus'=>$default? 'x2.forms.toggleText(this);' : null,
+			        'onblur'=>$default? 'x2.forms.toggleText(this);' : null,
 			        'tabindex'=>$field->tabOrder,
 			        'disabled'=>$disabled,
 			    ));
@@ -108,8 +108,8 @@ foreach($fields as $field) {
 			        'maxlength'=>40,
 			        'class'=>'resizable',
 			        'style'=>($default?'color:#aaa;':'')."height:".$height.";width:".$width.";",
-			        'onfocus'=>$default? 'toggleText(this);' : null,
-			        'onblur'=>$default? 'toggleText(this);' : null,
+			        'onfocus'=>$default? 'x2.forms.toggleText(this);' : null,
+			        'onblur'=>$default? 'x2.forms.toggleText(this);' : null,
 			        'tabindex'=>$field->tabOrder,
 			        'disabled'=>$disabled,
 			    )); 
@@ -150,8 +150,8 @@ foreach($fields as $field) {
 			    	'maxlength'=>40,
 			    	'class'=>'resizable',
 			    	'style'=>"height:".$height.";width:".$width.";",
-			    	'onfocus'=>$default? 'toggleText(this);' : null,
-			    	'onblur'=>$default? 'toggleText(this);' : null,
+			    	'onfocus'=>$default? 'x2.forms.toggleText(this);' : null,
+			    	'onblur'=>$default? 'x2.forms.toggleText(this);' : null,
 			    	'tabindex'=>$field->tabOrder,
 			    	'disabled'=>$disabled,
 			    ));

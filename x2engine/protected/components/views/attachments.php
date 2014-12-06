@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -34,61 +34,76 @@
  * "Powered by X2Engine".
  *****************************************************************************************/
 
-Yii::app()->clientScript->registerScript('uploadExtensionCheck', "
-var illegal_ext = ['exe','bat','dmg','js','jar','swf','php','pl','cgi','htaccess','py'];	// array with disallowed extensions
+Yii::app()->clientScript->registerCss('attachmentsCss',"
 
-function checkName(el, sbm) {
-	// - www.coursesweb.net
-	// get the file name and split it to separe the extension
-	var name = el.value;
-	var ar_name = name.split('.');
-
-	ar_ext = ar_name[ar_name.length - 1].toLowerCase();
-
-	// check the file extension
-	var re = 1;
-	for(i in illegal_ext) {
-		if(illegal_ext[i] == ar_ext) {
-			re = 0;
-			break;
-		}
-	}
-
-	// if re is 1, the extension isn't illegal
-	if(re==1) {
-		// enable submit
-		$(sbm).removeAttr('disabled');
-	}
-	else {
-		// delete the file name, disable Submit, Alert message
-		el.value = '';
-		$(sbm).attr('disabled','disabled');
-
-		var filenameError = ".json_encode(Yii::t('app', '"{X}" is not an allowed filetype.')).";
-		alert(filenameError.replace('{X}',ar_ext));
-	}
+#attachment-form input,
+#attachment-form select {
+    margin-right: 11px;
 }
-", CClientScript::POS_HEAD);
+
+");
+
 ?>
 <div id="attachment-form-top"></div>
 <div id="attachment-form"<?php if($startHidden) echo ' style="display:none;"'; ?>>
-    <div class="form">
+    <div class="form x2-layout-island">
+        <?php
+        if (!$mobile) {
+        ?>
         <b><?php echo Yii::t('app', 'Attach a File'); ?></b><br />
         <?php
-        echo CHtml::form(array('/site/upload'), 'post', array('enctype' => 'multipart/form-data', 'id' => 'attachment-form-form'));
+        }
+        echo CHtml::form(
+            array('/site/upload'), 'post', 
+            array(
+                'enctype' => 'multipart/form-data', 'id' => 'attachment-form-form'
+            )
+        );
         echo "<div class='row'>";
         echo CHtml::hiddenField('associationType', $this->associationType);
         echo CHtml::hiddenField('associationId', $this->associationId);
         echo CHtml::hiddenField('attachmentText', '');
-        echo CHtml::dropDownList('private', 'public', array('0' => Yii::t('actions', 'Public'), '1' => Yii::t('actions', 'Private')));
-        echo CHtml::fileField('upload', '', array('id' => 'upload', 'onchange' => "checkName(this, '#submitAttach')"));
-        echo CHtml::submitButton('Submit', array('id' => 'submitAttach', 'disabled' => 'disabled', 'class' => 'x2-button', 'style' => 'display:inline'));
+        if (isset ($profileId))
+            echo CHtml::hiddenField('profileId', $profileId);
+        $visibilityHtmlAttrs = array ();
+        if ($mobile)
+            $visibilityHtmlAttrs['data-mini'] = 'true';
+        echo CHtml::dropDownList(
+            'private', 'public', 
+            array(
+                '0' => Yii::t('actions', 'Public'), 
+                '1' => Yii::t('actions', 'Private')
+            ),
+            $visibilityHtmlAttrs
+        );
+        $fileFieldHtmlAttrs = array (
+            'id' => 'upload', 
+            'onchange' => "x2.attachments.checkName(event)"
+        );
+        if ($mobile) {
+            $fileFieldHtmlAttrs['data-inline'] = 'true';
+            $fileFieldHtmlAttrs['data-mini'] = 'true';
+        }
+        echo CHtml::fileField(
+            'upload', '', $fileFieldHtmlAttrs
+        );
+        if ($mobile) 
+            echo '<div style="display:none;">';
+        echo CHtml::submitButton(
+            Yii::t('app','Submit'), 
+            array(
+                'id' => 'submitAttach', 'disabled' => 'disabled', 'class' => 'x2-button',
+                'style' => 'display:inline'
+            )
+        );
+        if ($mobile) 
+            echo "</div>";
         echo "</div>";
-        if(Yii::app()->params->admin->googleIntegration){
+        if(Yii::app()->settings->googleIntegration){
             $auth = new GoogleAuthenticator();
             if($auth->getAccessToken()){
                 echo "<div class='row'>";
-                echo CHtml::label('Save to Google Drive?', 'drive');
+                echo CHtml::label(Yii::t('app','Save to Google Drive?'), 'drive');
                 echo CHtml::checkBox('drive');
                 echo "</div>";
             }

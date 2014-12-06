@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -62,21 +62,25 @@ $(document).ready(function() {
 	'enableAjaxValidation'=>false,
 )); ?>
 
-	<p class="note">Fields with <span class="required">*</span> are required.</p>
+	<p class="note"><?php echo Yii::t('app','Fields with <span class="required">*</span> are required.');?></p>
 
 	<?php echo $form->errorSummary($model); ?>
 
 	<div class="row">
-		<?php echo $form->labelEx($model,'name'); ?>
-		<?php echo $form->textField($model,'name',array('size'=>60,'maxlength'=>259)); ?>
-		<?php echo $form->error($model,'name'); ?>
+		<?php 
+        echo $form->labelEx($model,'name'); 
+		echo $form->textField($model,'name',array('maxlength'=>259, 'class'=>'x2-wide-input')); 
+		echo $form->error($model,'name'); 
+        ?>
 	</div>
-        <label>Users</label>
-        <?php echo CHtml::dropDownList('users[]', isset($selected)?$selected:"", $users, array('class'=>'multiselect', 'multiple'=>'multiple')); ?>
+        <label><?php echo Yii::t('groups','{users}', array(
+            '{users}' => Modules::displayName(true, "Users"),
+        ));?></label>
+        <?php echo CHtml::dropDownList('users[]', isset($selected)?$selected:"", X2Model::getAssignmentOptions(false, false), array('class'=>'multiselect', 'multiple'=>'multiple')); ?>
         <br />
 
 	<div class="row buttons">
-		<?php echo CHtml::submitButton($model->isNewRecord ? 'Create' : 'Save',array('class'=>'x2-button')); ?>
+		<?php echo CHtml::submitButton($model->isNewRecord ? Yii::t('app','Create') : Yii::t('app','Save'),array('class'=>'x2-button')); ?>
 	</div>
 
 <?php $this->endWidget(); ?>

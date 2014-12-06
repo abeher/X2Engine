@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -41,7 +41,7 @@
  * A CModelBehavior subclass which provides methods for managing entries in 
  * x2_search_keywords and x2_search.
  *
- * @package X2CRM.components
+ * @package application.components
  * @property string $baseRoute The default module/controller this model "belongs" to
  * @property string $viewRoute The default action to view this model
  * @property string $autoCompleteSource The action to user for autocomplete data

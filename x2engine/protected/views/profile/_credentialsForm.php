@@ -1,8 +1,8 @@
 <?php
 
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -43,13 +43,21 @@
  * @var User $user The system user
  */
 
+Yii::app()->clientScript->registerCss('credentialsFormCss',"
+
+form > .twitter-credential-input {
+    width: 300px; 
+}
+
+");
+
 echo '<div class="form">';
 
 $action = null;
 if($model->isNewRecord)
-	$action = array('profile/createUpdateCredentials','class'=>$model->modelClass);
+	$action = array('/profile/createUpdateCredentials','class'=>$model->modelClass);
 else
-	$action = array('profile/createUpdateCredentials','id'=>$model->id);
+	$action = array('/profile/createUpdateCredentials','id'=>$model->id);
 
 echo CHtml::beginForm($action);
 ?>
@@ -60,40 +68,27 @@ echo $includeTitle ? $model->pageTitle.'<hr />' : '';
 // Model class hidden field, so that it saves properly:
 echo CHtml::activeHiddenField($model,'modelClass');
 
-echo CHtml::activeLabel($model, 'name');
-echo CHtml::error($model, 'name');
-echo CHtml::activeTextField($model, 'name');
+if (!$disableMetaDataForm) {
+    echo CHtml::activeLabel($model, 'name');
+    echo CHtml::error($model, 'name');
+    echo CHtml::activeTextField($model, 'name');
 
-// echo CHtml::activeLabel($model, 'private');
-echo CHtml::activeHiddenField($model, 'private',array('value'=>1));
+    echo CHtml::activeLabel($model, 'private');
+    echo CHtml::activeCheckbox($model, 'private',array('value'=>1));
+    echo CHtml::tag('span', array('class' => 'x2-hint', 'style'=>'display:inline-block; margin-left:5px;', 'title' => Yii::t('app', 'If you disable this option, administrators and users granted privilege to do so will be able to use these credentials on your behalf.')),'[?]');
 
-if(Yii::app()->user->checkAccess('AdminIndex')) {
-	$users = User::model()->findAll();
-	$users = array_combine(array_map(function($u){return $u->id;},$users),array_map(function($u){return $u->name;},$users));
-	$users[null] = 'None (system-wide)';
-	echo CHtml::activeLabel($model,'userId');
-	echo CHtml::activeDropDownList($model, 'userId', $users,array('selected'=>null));
+    if($model->isNewRecord){
+        if(Yii::app()->user->checkAccess('CredentialsAdmin')){
+            $users = array($user->id => Yii::t('app', 'You'));
+            $users[Credentials::SYS_ID] = 'System';
+            echo CHtml::activeLabel($model, 'userId');
+            echo CHtml::activeDropDownList($model, 'userId', $users, array('selected' => Credentials::SYS_ID));
+        }else{
+            echo CHtml::activeHiddenField($model, 'userId', array('value' => $user->id));
+        }
+    }
 }
 
-$subsLabels = $model->substituteLabels;
-
-echo CHtml::label(Yii::t('app', 'Set as default'), 'default');
-if(count($subsLabels) > 1){
-	$options = array();
-	if(array_key_exists($user->id, $model->defaultCredentials)){
-		$defaults = $model->defaultCredentials[$user->id];
-		foreach($subsLabels as $sub => $label){
-			if(isset($defaults[$sub])){
-				if($defaults[$sub] == $model->id){
-					$options[$sub] = array('selected' => true);
-				}
-			}
-		}
-	}
-	echo CHtml::dropDownList('default', array_keys($options), $subsLabels, array('multiple' => 'multiple','options' => $options));
-}else{
-	echo CHtml::checkBox('default');
-}
 ?>
 	
 <!-- Credentials details (embedded model) -->
@@ -108,8 +103,103 @@ $this->widget('EmbeddedModelForm', array(
 <div class="credentials-buttons">
 <?php
 echo CHtml::submitButton(Yii::t('app','Save'),array('class'=>'x2-button credentials-save','style'=>'display:inline-block;margin-top:0;'));
-echo CHtml::link(Yii::t('app','Cancel'),array('profile/manageCredentials'),array('class'=>'x2-button credentials-cancel'));
-?></div><?php
+echo CHtml::link(Yii::t('app','Cancel'),array('/profile/manageCredentials'),array('class'=>'x2-button credentials-cancel'));
+if (isset ($model->auth->enableVerification) && $model->auth->enableVerification) {
+    echo CHtml::link(Yii::t('app', 'Verify Credentials'), "#", array('class' => 'x2-button credentials-verify', 'style' => 'margin-left: 5px;'));
+    ?><div id='verify-credentials-loading'></div>
+<?php
+}
+?>
+</div><?php
 echo CHtml::endForm();
+
+
+$verifyCredsUrl = Yii::app()->createUrl("profile/verifyCredentials");
 ?>
 
+<div id="verification-result">
+
+</div>
+<script type='text/javascript'>
+    $(function() {
+        if (typeof x2 == 'undefined')
+            x2 = {};
+        if (typeof x2.credManager == 'undefined')
+            x2.credManager = {};
+
+        /**
+         * Function to toggle an input between text and password type
+         * @param string passwordField Password field identifier
+         */
+        x2.credManager.swapPasswordVisibility = function(elem) {
+            var passwordField = $(elem);
+            var newObj = document.createElement('input');
+            newObj.setAttribute('value', passwordField.val() );
+            newObj.setAttribute('name', passwordField.attr('name'));
+            newObj.setAttribute('id', passwordField.attr('id'));
+
+            if ($('#password-visible').attr('checked') === 'checked')
+                newObj.setAttribute('type', 'text');
+            else
+                newObj.setAttribute('type', 'password');
+            passwordField.replaceWith(newObj);
+        }
+
+        $(".credentials-verify").click(function(evt) {
+            evt.preventDefault();
+            var email = $("#Credentials_auth_email").val();
+            if ($('#Credentials_auth_user').length) // Check if user name is different than email
+                email = $('#Credentials_auth_user').val();
+            var password = $("#Credentials_auth_password").val();
+
+            // server, port, and security are not specified in the form for GMail accounts
+            var server;
+            var port;
+            var security;
+            if ($('#Credentials_auth_server').length)
+                server = $('#Credentials_auth_server').val();
+            else
+                server = 'smtp.gmail.com';
+            if ($('#Credentials_auth_port').length)
+                port = $('#Credentials_auth_port').val();
+            else
+                port = 587;
+            if ($('#Credentials_auth_security').length)
+                security = $('#Credentials_auth_security').val();
+            else
+                security = 'tls';
+
+            var successMsg = "<?php echo Yii::t('app', 'Authentication successful.'); ?>";
+            var failureMsg = "<?php echo Yii::t('app', 'Failed to authenticate! Please check you credentials.'); ?>";
+            auxlib.containerLoading($('#verify-credentials-loading'));
+            // Hide previous result if any
+            $('#verification-result').html('');
+            $('#verification-result').removeClass();
+
+            $.ajax({
+                url: "<?php echo $verifyCredsUrl; ?>",
+                type: 'post',
+                data: {
+                    email: email,
+                    password: password,
+                    server: server,
+                    port: port,
+                    security: security
+                },
+                complete: function(xhr) {
+                    $('#verify-credentials-loading').children().remove();
+                    // auxlib.pageLoadingStop();
+                    if (xhr.responseText === '') {
+                        $("#verification-result").addClass('flash-success');
+                        $("#verification-result").removeClass('flash-error');
+                        $("#verification-result").html(successMsg);
+                    } else {
+                        $("#verification-result").addClass('flash-error');
+                        $("#verification-result").removeClass('flash-success');
+                        $("#verification-result").html(failureMsg);
+                    }
+                }
+            });
+        });
+    });
+</script>

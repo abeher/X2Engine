@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -64,11 +64,11 @@ echo CHtml::image($imageUrl, $model->description, array('style' => $imgStyle));
 <br />
 <strong>Size:</strong> <?php echo $model->fmtSize; ?> <br />
 <?php if (!$model->drive && $isImage && extension_loaded('gd')): ?>
-	<strong>Dimensions:</strong> <?php echo $model->fmtDimensions; ?><br />
+	<strong><?php echo Yii::t('media','Dimensions:');?></strong> <?php echo $model->fmtDimensions; ?><br />
 <?php endif; ?>
 <?php if(!empty($model->mimetype)): ?>
-	<strong>MIME Info:</strong> <?php echo $model->mimetype; ?><br>
+	<strong><?php echo Yii::t('media','MIME Info:');?></strong> <?php echo $model->renderAttribute('mimetype'); ?><br>
 <?php endif; ?>
 <?php if($model->drive): ?>
-	File is hosted on Google Drive
+	<?php echo Yii::t('media','File is hosted on Google Drive');?>
 <?php endif; ?>

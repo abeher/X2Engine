@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -34,131 +34,122 @@
  * "Powered by X2Engine".
  *****************************************************************************************/
 
-
-// remove the following lines when in production mode
-//defined('YII_DEBUG') or define('YII_DEBUG', true);
-// specify how many levels of call stack should be shown in each log message
-//defined('YII_TRACE_LEVEL') or define('YII_TRACE_LEVEL', 3);
-
 /**
- * @package X2CRM.modules.charts 
+ * @package application.modules.charts 
  */
-class ChartsModule extends CWebModule {
-	public $packages = array();
-	private $_assetsUrl;
+class ChartsModule extends X2WebModule {
+    public $packages = array();
+    private $_assetsUrl;
 
-	public function getAssetsUrl() {
-		if ($this->_assetsUrl === null)
-			$this->_assetsUrl = Yii::app()->getAssetManager()->publish(
-					Yii::getPathOfAlias('charts.assets'));
-		return $this->_assetsUrl;
-	}
 
-	public function init() {
-		// this method is called when the module is being created
-		// you may place code here to customize the module or the application
-		// import the module-level models and components
-		$this->setImport(array(
-			'charts.models.*',
-			'charts.components.*',
-		));
+    public function init() {
+        // this method is called when the module is being created
+        // you may place code here to customize the module or the application
+        // import the module-level models and components
+        $this->setImport(array(
+            'charts.models.*',
+            'charts.components.*',
+        ));
 
-		// Set module specific javascript packages
+        // Set module specific javascript packages
+        $this->packages = array(
+             'jquery' => array(
+                 'basePath' => $this->getBasePath(),
+                 'baseUrl' => $this->assetsUrl,
+                 'js' => array(
+                     'js/jquery.js'
+                 )
+             ),
+            'jquerysparkline' => array(
+                'basePath' => $this->getBasePath(),
+                'baseUrl' => $this->assetsUrl,
+                'css' => array(
+                    'css/charts.css'
+                ),
+                'js' => array(
+                    'js/splunk/jquery.sparkline.js'
+                ),
+                'depends' => array('jquery'),
+            ),
+            'jqplot' => array(
+                'basePath' => $this->getBasePath(),
+                'baseUrl' => $this->assetsUrl,
+                'css' => array(
+                    'js/jqplot/jquery.jqplot.css',
+                    'css/charts.css'
+                ),
+                'js' => array(
+                    'js/jqplot/jquery.jqplot.js'
+                ),
+                'depends' => array('jquery'),
+            ),
+            'jqlineplot' => array(
+                'basePath' => $this->getBasePath(),
+                'baseUrl' => $this->assetsUrl,
+                'js' => array(
+                    'js/jqplot/plugins/jqplot.canvasTextRenderer.js',
+                    'js/jqplot/plugins/jqplot.categoryAxisRenderer.js',
+                    'js/jqplot/plugins/jqplot.canvasAxisLabelRenderer.js'
+                ),
+                'depends' => array('jqplot'),
+            ),
+            'jqpieplot' => array(
+                'basePath' => $this->getBasePath(),
+                'baseUrl' => $this->assetsUrl,
+                'js' => array(
+                    'js/jqplot/plugins/jqplot.pieRenderer.js',
+                ),
+                'depends' => array('jqplot'),
+            ),
+            'jqbubbleplot' => array(
+                'basePath' => $this->getBasePath(),
+                'baseUrl' => $this->assetsUrl,
+                'js' => array(
+                    'js/jqplot/plugins/jqplot.bubbleRenderer.js',
+                ),
+                'depends' => array('jqplot'),
+            ),
+            'jqfunnelplot' => array(
+                'basePath' => $this->getBasePath(),
+                'baseUrl' => $this->assetsUrl,
+                'js' => array(
+                    'js/jqplot/plugins/jqplot.funnelRenderer.js',
+                ),
+                'depends' => array('jqplot'),
+            ),
+            'jqbarplot' => array(
+                'basePath' => $this->getBasePath(),
+                'baseUrl' => $this->assetsUrl,
+                'js' => array(
+                    'js/jqplot/plugins/jqplot.barRenderer.js',
+                    'js/jqplot/plugins/jqplot.canvasTextRenderer.js',
+                    'js/jqplot/plugins/jqplot.categoryAxisRenderer.js',
+                    'js/jqplot/plugins/jqplot.canvasAxisTickRenderer.js',
+                    'js/jqplot/plugins/jqplot.dateAxisRenderer.js',
+                    'js/jqplot/plugins/jqplot.pointLabels.js',
+                ),
+                'depends' => array('jqplot'),
+            )
+        );
+        if (AuxLib::isIE8 ()) {
+            $this->packages['jqplot']['js'][] = 'js/jqplot/excanvas.js';
+        }
 
-		$this->packages = array(
-			 'jquery' => array(
-				 'basePath' => $this->getBasePath(),
-				 'baseUrl' => $this->assetsUrl,
-				 'js' => array(
-					 'js/jquery.js'
-				 )
-			 ),
-			'jquerysparkline' => array(
-				'basePath' => $this->getBasePath(),
-				'baseUrl' => $this->assetsUrl,
-				'css' => array(
-					'css/charts.css'
-				),
-				'js' => array(
-					'js/splunk/jquery.sparkline.js'
-				),
-				'depends' => array('jquery'),
-			),
-			'jqplot' => array(
-				'basePath' => $this->getBasePath(),
-				'baseUrl' => $this->assetsUrl,
-				'css' => array(
-					'js/jqplot/jquery.jqplot.css',
-					'css/charts.css'
-				),
-				'js' => array(
-					'js/jqplot/jquery.jqplot.js'
-				),
-				'depends' => array('jquery'),
-			),
-			'jqlineplot' => array(
-				'basePath' => $this->getBasePath(),
-				'baseUrl' => $this->assetsUrl,
-				'js' => array(
-					'js/jqplot/plugins/jqplot.canvasTextRenderer.js',
-					'js/jqplot/plugins/jqplot.categoryAxisRenderer.js',
-					'js/jqplot/plugins/jqplot.canvasAxisLabelRenderer.js'
-				),
-				'depends' => array('jqplot'),
-			),
-			'jqpieplot' => array(
-				'basePath' => $this->getBasePath(),
-				'baseUrl' => $this->assetsUrl,
-				'js' => array(
-					'js/jqplot/plugins/jqplot.pieRenderer.js',
-				),
-				'depends' => array('jqplot'),
-			),
-			'jqbubbleplot' => array(
-				'basePath' => $this->getBasePath(),
-				'baseUrl' => $this->assetsUrl,
-				'js' => array(
-					'js/jqplot/plugins/jqplot.bubbleRenderer.js',
-				),
-				'depends' => array('jqplot'),
-			),
-			'jqfunnelplot' => array(
-				'basePath' => $this->getBasePath(),
-				'baseUrl' => $this->assetsUrl,
-				'js' => array(
-					'js/jqplot/plugins/jqplot.funnelRenderer.js',
-				),
-				'depends' => array('jqplot'),
-			),
-			'jqbarplot' => array(
-				'basePath' => $this->getBasePath(),
-				'baseUrl' => $this->assetsUrl,
-				'js' => array(
-					'js/jqplot/plugins/jqplot.barRenderer.js',
-					'js/jqplot/plugins/jqplot.canvasTextRenderer.js',
-					'js/jqplot/plugins/jqplot.categoryAxisRenderer.js',
-					'js/jqplot/plugins/jqplot.canvasAxisTickRenderer.js',
-					'js/jqplot/plugins/jqplot.dateAxisRenderer.js',
-					'js/jqplot/plugins/jqplot.pointLabels.js',
-				),
-				'depends' => array('jqplot'),
-			)
-		);
-		Yii::app()->clientScript->packages = $this->packages;
+        Yii::app()->clientScript->packages = $this->packages;
 
-		// set module layout
-		// $this->layout = 'main';
-	}
+        // set module layout
+        // $this->layout = 'main';
+    }
 
-	public function beforeControllerAction($controller, $action) {
-		if (parent::beforeControllerAction($controller, $action)) {
-			// this method is called before any module controller action is performed
-			// you may place customized code here
-			return true;
-		}
-		else
-			return false;
-	}
+    public function beforeControllerAction($controller, $action) {
+        if (parent::beforeControllerAction($controller, $action)) {
+            // this method is called before any module controller action is performed
+            // you may place customized code here
+            return true;
+        }
+        else
+            return false;
+    }
 
 }
 ?>

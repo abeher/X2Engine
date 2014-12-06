@@ -4,9 +4,8 @@
  *
  * @author Qiang Xue <qiang.xue@gmail.com>
  * @link http://www.yiiframework.com/
- * @copyright Copyright &copy; 2008-2011 Yii Software LLC
+ * @copyright 2008-2013 Yii Software LLC
  * @license http://www.yiiframework.com/license/
- * @version $Id: yii.php 2799 2011-01-01 19:31:13Z qiang.xue $
  * @package system
  * @since 1.0
  */
@@ -20,19 +19,24 @@ require(dirname(__FILE__).'/YiiBase.php');
  * By writing your own Yii class, you can customize some functionalities of YiiBase.
  *
  * @author Qiang Xue <qiang.xue@gmail.com>
- * @version $Id: yii.php 2799 2011-01-01 19:31:13Z qiang.xue $
  * @package system
  * @since 1.0
  */
-class Yii extends YiiBase {
-
-	public static $paths = array();
+class Yii extends YiiBase
+{
+    public static $paths = array();
 	protected static $rootPath;
-	
+
 	public static function getRootPath() {
-		if(!isset(self::$rootPath)) {
+        if (YII_DEBUG && YII_UNIT_TESTING) { 
+            // resets root path to the webroot so that custom files can be detected
+            $path = array ();
+            exec ('pwd', $path);
+            self::$rootPath = dirname (preg_replace ('/\/tests/', '', $path[0]));
+        } elseif (!isset(self::$rootPath)) {
 			self::$rootPath = dirname(self::app()->request->scriptFile);
 		}
+
 		return self::$rootPath;
 	}
 
@@ -42,27 +46,34 @@ class Yii extends YiiBase {
 	 * @return X2WebApplication
 	 */
 	public static function createWebApplication($config=null) {
-		require(realpath(__DIR__.DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'protected/components/X2WebApplication.php'));
+		require(implode(DIRECTORY_SEPARATOR,array(
+            __DIR__,
+            '..',
+            'protected',
+            'components',
+            'X2WebApplication.php'
+        )));
 		return parent::createApplication('X2WebApplication',$config);
 	}
 
 	/**
 	 * Checks if a custom version of a file exists
-	 * 
+	 *
 	 * @param String $path The file path
 	 * @return String $path The original file path, or the version in /custom if it exists
 	 */
 	public static function getCustomPath($path) {
 		//calculate equivalent path in /custom, ie. from [root]/[path] to [root]/custom/[path]
 		$customPath = str_replace(self::getRootPath(),self::getRootPath().DIRECTORY_SEPARATOR.'custom',$path);
+
 		if(file_exists($customPath))
 			$path = $customPath;
 		return $path;
 	}
-	
+
 	/**
 	 * Checks if a custom version of a class file exists
-	 * 
+	 *
 	 * @param String $path The path to something in /custom
 	 * @return String $path The path to the original file or folder
 	 */
@@ -73,7 +84,7 @@ class Yii extends YiiBase {
 	/**
 	 * Imports a class or a directory.
 	 * Overrides {@link YiiBase::import()} to check in /custom for all imported classes
-	 * 
+	 *
 	 * @param string $alias path alias to be imported
 	 * @param boolean $forceInclude whether to include the class file immediately. If false, the class file
 	 * will be included only when the class is being used. This parameter is used only when
@@ -216,7 +227,7 @@ class Yii extends YiiBase {
 				.CHtml::hiddenField('msg',$message)
 				.parent::t($category,$message,$params,$source,$language)
 				.'</dt>';
-		
+
 		else
 			return parent::t($category,$message,$params,$source,$language);
 	}

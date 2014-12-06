@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -80,4 +80,16 @@ return array (
 
 // // Misc Text
 'Are you sure you want to delete this item?'=>'Вы уверены, что хотите удалить этот элемент?',
+'Saved at'=>'Сохраненные в',
+'Uploaded Docs'=>'Загружено Docs',
+'Make a copy'=>'Делать копию',
+'Edit Template:'=>'Изменить шаблон:',
+'copy'=>'скопировать',
+'Document'=>'Документ',
+'Body'=>'Тело',
+'Leaving this field blank will preserve its default behavior.'=>'Оставив это поле пустым сохранит свое поведение по умолчанию.',
+'Create Quote Template'=>'Создание Цитировать шаблона',
+'Import Docs'=>'Импорт Docs',
+'Export Docs'=>'Экспорт Docs',
+'To:'=>'Кому:',
 );

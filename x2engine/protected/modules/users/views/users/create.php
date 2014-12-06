@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -34,12 +34,24 @@
  * "Powered by X2Engine".
  *****************************************************************************************/
 
-$this->actionMenu = $this->formatMenu(array(
-	array('label'=>Yii::t('profile','Social Feed'),'url'=>array('/profile')),
-	array('label'=>Yii::t('users','Manage Users'), 'url'=>array('admin')),
-	array('label'=>Yii::t('users','Create User')),
-	array('label'=>Yii::t('users','Invite Users'), 'url'=>array('inviteUsers')),
-));
+$menuOptions = array(
+    'feed', 'admin', 'create', 'invite',
+);
+$this->insertMenu($menuOptions);
+
 ?>
-<div class="page-title icon users"><h2><?php echo Yii::t('users','Create User'); ?></h2></div>
-<?php echo $this->renderPartial('_form', array('model'=>$model, 'roles'=>$roles, 'groups'=>$groups,'selectedGroups'=>$selectedGroups,'selectedRoles'=>$selectedRoles,)); ?>
+<div class="page-title icon users"><h2>
+    <?php echo Yii::t('users','Create {user}', array(
+        '{user}' => Modules::displayName(false),
+    )); ?>
+</h2></div>
+<?php 
+echo $this->renderPartial(
+    '_form', array(
+        'update' => false,
+        'model'=>$model,
+        'roles'=>$roles,
+        'groups'=>$groups,
+        'selectedGroups'=>$selectedGroups,
+        'selectedRoles'=>$selectedRoles,
+    )); ?>

@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -49,28 +49,30 @@ $('#timeout').change(function() {
 ", CClientScript::POS_READY);
 
 ?>
-<div>
-	<div class="page-title"><h2><?php echo Yii::t('admin', 'Activity Feed Settings'); ?></h2></div>
+<div class="page-title"><h2><?php echo Yii::t('admin', 'Activity Feed Settings'); ?></h2></div>
+<div class='admin-form-container'>
 	<?php
 	$form = $this->beginWidget('CActiveForm', array(
 	'id' => 'settings-form',
 	'enableAjaxValidation' => false,
 	    ));
 	?>
-	
+
 	<div class="form">
-    <div class="span-16">
 	<?php
 	echo $form->labelEx($model, 'eventDeletionTime')."<br /><br />";
-	echo $form->dropDownList($model,'eventDeletionTime',array(1=>'1 day',7=>'7 days',30=>'30 days', 0=>'Do not delete'));
+	echo $form->dropDownList($model,'eventDeletionTime',array(
+        1=>Yii::t('app','{n} day',array('{n}'=>1)),
+        7=>Yii::t('app','{n} days',array('{n}'=>7)),
+        30=>Yii::t('app','{n} days',array('{n}'=>30)),
+        0=>Yii::t('app','Do not delete')
+    ));
 	?><br>
 	<?php echo Yii::t('admin', 'Set how long activity feed events should last before deletion.'); ?>
 	<br><br>
 	<?php echo Yii::t('admin', 'Events build up quickly as they are triggered very often and it is highly recommended that some form of clean up is enabled.  Default is 7 days.'); ?>
     </div>
-    </div>
     <div class="form">
-    <div class="span-16">
 	<?php
 	echo $form->labelEx($model, 'eventDeletionTypes')."<br /><br />";
 	echo $form->checkBoxList($model,'eventDeletionTypes',array(
@@ -98,7 +100,6 @@ $('#timeout').change(function() {
     <?php echo CHtml::submitButton(Yii::t('app', 'Save'), array('class' => 'x2-button', 'id' => 'save-button')) . "\n"; ?>
     <?php //echo CHtml::resetButton(Yii::t('app','Cancel'),array('class'=>'x2-button'))."\n"; ?>
     <?php $this->endWidget(); ?>
-    </div>
 </div>
 </div>
 <style>

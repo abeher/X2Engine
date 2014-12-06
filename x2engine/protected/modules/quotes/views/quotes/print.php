@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -46,7 +46,13 @@
 		<tr>
 			<td><b><?php echo $model->name; ?></b></td>
 			<td style="text-align:right;font-weight:bold;">
-				<span><?php echo ( $model->type == 'invoice'? Yii::t('quotes', 'Invoice:') : Yii::t('quotes','Quote:')); ?> # <?php echo $model->id; ?></span><br />
+                <span>
+                    <?php echo ( $model->type == 'invoice'? 
+                        Yii::t('quotes', 'Invoice:') : Yii::t('quotes','{quote}:', array(
+                            '{quote}' => Modules::displayName(false),
+                        ))
+                    ); ?> # <?php echo $model->id; ?>
+                </span><br />
 				<span><?php echo Yii::app()->dateFormatter->format(Yii::app()->locale->getDateFormat('long'), time()); ?></span>
 			</td>
 		</tr>

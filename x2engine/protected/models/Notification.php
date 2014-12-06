@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -36,8 +36,8 @@
 
 /**
  * This is the model class for table "x2_notifications".
- * 
- * @package X2CRM.models
+ *
+ * @package application.models
  */
 class Notification extends CActiveRecord {
 	/**
@@ -70,7 +70,7 @@ class Notification extends CActiveRecord {
 			array('user, createdBy, comparison, type', 'length', 'max'=>20),
 			array('type, value', 'length', 'max'=>250),
 			// array('text', 'safe'),
-			array('id, user, viewed, text, createDate, type, comparison, modelType, modelId, fieldName', 'safe', 'on'=>'search'),	//text, record, 
+			array('id, user, viewed, text, createDate, type, comparison, modelType, modelId, fieldName', 'safe', 'on'=>'search'),	//text, record,
 		);
 	}
 
@@ -81,7 +81,7 @@ class Notification extends CActiveRecord {
 		// NOTE: you may need to adjust the relation name and the related
 		// class name for the relations automatically generated below.
 		return array(
-            'event'=>array(self::HAS_ONE,'Events','associationId','condition'=>'associationType="Notifications"'),
+            'event'=>array(self::HAS_ONE,'Events','associationId','condition'=>'associationType="Notification"'),
 		);
 	}
 
@@ -135,37 +135,38 @@ class Notification extends CActiveRecord {
 			'criteria'=>$criteria,
 		));
 	}
-	
-	
+
+
 	public function getMessage() {
-		
+
 		if(empty($this->modelId) || empty($this->modelType))	// skip if there is no association
 			$record = null;
 		else {
-			if(class_exists($this->modelType))
+			if(class_exists($this->modelType)) {
 				$record = X2Model::model($this->modelType)->findByPk($this->modelId);
-			else
-				return 'Error: unkown record <b>'.$this->modelType.'</b>';
+			} else {
+				return 'Error: unknown record <b>'.$this->modelType.'</b>';
+			}
 			if($record === null) {
 				$this->delete();
 				return null;
 			}
 		}
-		
+
 		if(!isset($record) && $this->type !== 'lead_failure' && $this->type !== 'custom') {
 			// return var_dump($this->attributes);
 			return null;
         }
 		$passive = $this->createdBy === 'API' || empty($this->createdBy);
-        
+
 		switch($this->type) {
-            
+
 			case 'action_complete':
 				if($passive)
 					return Yii::t('actions','Action completed: {action}',array('{action}'=>$record->getLink()));
 				else
 					return Yii::t('actions','{user} completed an action: {action}',array('{user}'=>User::getUserLinks($record->completedBy),'{action}'=>$record->getLink(20)));
-                
+
             case 'action_reminder':
                 return Yii::t('actions','<b>Reminder!</b> The following action is due: {action}',array('{action}'=>$record->getLink()));
 			// case 'workflow_complete':
@@ -186,9 +187,9 @@ class Notification extends CActiveRecord {
 						'{field}'=>$record->getAttributeLabel($this->fieldName),
 						'{value}'=>$record->renderAttribute($this->fieldName,true,true),
 						'{record}'=>$record->getLink(),
-						'{user}'=>(Yii::app()->user->getName()==$this->createdBy)?CHtml::link('You',array('profile/view','id'=>Yii::app()->user->getId())):User::getUserLinks($this->createdBy)
+						'{user}'=>(Yii::app()->user->getName()==$this->createdBy)?CHtml::link('You',array('/profile/view','id'=>Yii::app()->user->getId())):User::getUserLinks($this->createdBy)
 					));
-				
+
 				} else {
 				// > < =
 					$msg = $passive? '{record}\'s {field} was changed to {value}' : '{user} changed {record}\'s {field} to {value}';
@@ -197,15 +198,15 @@ class Notification extends CActiveRecord {
 						'{field}'=>$record->getAttributeLabel($this->fieldName),
 						'{value}'=>$record->renderAttribute($this->fieldName,true,true),
 						'{record}'=>$record->getLink(),
-						'{user}'=>(Yii::app()->user->getName()==$this->createdBy)?CHtml::link('You',array('profile/view','id'=>Yii::app()->user->getId())):User::getUserLinks($this->createdBy)
+						'{user}'=>(Yii::app()->user->getName()==$this->createdBy)?CHtml::link('You',array('/profile/view','id'=>Yii::app()->user->getId())):User::getUserLinks($this->createdBy)
 					));
-				
-				
+
+
 				}
 
 			case 'lead_failure':
 				return Yii::t('app','A lead failed to come through Lead Capture. Check {link} to recover it.',array(
-					'{link}'=>CHtml::link(Yii::t('app','here'),Yii::app()->controller->createUrl('/contacts/cleanFailedLeads'))
+					'{link}'=>CHtml::link(Yii::t('app','here'),Yii::app()->controller->createUrl('/contacts/contacts/cleanFailedLeads'))
 				));
 			case 'assignment':
 				if($passive)
@@ -218,7 +219,8 @@ class Notification extends CActiveRecord {
 					return Yii::t('app','Record deleted: {record}',array('{record}'=>$this->modelType.' '.$this->modelId));
 				else
 					return Yii::t('app','{user} deleted a record: {record}',array('{user}'=>User::getUserLinks($this->createdBy),'{record}'=>$this->modelType.' '.$this->modelId));
-
+			case 'event_broadcast':
+				return Yii::t('app','{user} broadcast an event: {event}',array('{user}'=>User::getUserLinks($record->user),'{event}'=>$record->getText()));
 			case 'update':
 				if($passive)
 					return Yii::t('app','Record updated: {record}',array('{record}'=>$record->getLink()));
@@ -235,16 +237,16 @@ class Notification extends CActiveRecord {
 
 			case 'email_clicked':
 				return Yii::t('app','{record} clicked an email link: {campaign}',array('{record}'=>$record->getLink(),'{campaign}'=>$this->value));
-			
+
 			case 'email_opened':
 				return Yii::t('app','{record} opened an email: {campaign}',array('{record}'=>$record->getLink(),'{campaign}'=>$this->value));
-			
+
 			case 'email_unsubscribed':
 				return Yii::t('app','{record} unsubscribed from a campaign: {campaign}',array('{record}'=>$record->getLink(),'{campaign}'=>$this->value));
 
 			case 'social_post':
 				return Yii::t('app','{user} posted on {link}',array('{user}'=>User::getUserLinks($this->createdBy),'{link}'=>$record->getLink()));
-				
+
 			case 'social_comment':
 				return Yii::t('app','{user} replied on {link}',array('{user}'=>User::getUserLinks($this->createdBy),'{link}'=>$record->getLink()));
 
@@ -270,7 +272,7 @@ class Notification extends CActiveRecord {
 			case 'custom':
 				return $this->text;
 			default:
-				return 'Error: unkown type <b>'.$this->type.'</b>';
+				return 'Error: unknown type <b>'.$this->type.'</b>';
 
 		}
 	}

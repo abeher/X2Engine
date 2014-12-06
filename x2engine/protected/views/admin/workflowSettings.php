@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -34,6 +34,8 @@
  * "Powered by X2Engine".
  *****************************************************************************************/
 
+$this->setPageTitle(Yii::t('workflow', 'Process Settings'));
+
 Yii::app()->clientScript->registerScript('updateChatPollSlider',"
 
 $('#settings-form input, #settings-form select, #settings-form textarea').change(function() {
@@ -62,33 +64,33 @@ $timeLengths = array(
 	300=>Yii::t('app','{n} min',5),
 	900=>Yii::t('app','{n} min',15),
 	1800=>Yii::t('app','{n} min',30),
-	3600=>Yii::t('app','{n} hour|{n} hours',1),
-	7200=>Yii::t('app','{n} hour|{n} hours',2),
-	28800=>Yii::t('app','{n} hour|{n} hours',8),
-	86400=>Yii::t('app','{n} day|{n} days',1),
-	172800=>Yii::t('app','{n} day|{n} days',2),
-	432000=>Yii::t('app','{n} day|{n} days',5),
-	604800=>Yii::t('app','{n} day|{n} days',7),
-	1209600=>Yii::t('app','{n} day|{n} days',14),
-	2592000=>Yii::t('app','{n} month|{n} months',1),
-	7776000=>Yii::t('app','{n} month|{n} months',3),
-	15552000=>Yii::t('app','{n} month|{n} months',6),
-	31536000=>Yii::t('app','{n} year|{n} years',1),
-	-1=>Yii::t('admin','Unlimited'),
+	3600=>Yii::t('app','{n} hour',1),
+	7200=>Yii::t('app','{n} hours',2),
+	28800=>Yii::t('app','{n} hours',8),
+	86400=>Yii::t('app','{n} day',1),
+	172800=>Yii::t('app','{n} days',2),
+	432000=>Yii::t('app','{n} days',5),
+	604800=>Yii::t('app','{n} days',7),
+	1209600=>Yii::t('app','{n} days',14),
+	2592000=>Yii::t('app','{n} month',1),
+	7776000=>Yii::t('app','{n} months',3),
+	15552000=>Yii::t('app','{n} months',6),
+	31536000=>Yii::t('app','{n} year',1),
+	-1=>Yii::t('app','Unlimited'),
 );
 $dateLengths = array(
-	1=>Yii::t('app','{n} day|{n} days',1),
-	2=>Yii::t('app','{n} day|{n} days',2),
-	3=>Yii::t('app','{n} day|{n} days',3),
-	4=>Yii::t('app','{n} day|{n} days',4),
-	5=>Yii::t('app','{n} day|{n} days',5),
-	7=>Yii::t('app','{n} day|{n} days',7),
-	14=>Yii::t('app','{n} day|{n} days',14),
-	30=>Yii::t('app','{n} month|{n} months',1),
-	90=>Yii::t('app','{n} month|{n} months',3),
-	182=>Yii::t('app','{n} month|{n} months',6),
-	365=>Yii::t('app','{n} year|{n} years',1),
-	-1=>Yii::t('admin','Unlimited'),
+	1=>Yii::t('app','{n} day',1),
+	2=>Yii::t('app','{n} days',2),
+	3=>Yii::t('app','{n} days',3),
+	4=>Yii::t('app','{n} days',4),
+	5=>Yii::t('app','{n} days',5),
+	7=>Yii::t('app','{n} days',7),
+	14=>Yii::t('app','{n} days',14),
+	30=>Yii::t('app','{n} month',1),
+	90=>Yii::t('app','{n} months',3),
+	182=>Yii::t('app','{n} months',6),
+	365=>Yii::t('app','{n} year',1),
+	-1=>Yii::t('app','Unlimited'),
 );
 
 
@@ -99,7 +101,7 @@ if($backdateWindowIndex === false)
 	$backdateWindowIndex = count($timeLengths);	// default to last value (unlimited)
 else
 	$backdateWindowIndex++;
-	
+
 $backdateRangeIndex = array_search($model->workflowBackdateRange,array_keys($dateLengths));
 if($backdateRangeIndex === false)
 	$backdateRangeIndex = count($timeLengths);
@@ -107,8 +109,8 @@ else
 	$backdateRangeIndex++;
 
 ?>
-<div class="span-16">
-<div class="page-title"><h2><?php echo Yii::t('admin','Workflow Settings'); ?></h2></div>
+<div class="page-title"><h2><?php echo Yii::t('admin','Process Settings'); ?></h2></div>
+<div>
 <?php
 $form = $this->beginWidget('CActiveForm', array(
 	'id'=>'settings-form',
@@ -116,7 +118,7 @@ $form = $this->beginWidget('CActiveForm', array(
 ));
 ?>
 	<div class="form">
-		<?php echo $form->labelEx($model,'workflowBackdateWindow'); 
+		<?php echo $form->labelEx($model,'workflowBackdateWindow');
 		$this->widget('zii.widgets.jui.CJuiSlider', array(
 			'value'=>$backdateWindowIndex,
 			// additional javascript options for the slider plugin
@@ -130,12 +132,13 @@ $form = $this->beginWidget('CActiveForm', array(
 			),
 			'htmlOptions'=>array(
 				'id'=>'backdateWindowSlider',
-				'style'=>'width:340px;margin:10px 0;',
+                'class'=>'x2-wide-slider',
+				'style'=>'margin:10px 0;',
 			),
 		));
 		?>
 		<?php echo $form->dropDownList($model,'workflowBackdateWindow',$timeLengths,array('id'=>'backdateWindow')); ?><br>
-		<?php echo Yii::t('admin','How long users have to backdate a workflow date.'); ?>
+		<?php echo Yii::t('admin','How long users have to backdate a process date.'); ?>
 		<p>
 		<hr>
 		<?php echo $form->labelEx($model,'workflowBackdateRange'); ?>
@@ -152,24 +155,25 @@ $form = $this->beginWidget('CActiveForm', array(
 			),
 			'htmlOptions'=>array(
 				'id'=>'backdateRangeSlider',
-				'style'=>'width:340px;margin:10px 0;',
+                'class'=>'x2-wide-slider',
+				'style'=>'margin:10px 0;',
 			),
 		));
 		?>
 		<?php echo $form->dropDownList($model,'workflowBackdateRange',$dateLengths,array('id'=>'backdateRange')); ?><br>
-		<?php echo Yii::t('admin','How far back users can backdate a workflow stage.'); ?>
+		<?php echo Yii::t('admin','How far back users can backdate a process stage.'); ?>
 		<p>
 		<hr>
 		<?php echo $form->checkBox($model, 'workflowBackdateReassignment',array('id'=>'backdateReassignment')); ?>
 		<label for="backdateReassignment" style="display:inline"><?php echo Yii::t('admin', 'Backdate reassignment'); ?></label><br>
-		<?php echo Yii::t('admin','Users can change who a workflow stage was completed by.'); ?>
+		<?php echo Yii::t('admin','Users can change who a process stage was completed by.'); ?>
 		</p>
 	<?php echo CHtml::submitButton(Yii::t('app','Save'),array('class'=>'x2-button','id'=>'save-button','style'=>'margin-left:0;'))."\n";?>
 	</div>
 
 
-	
-	
+
+
 	<?php //echo CHtml::resetButton(Yii::t('app','Cancel'),array('class'=>'x2-button'))."\n";?>
 <?php $this->endWidget();?>
 </div>

@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -36,7 +36,7 @@
 ?>
 
 <?php
-$widgetSettings = ProfileChild::getWidgetSettings();
+$widgetSettings = Profile::getWidgetSettings();
 $mediaSettings = $widgetSettings->MediaBox;
 $mediaBoxHeight = $mediaSettings->mediaBoxHeight;
 $hideUsers = $mediaSettings->hideUsers;
@@ -44,45 +44,49 @@ $imageTooltips = '';
 $minimizeUserMedia = '';
 $username = Yii::app()->params->profile->username;
 $fullname = Yii::app()->params->profile->fullName;
+$escapedName = preg_replace('/[@\.]/','',$username);
 ?>
 
 <div id="media-library-widget-wrapper" style="width:99%">
     <div id="media-library-widget-container">
         <?php
         echo "<div id='x2-media-list' style='".($this->drive ? 'display:none;' : '')."'>";
-        $toggleUserMediaVisibleUrl = $this->controller->createUrl('/media/toggleUserMediaVisible')."?user=$username";
+        $toggleUserMediaVisibleUrl = $this->controller->createUrl('/media/media/toggleUserMediaVisible',array('user'=>$username));
         $visible = !in_array($username, $hideUsers);
         if(!$visible)
-            $minimizeUserMedia .= "$('$username-media').hide();\n";
-        $minimizeLink = CHtml::ajaxLink($visible ? '[&ndash;]' : '[+]', $toggleUserMediaVisibleUrl, array('success' => "function(response) { toggleUserMedia($(\"#$username-media\"), $('#$username-media-showhide'), response); }", 'type' => 'GET'), array('id' => "$username-media-showhide", 'class' => 'media-library-showhide')); // javascript function togglePortletVisible defined in js/layout.js
+            $minimizeUserMedia .= "$('#".$escapedName."-media').hide();\n";
+        $minimizeLink = CHtml::ajaxLink($visible ? '[&ndash;]' : '[+]', $toggleUserMediaVisibleUrl, array('success' => "function(response) { toggleUserMedia($(\"#".$escapedName."-media\"), $('#".$escapedName."-media-showhide'), response); }", 'type' => 'GET'), array('id' => $escapedName."-media-showhide", 'class' => 'media-library-showhide')); // javascript function toggleUserMedia defined in js/media.js
         ?>
         <strong><?php echo $fullname; ?></strong>
         <?php echo $minimizeLink; ?><br>
 
         <?php
         $myMediaItems = Yii::app()->db->createCommand()
-                ->select('id, uploadedBy, fileName, description, drive, title')
-                ->where('uploadedBy=:username AND drive=:drive', array(':username' => $username, ':drive' => $this->drive))
+                ->select('id, uploadedBy, fileName, description, drive, name')
+                ->where('uploadedBy=:username AND drive=:drive AND associationType IN("none","docs")', array(':username' => $username, ':drive' => $this->drive))
                 ->from('x2_media')
                 ->queryAll();
         ?>
         <?php //$myMediaItems = Media::model()->findAllByAttributes(array('uploadedBy'=>$username)); // get current user's media  ?>
 
 
-        <div id="<?php echo $username; ?>-media" class="user-media-list">
+        <div id="<?php echo $escapedName; ?>-media" class="user-media-list">
             <?php
             foreach($myMediaItems as $item){
-                $id = "$username-media-id-{$item['id']}";
-                echo '<span class="media-item">';
+				$baseId = str_replace('@','',$username)."-media-id-{$item['id']}";
+                $jsSelectorId = CJSON::encode("#$baseId");
+				$propertyId = addslashes($baseId);
+				$desc = CHtml::encode($item['description']);
+                echo '<span class="x2-pillbox media-item">';
                 $path = Media::getFilePath($item['uploadedBy'], $item['fileName']);
-                $filename = $item['drive']?$item['title']:$item['fileName'];
+                $filename = $item['drive']?$item['name']:$item['fileName'];
                 if(mb_strlen($filename, 'UTF-8') > 35){
                     $filename = mb_substr($filename, 0, 32, 'UTF-8').'…';
                 }
-                echo CHtml::link($filename, array('/media', 'view' => $item['id']), array(
+                echo CHtml::link($filename, array('/media/media/view', 'id'=>$item['id']), array(
                     'class' => 'x2-link media'.(Media::isImageExt($item['fileName']) ? ' image-file' : ''),
-                    'id' => $id,
-                    'style' => 'curosr:pointer;',
+                    'id' => $baseId,
+                    'style' => 'cursor:pointer;',
                     'data-url' => Media::getFullFileUrl($path),
                 ));
                 echo '</span>';
@@ -90,12 +94,16 @@ $fullname = Yii::app()->params->profile->fullName;
                 if(Media::isImageExt($item['fileName'])){
                     $imageLink = Media::getFileUrl($path);
                     $image = CHtml::image($imageLink, '', array('class' => 'media-hover-image'));
-                    if($item['description'])
-                        $imageTooltips .= "$('#$id').qtip({content: '<span style=\"max-width: 200px;\">$image {$item['description']}</span>', position: {my: 'top right', at: 'bottom left'}});\n";
-                    else
-                        $imageTooltips .= "$('#$id').qtip({content: '$image', position: {my: 'top right', at: 'bottom left'}});\n";
+					$imageStr = CJSON::encode($image);
+
+                    if($item['description']) {
+						$content = CJSON::encode("<span style=\"max-width: 200px;\">$image $desc</span>");
+                        $imageTooltips .= "$($jsSelectorId).qtip({content: $content, position: {my: 'top right', at: 'bottom left'}});\n";
+					}else
+                        $imageTooltips .= "$($jsSelectorId).qtip({content: $imageStr, position: {my: 'top right', at: 'bottom left'}});\n";
                 } else if($item['description']){
-                    $imageTooltips .= "$('#$id').qtip({content: '{$item['description']}', position: {my: 'top right', at: 'bottom left'}});\n";
+					$content = CJSON::encode($item['description']);
+                    $imageTooltips .= "$($jsSelectorId).qtip({content: $content, position: {my: 'top right', at: 'bottom left'}});\n";
                 }
             }
             ?>
@@ -117,44 +125,51 @@ $fullname = Yii::app()->params->profile->fullName;
             <?php //$userMediaItems = X2Model::model('Media')->findAllByAttributes(array('uploadedBy'=>$user->username)); ?>
             <?php
             $userMediaItems = Yii::app()->db->createCommand()
-                    ->select('id, uploadedBy, fileName, description, private, drive, title')
-                    ->where('uploadedBy=:username', array(':username' => $user['username']))
+                    ->select('id, uploadedBy, fileName, description, private, drive, name')
+                    ->where('uploadedBy=:username AND associationType="none"', array(':username' => $user['username']))
                     ->from('x2_media')
                     ->queryAll();
             ?>
             <?php if($userMediaItems){ // user has any media items? ?>
-                <?php $toggleUserMediaVisibleUrl = Yii::app()->controller->createUrl('/media/toggleUserMediaVisible')."?user={$user['username']}"; ?>
+                <?php $toggleUserMediaVisibleUrl = Yii::app()->controller->createUrl('/media/media/toggleUserMediaVisible')."?user={$user['username']}"; ?>
                 <?php $visible = !in_array($user['username'], $hideUsers); ?>
                 <?php if(!$visible) $minimizeUserMedia .= "$('#{$user['username']}-media').hide();\n"; ?>
-                <?php $minimizeLink = CHtml::ajaxLink($visible ? '[&ndash;]' : '[+]', $toggleUserMediaVisibleUrl, array('success' => "function(response) { toggleUserMedia($('#{$user['username']}-media'), $('#{$user['username']}-media-showhide'), response); }", 'type' => 'GET'), array('id' => "{$user['username']}-media-showhide", 'class' => 'media-library-showhide')); // javascript function togglePortletVisible defined in js/layout.js  ?>
+                <?php $minimizeLink = CHtml::ajaxLink($visible ? '[&ndash;]' : '[+]', $toggleUserMediaVisibleUrl, array('success' => "function(response) { toggleUserMedia($('#{$user['username']}-media'), $('#{$user['username']}-media-showhide'), response); }", 'type' => 'GET'), array('id' => "{$user['username']}-media-showhide", 'class' => 'media-library-showhide')); // javascript function toggleUserMedia defined in js/media.js  ?>
                 <strong><?php echo $user['fullName']; ?></strong>
                 <?php echo $minimizeLink; ?><br>
                 <div id="<?php echo $user['username']; ?>-media" class="user-media-list">
                     <?php
                     foreach($userMediaItems as $item){
                         if(!$item['private'] || $admin){
-                            $id = "{$user['username']}-media-id-{$item['id']}";
-                            echo '<span class="media-item">';
+							$baseId = "{$user['username']}-media-id-{$item['id']}";
+				            $jsSelectorId = CJSON::encode("#$baseId");
+							$propertyId = addslashes($baseId);
+							$desc = CHtml::encode($item['description']);
+                            echo '<span class="x2-pillbox" class="media-item">';
                             $path = Media::getFilePath($item['uploadedBy'], $item['fileName']);
-                            $filename = $item['drive']?$item['title']:$item['fileName'];
+                            $filename = $item['drive']?$item['name']:$item['fileName'];
                             if(mb_strlen($filename, 'UTF-8') > 35){
                                 $filename = mb_substr($filename, 0, 32, 'UTF-8').'…';
                             }
                             echo CHtml::link($filename, array('/media', 'view' => $item['id']), array(
                                 'class' => 'x2-link media media-library-item'.(Media::isImageExt($item['fileName']) ? ' image-file' : ''),
-                                'id' => $id,
+                                'id' => $baseId,
                                 'data-url' => Media::getFullFileUrl($path),
                             ));
                             echo '</span>';
                             if(Media::isImageExt($item['fileName'])){
                                 $imageLink = Media::getFileUrl($path);
                                 $image = CHtml::image($imageLink, '', array('class' => 'media-hover-image'));
-                                if($item['description'])
-                                    $imageTooltips .= "$('#$id').qtip({content: '<span style=\"max-width: 200px;\">$image {$item['description']}</span>', position: {my: 'top right', at: 'bottom left'}});\n";
-                                else
-                                    $imageTooltips .= "$('#$id').qtip({content: '$image', position: {my: 'top right', at: 'bottom left'}});\n";
+								$imageStr = CJSON::encode($image);
+
+                                if($item['description']) {
+									$content = CJSON::encode("<span style=\"max-width: 200px;\">$image $desc</span>");
+                                    $imageTooltips .= "$($jsSelectorId).qtip({content: $content, position: {my: 'top right', at: 'bottom left'}});\n";
+								}else
+                                    $imageTooltips .= "$($jsSelectorId).qtip({content: $imageStr, position: {my: 'top right', at: 'bottom left'}});\n";
                             } else if($item['description']){
-                                $imageTooltips .= "$('#$id').qtip({content: '{$item['description']}', position: {my: 'top right', at: 'bottom left'}});\n";
+								$content = CJSON::encode($desc);
+                                $imageTooltips .= "$($jsSelectorId).qtip({content: $content, position: {my: 'top right', at: 'bottom left'}});\n";
                             }
                         }
                     }
@@ -176,7 +191,7 @@ $fullname = Yii::app()->params->profile->fullName;
                     var id=$(this).attr('data-id');
                     if($('#'+id).is(':hidden')){
                         $.ajax({
-                            'url':'<?php echo Yii::app()->controller->createUrl('/media/recursiveDriveFiles') ?>',
+                            'url':'<?php echo Yii::app()->controller->createUrl('/media/media/recursiveDriveFiles') ?>',
                             'data':{'folderId':id},
                             'success':function(data){
                                 $('#'+id).html(data);

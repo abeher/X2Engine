@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -34,11 +34,10 @@
  * "Powered by X2Engine".
  *****************************************************************************************/
 
-$this->actionMenu = $this->formatMenu(array(
-	array('label'=>Yii::t('quotes','Quotes List')),
-	array('label'=>Yii::t('quotes','Invoice List'), 'url'=>array('indexInvoice')),
-	array('label'=>Yii::t('quotes','Create'), 'url'=>array('create')),
-));
+$menuOptions = array(
+    'index', 'invoices', 'create', 'import', 'export',
+);
+$this->insertMenu($menuOptions);
 
 Yii::app()->clientScript->registerScript('search', "
 $('.search-button').click(function(){
@@ -59,26 +58,37 @@ $('.search-form form').submit(function(){
 	'model'=>$model,
 )); ?>
 </div><!-- search-form -->
-<?php 
-$this->widget('application.components.X2GridView', array(
+<?php
+$this->widget('X2GridView', array(
 	'id'=>'quotes-grid',
-	'title'=>Yii::t('quotes','Quotes'),
-	'buttons'=>array('advancedSearch','clearFilters','columnSelector'),
-	'template'=> '<div class="page-title">{title}{buttons}{filterHint}{summary}</div>{items}{pager}',
+	'title'=>Yii::t('quotes','{module}',  array('{module}'=>Modules::displayName())),
+	'buttons'=>array('advancedSearch','clearFilters','columnSelector','autoResize'),
+	'template'=> 
+        '<div id="x2-gridview-top-bar-outer" class="x2-gridview-fixed-top-bar-outer">'.
+        '<div id="x2-gridview-top-bar-inner" class="x2-gridview-fixed-top-bar-inner">'.
+        '<div id="x2-gridview-page-title" '.
+         'class="page-title icon quotes x2-gridview-fixed-title">'.
+        '{title}{buttons}{filterHint}'.
+        
+        '{summary}{topPager}{items}{pager}',
+    'fixedHeader'=>true,
 	'dataProvider'=>$model->search(),
 	// 'enableSorting'=>false,
 	// 'model'=>$model,
 	'filter'=>$model,
+	'pager'=>array('class'=>'CLinkPager','maxButtonCount'=>10),
 	// 'columns'=>$columns,
 	'modelName'=>'Quote',
 	'viewName'=>'quotes',
 	// 'columnSelectorId'=>'contacts-column-selector',
 	'defaultGvSettings'=>array(
+        'gvCheckbox' => 30,
 		'name' => 244,
 		'probability' => 67,
 		'expectedCloseDate' => 117,
 		'assignedTo' => 120,
-		'lastActivity' => 70,
+		'lastActivity' => 90,
+        'gvControls' => 72,
 	),
 	'specialColumns'=>array(
 		'name'=>array(

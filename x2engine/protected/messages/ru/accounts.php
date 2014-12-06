@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -37,56 +37,74 @@
 return array (
 // Account Attributes
 'ID'=>'ID',
-'Name'=>'имя',
-'Website'=>'веб-сайт',
-'Type'=>'тип',
-'Revenue'=>'доходы',
-'Phone'=>'телефон',
+'Name'=>'Название',
+'Website'=>'WWW',
+'Type'=>'Деятельность',
+'Revenue'=>'Годовой доход',
+'Phone'=>'Телефон',
 'Symbol'=>'символ',
 'Employees'=>'Сотрудники',
 'Assigned To'=>'Назначено',
 'Create Date'=>'Дата создания',
-'Associated Contacts'=>'связанные Контакты',
-'Description'=>'описание',
+'Associated Contacts'=>'Связанные контакты',
+'Description'=>'Описание',
 'Last Updated'=>'Последнее обновление',
 'Updated By'=>'Обновил',
-'None'=>'ни один',
-'Contacts'=>'связи',
+'None'=>'никто',
+'Contacts'=>'Контакты',
 'Basic Information'=>'Основная информация',
 'Additional Information'=>'Дополнительная информация',
 'Last Activity'=>'Последняя активность',
 
 // Accounts Actions
-'Accounts List'=>'Список счетов',
-'Create Account'=>'Создать учетную запись',
-'View Account'=>'Просмотр счета',
-'Update Account'=>'Обновление счета',
-'Delete Account'=>'Удалить аккаунт',
-'Add a User'=>'Добавить пользователя',
+'Accounts List'=>'Список организаций',
+'Create Account'=>'Новая',
+'View Account'=>'Просмотр организации',
+'Update Account'=>'Править организацию',
+'Delete Account'=>'Удалить организацию',
+'Add a User'=>'Открыть доступ',
 'Add a Contact'=>'Добавить контакт',
-'Remove a User'=>'Удаление пользователя',
-'Remove a Contact'=>'Удалить Контакт',
-'Share Account'=>'паевой счет',
-'Create'=>'создавать',
-'View'=>'смотреть',
-'Update'=>'обновление',
-'Delete'=>'удалять',
-'Update Account:'=>'Обновление счет:',
+'Remove a User'=>'Отменить доступ',
+'Remove a Contact'=>'Удалить контакт',
+'Share Account'=>'Отправить карточку',
+'Create'=>'Создать',
+'View'=>'Просмотр',
+'Update'=>'Обновить',
+'Delete'=>'Удалить',
+'Update Account:'=>'Обновление организации:',
 'Share Opportunity'=>'Поделиться возможностей',
-'All Accounts'=>'Все счета',
-'Edit Account'=>'Изменить учетную запись',
+'All Accounts'=>'Все Организации',
+'Edit Account'=>'Редактировать',
+
+'Parent'=>'родитель',
+'Address'=>'Адрес',
+'City'=>'Город',
+'Address'=>'Адрес',
+'State'=>'Область',
+'Postal Code'=>'Индекс',
+'Country'=>'Страна',
+
 
 // Accounts Titles
-'Accounts'=>'счета',
-'Manage Accounts'=>'Управление учетными записями',
-'Update Account: {name}'=>'Обновление счет: {имя}',
-'Account:'=>'счет:',
+'Accounts'=>'Организации',
+'Manage Accounts'=>'Управление организациями',
+'Update Account: {name}'=>'Обновление организации: {имя}',
+'Account:'=>'Организация:',
 
 // Misc
-'Please click any new users you wish to add.'=>'Пожалуйста, нажмите на любую новых пользователей вы хотите добавить.',
-'Please click any new users you wish to remove.'=>'Пожалуйста, нажмите на любую новых пользователей вы хотите удалить.',
+'Please click any new users you wish to add.'=>'Выберите нового пользователя, которого желаете добавить.',
+'Please click any new users you wish to remove.'=>'Выберите нового пользователя, которого желаете удалить.',
 'Account Record Details'=>'Реквизиты записей',
-'Account Record'=>'счет запись',
-'Create a new Opportunity associated with this Account.'=>'Создаем новые возможности, связанные с этим счета.',
+'Account Record'=>'Запись компании',
+'Create a new Opportunity associated with this Account.'=>'Создаем новые возможности, связанные с этой компанией.',
 'Create a new Contact associated with this Account.'=>'Создание нового контакта связанный с этим аккаунтом.',
+
+'Accounts Report'=>'Финансовая отчетность',
+'Campaign Form'=>'Кампания форма',
+'This form will allow you to generate a campaign to mail related Contacts of the Accounts displayed in the report below. Select "Primary Contacts" to only email Contacts which are set as the Primary Contact for an Account. Select "All" to email all related Contacts on each Account.'=>'Эта форма позволит вам создавать кампании связанных с почтой Контакты Счетной отображается в отчете ниже. Выберите &quot;Primary Контакты&quot; только контактов электронной почты, которые устанавливаются в качестве основного контактного счета. Выберите &quot;Все&quot; по электронной почте всех связанных контактов на каждой учетной записи.',
+'Create a new Account associated with this Account.'=>'Создать новую учетную запись, связанные с этим счетом.',
+'Primary Contact'=>'Основное контактное лицо',
+'Import Accounts'=>'Импорт счета',
+'Export Accounts'=>'Экспорт счета',
+'Bug Report Attributes'=>'Сообщение об ошибке Атрибуты',
 );

@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -37,42 +37,84 @@
 /**
  * X2FlowAction that reassigns a record
  *
- * @package X2CRM.components.x2flow.actions
+ * @package application.components.x2flow.actions
  */
 class X2FlowRecordReassign extends X2FlowAction {
-	public $title = 'Reassign Record';
-	public $info = 'Assign the record to a user or group, or automatically using lead routing.';
-	
-	public function __construct() {
-		$this->attachBehavior('LeadRoutingBehavior',array('class'=>'LeadRoutingBehavior'));
-	}
-	
-	public function paramRules() {
-		$leadRoutingModes = array(
-			''=>'Free For All',
-			'roundRobin'=>'Round Robin Distribution',
-			'roundRobin'=>'Sequential Distribution',
-			'singleUser'=>'Direct User Assignment'
-		);
-		return array(
-			'title' => Yii::t('studio',$this->title),
-			'info' => Yii::t('studio',$this->info),
-			'modelRequired' => 1,
-			'options' => array(
-				// array('name'=>'routeMode','label'=>'Routing Method','type'=>'dropdown','options'=>$leadRoutingModes),
-				array('name'=>'user','label'=>'User','type'=>'dropdown','multiple'=>1,'options'=>array('auto'=>Yii::t('studio','Use Lead Routing'))+X2Model::getAssignmentOptions(true,true)),
-				// array('name'=>'onlineOnly','label'=>'Online Only?','optional'=>1,'type'=>'boolean','defaultVal'=>false),
-			));
-	}
 
-	public function execute(&$params) {
-		$user = $this->parseOption('user',$params);
-		if($user === 'auto')
-			$params['model']->assignedTo = $this->getNextAssignee();
-		elseif(CActiveRecord::model('User')->exists('username=?',array($user)))	// make sure the user exists
-			$params['model']->assignedTo = $user;
-		else
-			return false;
-		return $params['model']->save();
-	}
+    public $title = 'Reassign Record';
+    public $info = 'Assign the record to a user or group, or automatically using lead routing.';
+
+    public function __construct(){
+        $this->attachBehavior('LeadRoutingBehavior', array('class' => 'LeadRoutingBehavior'));
+    }
+
+    public function paramRules(){
+        $leadRoutingModes = array(
+            '' => 'Free For All',
+            'roundRobin' => 'Round Robin Distribution',
+            'roundRobin' => 'Sequential Distribution',
+            'singleUser' => 'Direct User Assignment'
+        );
+        return array(
+            'title' => Yii::t('studio', $this->title),
+            'info' => Yii::t('studio', $this->info),
+            'modelRequired' => 1,
+            'options' => array(
+                // array('name'=>'routeMode','label'=>'Routing Method','type'=>'dropdown','options'=>$leadRoutingModes),
+                array(
+                    'name' => 'user',
+                    'label' => 'User',
+                    'type' => 'dropdown',
+                    'multiple' => 1,
+                    'options' => array(
+                        'auto' => Yii::t('studio', 'Use Lead Routing')) + 
+                            X2Model::getAssignmentOptions(true, true)
+                ),
+            // array('name'=>'onlineOnly','label'=>'Online Only?','optional'=>1,'type'=>'boolean','defaultVal'=>false),
+            )
+        );
+    }
+
+    public function execute(&$params){
+        $model = $params['model'];
+        if(!$model->hasAttribute('assignedTo')){
+            return array(
+                false,
+                Yii::t('studio', get_class($model).' records have no attribute "assignedTo"')
+            );
+        }
+
+        $user = $this->parseOption('user', $params);
+        if($user === 'auto'){
+            if (get_class ($model) === 'Contacts') {
+                $assignedTo = $this->getNextAssignee($model);
+            } else {
+                return array(
+                    false, Yii::t('studio', 'Lead routing rules cannot be used with {type} records',
+                        array ('{type}' => get_class ($model))));
+            }
+        }elseif(CActiveRecord::model('User')->exists('username=?', array($user)) || 
+                CActiveRecord::model('Groups')->exists('id=?', array($user))){ 
+            // make sure the user exists
+
+            $assignedTo = $user;
+        }else{
+            return array(false, Yii::t('studio', 'User '.$user.' does not exist'));
+        }
+
+        $model->assignedTo = $assignedTo;
+        if($model->save ()){
+            if(is_subclass_of($model, 'X2Model')){
+                return array(
+                    true,
+                    Yii::t('studio', 'View updated record: ').$model->getLink()
+                );
+            }else{
+                return array(true, "");
+            }
+        }else{
+            return array(false, "Failed to reassign the record");
+        }
+    }
+
 }

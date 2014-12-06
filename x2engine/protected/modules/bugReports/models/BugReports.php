@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -38,9 +38,12 @@ Yii::import('application.models.X2Model');
 
 /**
  * This is the model class for table "x2_template".
- * @package X2CRM.modules.template.models
+ * @package application.modules.template.models
  */
 class BugReports extends X2Model {
+
+    public $supportsWorkflow = false;
+
 	/**
 	 * Returns the static model of the specified AR class.
 	 * @return Template the static model class
@@ -62,6 +65,9 @@ class BugReports extends X2Model {
 				'class'=>'application.components.ERememberFiltersBehavior',
 				'defaults'=>array(),
 				'defaultStickOnClear'=>false
+			),
+			'InlineEmailModelBehavior' => array(
+				'class'=>'application.components.InlineEmailModelBehavior',
 			)
 		));
 	}
@@ -69,39 +75,24 @@ class BugReports extends X2Model {
 
 	/**
 	 * Retrieves a list of models based on the current search/filter conditions.
-	 * @return CActiveDataProvider the data provider that can return the models based on the search/filter conditions.
+	 * @return CActiveDataProvider the data provider that can return the models based on the 
+     *  search/filter conditions.
 	 */
 	public function search() {
 		$criteria=new CDbCriteria;
 		return $this->searchBase($criteria);
 	}
 
-    /**
-	 * Base search method for all data providers.
-	 * Sets up record-level security checks.
-	 *
-	 * @param CDbCriteria $criteria starting criteria for this search
-	 * @return SmartDataProvider data provider using the provided criteria and any conditions added by {@link X2Model::compareAttributes}
-	 */
-	public function searchBase($criteria=null) {
-		if($criteria === null)
-			$criteria = $this->getAccessCriteria();
-		else
-			$criteria->mergeWith($this->getAccessCriteria());
-
-		return parent::searchBase($criteria);
-	}
-
     public function afterFind(){
         if($this->id!=$this->name){
             $this->name=$this->id;
-            $this->save();
+            $this->update(array('name'));
         }
+        return parent::afterFind();
     }
 
     /**
-	 *  Like search but filters by status based on the user's profile
-	 *
+	 * Like search but filters by status based on the user's profile
 	 */
 	public function searchWithStatusFilter() {
 		// Warning: Please modify the following code to remove attributes that
@@ -120,7 +111,7 @@ class BugReports extends X2Model {
 					$hideStatus = array();
 				}
 				foreach($hideStatus as $hide) {
-					$criteria->compare('status', '<>'.$hide);
+					$criteria->compare('t.status', '<>'.$hide);
 				}
 			}
 		}

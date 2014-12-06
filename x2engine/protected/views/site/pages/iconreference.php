@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -37,13 +37,12 @@
 
 <?php
 $this->layout = '//layouts/column1';
-$this->pageTitle=Yii::app()->name . ' - ' . Yii::t('help','Icon Reference');
+$this->pageTitle=Yii::app()->settings->appName . ' - ' . Yii::t('help','Icon Reference');
 
 
 $cssString = "
     #icon-reference-title {
         width: 1002px;
-        margin-left: 50px;
         margin-right: 0;
         padding: 0 0 0 0;
     }
@@ -110,7 +109,7 @@ Yii::app()->clientScript->registerCss('icon-reference-css', $cssString);
 
 <div id="icon-reference-section-1" class="icon-reference form p-20">
     <h2 class="section-title"> 
-        <?php echo Yii::t ('help', 'X2CRM Modules'); ?>
+        <?php echo Yii::t ('help', 'X2Engine Modules'); ?>
     </h2>
     <div class="column1 cell">
         <div class="row">
@@ -118,7 +117,7 @@ Yii::app()->clientScript->registerCss('icon-reference-css', $cssString);
                 <?php echo "<img src='" . Yii::app()->request->baseUrl.'/themes/x2engine/images/accounts.png' . "'/>"; ?>
             </div>
             <div class="icon-description">
-                <p> <?php echo CHtml::link (Yii::t('accounts', 'Accounts'), array ('/accounts/index')); ?> </p>
+                <p> <?php echo CHtml::link (Yii::t('accounts', 'Accounts'), array ('/accounts/accounts/index')); ?> </p>
             </div>
         </div>
         <div class="row">
@@ -126,7 +125,7 @@ Yii::app()->clientScript->registerCss('icon-reference-css', $cssString);
                 <?php echo "<img src='" . Yii::app()->request->baseUrl.'/themes/x2engine/images/eventIcons/feed.png' . "'/>"; ?>
             </div>
             <div class="icon-description">
-                <p> <?php echo CHtml::link (Yii::t('app', 'Activity Feed'), array ('/site/whatsNew')); ?> </p>
+                <p> <?php echo CHtml::link (Yii::t('app', 'Activity Feed'), array ('/profile/view', 'id' => Yii::app()->user->getId())); ?> </p>
             </div>
         </div>
         <div class="row">
@@ -134,7 +133,7 @@ Yii::app()->clientScript->registerCss('icon-reference-css', $cssString);
                 <?php echo "<img src='" . Yii::app()->request->baseUrl.'/themes/x2engine/images/actions.png' . "'/>"; ?>
             </div>
             <div class="icon-description">
-                <p> <?php echo CHtml::link (Yii::t('app', 'Actions'), array ('/actions/index')); ?> </p>
+                <p> <?php echo CHtml::link (Yii::t('app', 'Actions'), array ('/actions/actions/index')); ?> </p>
             </div>
         </div>
         <div class="row">
@@ -142,7 +141,7 @@ Yii::app()->clientScript->registerCss('icon-reference-css', $cssString);
                 <?php echo "<img src='" . Yii::app()->request->baseUrl.'/themes/x2engine/images/calendar.png' . "'/>"; ?>
             </div>
             <div class="icon-description">
-                <p> <?php echo CHtml::link (Yii::t('calendar', 'Calendar'), array ('/calendar/index')); ?> </p>
+                <p> <?php echo CHtml::link (Yii::t('calendar', 'Calendar'), array ('/calendar/calendar/index')); ?> </p>
             </div>
         </div>
         <div class="row">
@@ -150,7 +149,7 @@ Yii::app()->clientScript->registerCss('icon-reference-css', $cssString);
                 <?php echo "<img src='" . Yii::app()->request->baseUrl.'/themes/x2engine/images/charts.png' . "'/>"; ?>
             </div>
             <div class="icon-description">
-                <p> <?php echo CHtml::link (Yii::t('app', 'Charts'), array ('/charts/index')); ?> </p>
+                <p> <?php echo CHtml::link (Yii::t('app', 'Charts'), array ('/charts/charts/index')); ?> </p>
             </div>
         </div>
         <div class="row">
@@ -158,7 +157,7 @@ Yii::app()->clientScript->registerCss('icon-reference-css', $cssString);
                 <?php echo "<img src='" . Yii::app()->request->baseUrl.'/themes/x2engine/images/contacts.png' . "'/>"; ?>
             </div>
             <div class="icon-description">
-                <p> <?php echo CHtml::link (Yii::t('contacts', 'Contacts'), array ('/contacts/index')); ?> </p>
+                <p> <?php echo CHtml::link (Yii::t('contacts', 'Contacts'), array ('/contacts/contacts/index')); ?> </p>
             </div>
         </div>
         <div class="row">
@@ -166,7 +165,7 @@ Yii::app()->clientScript->registerCss('icon-reference-css', $cssString);
                 <?php echo "<img src='" . Yii::app()->request->baseUrl.'/themes/x2engine/images/docs.png' . "'/>"; ?>
             </div>
             <div class="icon-description">
-                <p> <?php echo CHtml::link (Yii::t('docs', 'Docs'), array ('/docs/index')); ?> </p>
+                <p> <?php echo CHtml::link (Yii::t('docs', 'Docs'), array ('/docs/docs/index')); ?> </p>
             </div>
         </div>
         <div class="row">
@@ -174,7 +173,7 @@ Yii::app()->clientScript->registerCss('icon-reference-css', $cssString);
                 <?php echo "<img src='" . Yii::app()->request->baseUrl.'/themes/x2engine/images/groups.png' . "'/>"; ?>
             </div>
             <div class="icon-description">
-                <p> <?php echo CHtml::link (Yii::t('app', 'Groups'), array ('/groups/index')); ?> </p>
+                <p> <?php echo CHtml::link (Yii::t('app', 'Groups'), array ('/groups/groups/index')); ?> </p>
             </div>
         </div>
     </div>
@@ -184,7 +183,7 @@ Yii::app()->clientScript->registerCss('icon-reference-css', $cssString);
                 <?php echo "<img src='" . Yii::app()->request->baseUrl.'/themes/x2engine/images/eventIcons/media.png' . "'/>"; ?>
             </div>
             <div class="icon-description">
-                <p> <?php echo CHtml::link (Yii::t('app', 'Media'), array ('/media/index')); ?> </p>
+                <p> <?php echo CHtml::link (Yii::t('app', 'Media'), array ('/media/media/index')); ?> </p>
             </div>
         </div>
         <div class="row">
@@ -192,7 +191,7 @@ Yii::app()->clientScript->registerCss('icon-reference-css', $cssString);
                 <?php echo "<img src='" . Yii::app()->request->baseUrl.'/themes/x2engine/images/marketing.png' . "'/>"; ?>
             </div>
             <div class="icon-description">
-                <p> <?php echo CHtml::link (Yii::t('app', 'Marketing'), array ('/marketing/index')); ?> </p>
+                <p> <?php echo CHtml::link (Yii::t('app', 'Marketing'), array ('/marketing/marketing/index')); ?> </p>
             </div>
         </div>
         <div class="row">
@@ -200,7 +199,7 @@ Yii::app()->clientScript->registerCss('icon-reference-css', $cssString);
                 <?php echo "<img src='" . Yii::app()->request->baseUrl.'/themes/x2engine/images/opportunities.png' . "'/>"; ?>
             </div>
             <div class="icon-description">
-                <p> <?php echo CHtml::link (Yii::t('opportunities', 'Opportunities'), array ('/opportunities/index')); ?> </p>
+                <p> <?php echo CHtml::link (Yii::t('opportunities', 'Opportunities'), array ('/opportunities/opportunities/index')); ?> </p>
             </div>
         </div>
         <div class="row">
@@ -208,7 +207,7 @@ Yii::app()->clientScript->registerCss('icon-reference-css', $cssString);
                 <?php echo "<img src='" . Yii::app()->request->baseUrl.'/themes/x2engine/images/products.png' . "'/>"; ?>
             </div>
             <div class="icon-description">
-                <p> <?php echo CHtml::link (Yii::t('products', 'Products'), array ('/products/index')); ?> </p>
+                <p> <?php echo CHtml::link (Yii::t('products', 'Products'), array ('/products/products/index')); ?> </p>
             </div>
         </div>
         <div class="row">
@@ -216,7 +215,7 @@ Yii::app()->clientScript->registerCss('icon-reference-css', $cssString);
                 <?php echo "<img src='" . Yii::app()->request->baseUrl.'/themes/x2engine/images/eventIcons/quote_emailed.png' . "'/>"; ?>
             </div>
             <div class="icon-description">
-                <p> <?php echo CHtml::link (Yii::t('quotes', 'Quotes'), array ('/quotes/index')); ?> </p>
+                <p> <?php echo CHtml::link (Yii::t('quotes', 'Quotes'), array ('/quotes/quotes/index')); ?> </p>
             </div>
         </div>
         <div class="row">
@@ -224,7 +223,7 @@ Yii::app()->clientScript->registerCss('icon-reference-css', $cssString);
                 <?php echo "<img src='" . Yii::app()->request->baseUrl.'/themes/x2engine/images/services.png' . "'/>"; ?>
             </div>
             <div class="icon-description">
-                <p> <?php echo CHtml::link (Yii::t('help', 'Services'), array ('/services/index')); ?> </p>
+                <p> <?php echo CHtml::link (Yii::t('help', 'Services'), array ('/services/services/index')); ?> </p>
             </div>
         </div>
         <div class="row">
@@ -232,7 +231,7 @@ Yii::app()->clientScript->registerCss('icon-reference-css', $cssString);
                 <?php echo "<img src='" . Yii::app()->request->baseUrl.'/themes/x2engine/images/workflow.png' . "'/>"; ?>
             </div>
             <div class="icon-description">
-                <p> <?php echo CHtml::link (Yii::t('workflow', 'Workflow'), array ('/workflow/index')); ?> </p>
+                <p> <?php echo CHtml::link (Yii::t('workflow', 'Process'), array ('/workflow/workflow/index')); ?> </p>
             </div>
         </div>
     </div>

@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -86,16 +86,16 @@ if($type == 'workflow') {
 
 
 <div class="view" id="history-<?php echo $data->id; ?>">
-    <div class="sticky-icon x2-hint" title="This action has been marked as sticky and will remain at the top of the list." style="<?php echo $data->sticky?"":"display:none"; ?>"></div>
+    <div class="sticky-icon x2-hint" title="<?php echo Yii::t('actions','This action has been marked as sticky and will remain at the top of the list.');?>" style="<?php echo $data->sticky?"":"display:none"; ?>"></div>
     <?php
     if($data->complete!='Yes'){
 		if(empty($data->dueDate)){
-			echo X2Date::actionDate($data->createDate,$data->priority);
+			echo X2DateUtil::actionDate($data->createDate,$data->priority);
         }else{
-			echo X2Date::actionDate($data->dueDate,$data->priority);
+			echo X2DateUtil::actionDate($data->dueDate,$data->priority);
         }
     }else{
-		echo X2Date::actionDate($data->completeDate,$data->priority,'Yes');
+		echo X2DateUtil::actionDate($data->completeDate,$data->priority,'Yes');
     }
 ?>
 	<div class="header">
@@ -127,7 +127,7 @@ if($type == 'workflow') {
 				//echo Actions::parseStatus($data->dueDate);
 		} elseif ($data->type == 'workflow') {
 			// $actionData = explode(':',$data->actionDescription);
-			echo Yii::t('workflow','Workflow:').'<b> '.$workflowRecord->name .'/'.$stageRecords[$data->stageNumber-1]->name.'</b> ';
+			echo Yii::t('workflow','Process:').'<b> '.$workflowRecord->name .'/'.$stageRecords[$data->stageNumber-1]->name.'</b> ';
 		} elseif(in_array($data->type,array('email','emailFrom'))) {
 			echo Yii::t('actions','Email Message:').' '.Formatter::formatCompleteDate($data->completeDate);
 		} elseif($data->type == 'quotes') {
@@ -141,7 +141,7 @@ if($type == 'workflow') {
 		} elseif($data->type == 'call' && $data->complete=='Yes') {
 			echo Yii::t('actions','Call:').' '.Formatter::formatCompleteDate($data->completeDate); //Yii::app()->dateFormatter->format(Yii::app()->locale->getDateFormat("medium"),$data->completeDate);
 		} elseif($data->type == 'event') {
-			echo '<b>'.CHtml::link(Yii::t('calendar','Event').':',array('/actions/'.$data->id)).' ';
+			echo '<b>'.CHtml::link(Yii::t('calendar','Event').':',array('/actions/actions/view','id'=>$data->id)).' ';
 			if($data->allDay) {
 				echo Formatter::formatLongDate($data->dueDate);
 				if($data->completeDate)
@@ -192,16 +192,16 @@ if($type == 'workflow') {
                 $subject = $matches[1];
 				$body = '';
 			} else {
-                $subject = "No subject found";
-				$body = "(Error displaying email)";
+                $subject = Yii::t('actions',"No subject found");
+				$body = Yii::t('actions',"(Error displaying email)");
 			}
             if($type=='emailOpened'){
-                echo "Contact has opened the following email:<br />";
+                echo Yii::t('actions',"Contact has opened the following email:")."<br>";
             }
             echo '<strong>'.$subject.'</strong> '.$body;
-			echo '<br /><br />'.CHtml::link('[View email]','#',array('onclick'=>'return false;','id'=>$data->id,'class'=>'email-frame'));
+			echo '<br /><br />'.CHtml::link(Yii::t('actions','[View Email]'),'#',array('onclick'=>'return false;','id'=>$data->id,'class'=>'email-frame'));
         } elseif($data->type == 'quotes') {
-			echo CHtml::link('[View quote]', '#', array('onclick' => 'return false;', 'id' => $data->id, 'class' => 'quote-frame'));
+			echo CHtml::link(Yii::t('actions','[View Quote]'), '#', array('onclick' => 'return false;', 'id' => $data->id, 'class' => 'quote-frame'));
 		} else
 			echo Yii::app()->controller->convertUrls(CHtml::encode(empty($data->subject)?$data->actionDescription:$data->subject));	// convert LF and CRLF to <br />
 		?>

@@ -1,8 +1,8 @@
 <?php
 
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -40,6 +40,7 @@
 // This is the testing application configuration. Any writable
 // CWebApplication properties can be configured here.
 $config = require(dirname(__FILE__) . DIRECTORY_SEPARATOR . 'main.php');
+
 require_once(dirname(__FILE__) . DIRECTORY_SEPARATOR . 'X2Config-test.php');
 
 $config['components']['db'] = array(
@@ -60,7 +61,15 @@ $config['import'] = array_merge($config['import'], array('application.tests.*', 
 $config['components']['log']['routes'] = array(
 	array(
 		'class' => 'CFileLogRoute',
-		'logFile' => 'test.log',
+		'logFile' => php_sapi_name() == 'cli' ? 'system-test.log' : 'system-test-web.log',
+        'levels' => 'error,warning,trace,info',
+        'categories' => 'system.*'
+	),
+	array(
+		'class' => 'CFileLogRoute',
+		'logFile' => php_sapi_name() == 'cli' ? 'test.log' : 'test-web.log',
+        'levels' => 'error,warning,trace,info',
+        'categories' => 'application.*'
 	)
 );
 $config['params']['automatedTesting'] = true;

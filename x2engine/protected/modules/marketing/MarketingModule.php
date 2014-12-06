@@ -1,14 +1,11 @@
 <?php
 
 /**
- * @package X2CRM.modules.marketing 
+ * @package application.modules.marketing 
  */
-class MarketingModule extends CWebModule {
-	public function init() {
-		// this method is called when the module is being created
-		// you may place code here to customize the module or the application
+class MarketingModule extends X2WebModule {
 
-		// import the module-level models and components
+	public function init() {
 		$this->setImport(array(
 			'marketing.models.*',
 			'marketing.components.*',

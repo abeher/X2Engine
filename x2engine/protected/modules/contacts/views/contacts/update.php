@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -34,39 +34,44 @@
  * "Powered by X2Engine".
  *****************************************************************************************/
 
-$authParams['assignedTo'] = $model->assignedTo;
-$this->actionMenu = $this->formatMenu(array(
-	array('label'=>Yii::t('contacts','All Contacts'),'url'=>array('index')),
-	array('label'=>Yii::t('contacts','Lists'),'url'=>array('lists')),
-	array('label'=>Yii::t('contacts','Create Contact'),'url'=>array('create')),
-	array('label'=>Yii::t('contacts','View'),'url'=>array('view', 'id'=>$model->id)),
-    array('label'=>Yii::t('contacts','Edit Contact')),
-    array('label'=>Yii::t('contacts','Save Contact'),'url'=>'#','linkOptions'=>array('onclick'=>"$('#save-button').click();return false;")),
-	array('label'=>Yii::t('contacts','Share Contact'),'url'=>array('shareContact','id'=>$model->id)),
-	array('label'=>Yii::t('contacts','Delete Contact'),'url'=>'#', 'linkOptions'=>array('submit'=>array('delete','id'=>$model->id),'confirm'=>'Are you sure you want to delete this item?')),
-	array('label'=>Yii::t('app', 'Quick Create'), 'url'=>array('/site/createRecords', 'ret'=>'contacts'), 'linkOptions'=>array('id'=>'x2-create-multiple-records-button', 'class'=>'x2-hint', 'title'=>Yii::t('app', 'Create a Contact, Account, and Opportunity.'))),
-),$authParams);
+$authParams['X2Model'] = $model;
+
+$menuOptions = array(
+    'all', 'lists', 'create', 'view', 'edit', 'save', 'share', 'delete', 'quick',
+);
+$this->insertMenu($menuOptions, $model, $authParams);
 
 ?>
+<?php
+	if (!IS_ANDROID && !IS_IPAD) {
+		echo '
 <div class="page-title-placeholder"></div>
 <div class="page-title-fixed-outer">
 	<div class="page-title-fixed-inner">
+		';
+	}
+?>
 		<div class="page-title icon contacts">
-			<h2><span class="no-bold"><?php echo Yii::t('app','Update:'); ?></span> <?php echo $model->name; ?></h2>
+			<h2><span class="no-bold"><?php echo Yii::t('app','Update:'); ?></span> <?php echo CHtml::encode($model->name); ?></h2>
 			<?php echo CHtml::link(Yii::t('app','Save'),'#',array('class'=>'x2-button highlight right','onclick'=>'$("#save-button").click();return false;')); ?>
 		</div>
+<?php
+	if (!IS_ANDROID && !IS_IPAD) {
+		echo '
 	</div>
 </div>
+		';
+	}
+?>
 <?php echo $this->renderPartial('application.components.views._form', array('model'=>$model, 'users'=>$users,'modelName'=>'contacts')); ?>
-
 <?php
-$createAccountUrl = $this->createUrl('/accounts/create');
-Yii::app()->clientScript->registerScript('create-account', "
+//$createAccountUrl = $this->createUrl('/accounts/accounts/create');
+/*Yii::app()->clientScript->registerScript('create-account', "
 	$(function() {
 		$('.create-account').data('createAccountUrl', '$createAccountUrl');
 		$('.create-account').qtip({content: 'Create a new Account for this Contact.'});
 		// init create action button
 		$('.create-account').initCreateAccountDialog();
 	});
-");
+");*/
 ?>

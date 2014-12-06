@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -34,7 +34,7 @@
  * "Powered by X2Engine".
  *****************************************************************************************/
 
-$this->pageTitle = Yii::app()->name . ' - Home';
+$this->pageTitle = Yii::app()->settings->appName . ' - Home';
 ?>
 <div>
     <?php
@@ -47,14 +47,12 @@ $this->pageTitle = Yii::app()->name . ' - Home';
 
     if ($isUser || $isAdmin) {
         $menuItems = array(
-            //array('label' => Yii::t('app', 'Social Feed'), 'url' => array('social/index/')),
-            //array('label' => Yii::t('app', 'Documents'), 'url' => array('docs/index/')),
-            array('label' => Yii::t('mobile', 'Who\'s Online'), 'url' => array('site/online/')),            
-            array('label' => Yii::t('mobile', 'Back'), 'url' => array('site/index/'), 'left'=>true),
+            array('label' => Yii::t('mobile', 'Who\'s Online'), 'url' => array('/mobile/site/online')),
+            array('label' => Yii::t('mobile', 'Back'), 'url' => array('/mobile/site/index'), 'left'=>true),
         );
     } else {
         $menuItems = array(
-            array('label' => Yii::t('app', 'Login'), 'url' => array('site/login/'))
+            array('label' => Yii::t('app', 'Login'), 'url' => array('/mobile/site/login'))
         );
     }
 
@@ -71,7 +69,7 @@ $this->pageTitle = Yii::app()->name . ' - Home';
     }
 
     $userMenu = array(
-        array('label' => Yii::t('mobile', 'Logout ({username})', array('{username}' => Yii::app()->user->name)), 'url' => array('site/logout/'), 'left'=>true)
+        array('label' => Yii::t('mobile', 'Logout ({username})', array('{username}' => Yii::app()->user->name)), 'url' => array('/mobile/site/logout'), 'left'=>true)
     );
 
     //render main menu items

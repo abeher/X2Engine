@@ -1,7 +1,7 @@
-<?php 
+<?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -36,7 +36,7 @@
 ?>
 
 <?php
-include('webLeadConfig.php');
+include('webConfig.php');
 $authData=array('user'=>$user,'userKey'=>$userKey);
 
 if($url==""){
@@ -50,7 +50,7 @@ if($count==0){
     die("Invalid e-mail address!");
 }
 
-$ccUrl = $url.'/index.php/api/lookUp/model/Contacts'; 
+$ccUrl = $url.'/index.php/api/lookUp/model/Contacts';
 
 $defaultOpts = array(
 	CURLOPT_HTTP200ALIASES => array(400,401,403,404,500),
@@ -170,7 +170,7 @@ if($code == 200){ // update info
 		curl_close($ccSession);
 	}
 }
-    
+
 ?>
 <html>
 	<head></head>

@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -38,9 +38,12 @@ Yii::import('application.models.X2Model');
 
 /**
  * This is the model class for table "x2_products".
- * @package X2CRM.modules.products.models
+ * @package application.modules.products.models
  */
 class Product extends X2Model {
+
+    public $supportsWorkflow = false;
+
 	/**
 	 * Returns the static model of the specified AR class.
 	 * @return Template the static model class
@@ -100,35 +103,19 @@ class Product extends X2Model {
 		return new CActiveDataProvider(get_class($this), array(
 			'criteria'=>$criteria,
 			'pagination'=>array(
-				'pageSize'=>ProfileChild::getResultsPerPage(),
+				'pageSize'=>Profile::getResultsPerPage(),
 			),
 		));*/
 		return $this->searchBase($criteria);
 	}
-    
-    /**
-	 * Base search method for all data providers.
-	 * Sets up record-level security checks.
-	 * 
-	 * @param CDbCriteria $criteria starting criteria for this search
-	 * @return SmartDataProvider data provider using the provided criteria and any conditions added by {@link X2Model::compareAttributes}
-	 */
-	public function searchBase($criteria=null) {
-		if($criteria === null)
-			$criteria = $this->getAccessCriteria();
-		else
-			$criteria->mergeWith($this->getAccessCriteria());
 
-		return parent::searchBase($criteria);
-	}
-    
 	/**
 	 *
 	 */
 	public static function activeProducts() {
 		return Product::model()->findAllByAttributes(array('status'=>'Active'));
 	}
-	
+
 	/**
 	 * Get a list of active product names indexed by id
 	 */
@@ -143,10 +130,10 @@ class Product extends X2Model {
 		$productNames = array(0 => '');
 		foreach($products as $product)
 			$productNames[$product->id] = $product->name;
-		
+
 		return $productNames;
 	}
-	
+
 	/**
 	 * Get a list of active product currencys indexed by id
 	 */
@@ -161,10 +148,10 @@ class Product extends X2Model {
 		$productCurrency = array(0 => '');
 		foreach($products as $product)
 			$productCurrency[$product->id] = $product->currency;
-		
+
 		return $productCurrency;
 	}
-	
+
 	/**
 	 * Get a list of active product currencys indexed by id
 	 */
@@ -179,7 +166,7 @@ class Product extends X2Model {
 		$productPrices = array(0 => '');
 		foreach($products as $product)
 			$productPrices[$product->id] = $product->price;
-		
+
 		return $productPrices;
 	}
 }

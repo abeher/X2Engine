@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -40,63 +40,92 @@
  * 
  * LeadRouting is a CBehavior that provides logic for simple or complex 
  * distribution of leads to users
- * @package X2CRM.components
+ * @package application.components
  */
 class LeadRoutingBehavior extends CBehavior {
-
-	public function cleanUpSessions() {
-		X2Model::model('Session')->deleteAll('lastUpdated < :cutoff', array(':cutoff'=>time() - Yii::app()->params->admin->timeout));
-	}
 
 	/**
 	 * Picks the next asignee based on the routing type
 	 * 
 	 * @return string Username that should be assigned the next lead
 	 */
-	public function getNextAssignee() {
-		$admin = &Yii::app()->params->admin;
+	public function getNextAssignee($contact=null) {
+		$admin = &Yii::app()->settings;
 		$type = $admin->leadDistribution;
 		if ($type == "") {
 			return "Anyone";
-		} elseif ($type == "evenDistro") {
+		} elseif ($type == "evenDistro") { // legacy lead routing option
 			return $this->evenDistro();
 		} elseif ($type == "trueRoundRobin") {
 			return $this->roundRobin();
 		} elseif ($type == "customRoundRobin") {
-			$arr = $_POST;
-			// for new lead capture form:
-			//     "Contacts" maps to an array of fields, check if this array exists and has fields, if so, set arr
-			if(isset($arr['Contacts']) && is_array($arr['Contacts']) && count($arr['Contacts']) > 0)
-				$arr = $arr['Contacts'];
-			$users = $this->getRoutingRules($arr);
-			if (!empty($users) && is_array($users) && count($users)>1) {
-				$rrId = $users[count($users) - 1];
-				unset($users[count($users) - 1]);
-				$i = $rrId % count($users);
-				return $users[$i];
-			}else{
-                return "Anyone";
-            }
-		}elseif($type=='singleUser'){
-            $user=User::model()->findByPk($admin->rrId);
-            if(isset($user)){
-                return $user->username;
-            }else{
-                return "Anyone";
-            }
+            return $this->customRoundRobin ($contact);
+		} elseif ($type=='singleUser') {
+            return $this->singleUser ();
         }
 	}
 
+    public function singleUser () {
+		$admin = &Yii::app()->settings;
+        $user = User::model()->findByPk($admin->rrId);
+        if(isset($user)){
+            $username = $user->username;
+
+            if (($admin->onlineOnly && !in_array ($username, Session::getOnlineUsers())) ||
+                !in_array ($username, Profile::model ()->getUsernamesOfAvailableUsers ())) {
+
+                return 'Anyone';
+            } else {
+                return $username;
+            }
+        }else{
+            return "Anyone";
+        }
+    }
+
 	/**
+	 * Picks the next asignee for custom round robin lead routing rule.
+     * @param mixed $contact null or Contacts model. If this is set, it will be used in place of 
+     *  POST data for the purposes of testing routing rules.
+	 * @return mixed
+	 */
+    public function customRoundRobin ($contact=null) {
+        if ($contact) {
+            $arr = $contact->getAttributes ();
+        } else {
+            $arr = $_POST;
+            /* for new lead capture form:
+                 "Contacts" maps to an array of fields, check if this array exists and has fields, 
+                 if so, set arr */
+            if(isset($arr['Contacts']) && is_array($arr['Contacts']) && 
+               count($arr['Contacts']) > 0) {
+                $arr = $arr['Contacts'];
+            }
+        }
+        $users = $this->getRoutingRules($arr);
+        if (!empty($users) && is_array($users) && count($users)>1) {
+            $rrId = $users[count($users) - 1];
+            unset($users[count($users) - 1]);
+            $i = $rrId % count($users);
+            return $users[$i];
+        }else{
+            return "Anyone";
+        }
+    }
+
+	/**
+     * Legacy lead routing option. This can no longer be selected option from the lead routing
+     * admin page.
+     *
 	 * Picks the next asignee such that the resulting routing distribution 
 	 * would be even.
 	 * 
 	 * @return mixed
 	 */
 	public function evenDistro() {
-		$admin = &Yii::app()->params->admin;
+		$admin = &Yii::app()->settings;
 		$online = $admin->onlineOnly;
-		$this->cleanUpSessions();
+		Session::cleanUpSessions();
 		$usernames = array();
 		$sessions = Session::getOnlineUsers();
 		$users = X2Model::model('User')->findAll();
@@ -112,6 +141,8 @@ class LeadRoutingBehavior extends CBehavior {
 		}else {
 			$users = $usernames;
 		}
+
+        $users = array_values (array_intersect (Profile::model ()->getUsernamesOfAvailableUsers (), $users));
 
 		$numbers = array();
 		foreach ($users as $user) {
@@ -138,15 +169,16 @@ class LeadRoutingBehavior extends CBehavior {
 	 * @return mixed 
 	 */
 	public function roundRobin() {
-		$admin = &Yii::app()->params->admin;
+		$admin = &Yii::app()->settings;
 		$online = $admin->onlineOnly;
-		$this->cleanUpSessions();
+		Session::cleanUpSessions();
 		$usernames = array();
 		$sessions = Session::getOnlineUsers();
 		$users = X2Model::model('User')->findAll();
 		foreach ($users as $userRecord) {
 			//exclude admin from candidates
-			if ($userRecord->username != 'admin' && $userRecord->username!='api') $usernames[] = $userRecord->username;
+			if ($userRecord->username != 'admin' && $userRecord->username!='api') 
+                $usernames[] = $userRecord->username;
 		}
 		if ($online == 1) {
 			$userList = array();
@@ -157,6 +189,10 @@ class LeadRoutingBehavior extends CBehavior {
 		}else {
 			$userList = $usernames;
 		}
+
+        $userList = array_values (
+            array_intersect (Profile::model()->getUsernamesOfAvailableUsers (), $userList));
+
 		$rrId = $this->getRoundRobin();
         if(count($userList)>0){
             $i = $rrId % count($userList);
@@ -172,7 +208,7 @@ class LeadRoutingBehavior extends CBehavior {
 	 * @return integer
 	 */
 	public function getRoundRobin() {
-		$admin = &Yii::app()->params->admin;
+		$admin = &Yii::app()->settings;
 		$rrId = $admin->rrId;
 		return $rrId;
 	}
@@ -181,10 +217,13 @@ class LeadRoutingBehavior extends CBehavior {
 	 * Stores the round-robin state. 
 	 */
 	public function updateRoundRobin() {
-		$admin = &Yii::app()->params->admin;
+		$admin = &Yii::app()->settings;
 		$admin->rrId = $admin->rrId + 1;
 		$admin->save();
 	}
+
+    const WITHIN_GROUPS = 0;
+    const BETWEEN_GROUPS = 1;
 
 	/**
 	 * Obtains lead routing rules.
@@ -192,9 +231,9 @@ class LeadRoutingBehavior extends CBehavior {
 	 * @return type 
 	 */
 	public function getRoutingRules($data) {
-		$admin = &Yii::app()->params->admin;
+		$admin = &Yii::app()->settings;
 		$online = $admin->onlineOnly;
-		$this->cleanUpSessions();
+		Session::cleanUpSessions();
 		$sessions = Session::getOnlineUsers();
         $criteria=new CDbCriteria;
         $criteria->order="priority ASC";
@@ -241,24 +280,32 @@ class LeadRoutingBehavior extends CBehavior {
 					$groups = explode(", ", $groups);
 					$users = array();
 					foreach ($groups as $group) {
-						if ($rule->groupType == 0) {
-							$links = GroupToUser::model()->findAllByAttributes(array('groupId' => $group));
+						if ($rule->groupType == self::WITHIN_GROUPS) {
+							$links = GroupToUser::model()->findAllByAttributes(
+                                array('groupId' => $group));
 							foreach ($links as $link) {
 								$usernames[] = User::model()->findByPk($link->userId)->username;
 							}
-						} else {
+						} else { // $rule->groupType == self::BETWEEN_GROUPS
 							$users[] = $group;
 						}
 					}
-					if ($online == 1 && $rule->groupType == 0) {
+					if ($online == 1 && $rule->groupType == self::WITHIN_GROUPS) {
 						foreach ($usernames as $user) {
 							if (in_array($user, $sessions))
 								$users[] = $user;
 						}
-					}elseif($rule->groupType == 0){
+					}elseif($rule->groupType == self::WITHIN_GROUPS){
                         $users=$usernames;
                     }
 				}
+
+                if ($rule->groupType == self::WITHIN_GROUPS) {
+                    $users = array_values (
+                        array_intersect (
+                            Profile::model ()->getUsernamesOfAvailableUsers (), $users));
+                }
+
 				$users[] = $rule->rrId;
 				$rule->rrId++;
 				$rule->save();

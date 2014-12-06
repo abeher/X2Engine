@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -33,10 +33,8 @@
  * technical reasons, the Appropriate Legal Notices must display the words
  * "Powered by X2Engine".
  *****************************************************************************************/
-?>
 
-<?php
-if(Yii::app()->params->admin->googleIntegration) { // menu if google integration is enables has additional options
+if(Yii::app()->settings->googleIntegration) { // menu if google integration is enables has additional options
 	$menuItems = array(
 		array('label'=>Yii::t('calendar','Calendar'), 'url'=>array('index')),
 		array('label'=>Yii::t('calendar', 'My Calendar Permissions'), 'url'=>array('myCalendarPermissions')),
@@ -79,7 +77,7 @@ $('.search-form form').submit(function(){
 */ ?>
 
 <?php 
-$this->widget('application.components.X2GridView', array(
+$this->widget('X2GridView', array(
 	'id'=>'calendar-grid',
 	'baseScriptUrl'=>Yii::app()->theme->getBaseUrl().'/css/gridview',
 	'template'=> '<div class="page-title"><h2>'.Yii::t('quotes','Calendars').'</h2><div class="title-bar">'

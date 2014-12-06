@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -36,9 +36,9 @@
 
 /**
  * Class intended for auto-import of {@link CActiveMock}
- * @package X2CRM.tests
+ * @package application.tests
  */
-class CActiveRecordBehaviorTestCase extends CTestCase {
+class CActiveRecordBehaviorTestCase extends X2TestCase {
 
 	public static function setUpBeforeClass() {
 		Yii::app()->db->createCommand('DROP TABLE IF EXISTS`'.CActiveMock::MOCK_TABLE)->execute();
@@ -54,7 +54,7 @@ class CActiveRecordBehaviorTestCase extends CTestCase {
 
 /**
  * Child class of CActiveRecord for doing mocks in tests of CActiveRecordBehavior
- * @package X2CRM.tests
+ * @package application.tests
  */
 class CActiveMock extends CActiveRecord {
 

@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -34,7 +34,14 @@
  * "Powered by X2Engine".
  *****************************************************************************************/
 
- 
+Yii::app()->clientScript->registerCss('workflowFormCss',"
+
+.color-picker-row {
+    margin: 9px 0;
+}
+
+");
+
 if(empty($model->stages))
 	$model->stages = array(new WorkflowStage);	// start with at least 1 blank row
 
@@ -53,7 +60,7 @@ function deleteStage(object) {
 		opacity: 0,
 		height: 0
 	}, 200,function() { $(this).remove(); updateStageNumbers(); });
-	
+
 	var stageCount = $('#workflow-stages li').length;
 	$('#workflow-stages li select.workflow_requirePrevious').find('option:last').remove();
 }
@@ -73,8 +80,19 @@ function addStage() {
 		." \
 		</div> \
 		<div class=\"cell\">\
-			".addslashes(CHtml::label($model->stages[0]->getAttributeLabel('requirePrevious'),null)
-			.' '.preg_replace('/[\r\n]+/u','',CHtml::dropdownList('WorkflowStages[][requirePrevious]',0,array('0'=>Yii::t('app','None'),'1'=>Yii::t('app','All')),array('class'=>'workflow_requirePrevious','style'=>'width:100px;'))))
+			".addslashes(
+                CHtml::label(
+                    $model->stages[0]->getAttributeLabel('requirePrevious'),null)
+			.' '.
+            preg_replace(
+                '/[\r\n]+/u','',
+                CHtml::dropdownList(
+                    'WorkflowStages[][requirePrevious]',
+                    0,
+                    array('0'=>Yii::t('app','None'), '1'=>Yii::t('app','All Previous')),
+                    array('class'=>'workflow_requirePrevious','style'=>'width:100px;')
+                )
+            ))
 		."</div>\
 		<div class=\"cell\">\
 			".addslashes(CHtml::label($model->stages[0]->getAttributeLabel('roles'),null)
@@ -90,8 +108,8 @@ function addStage() {
 	</div>\
 	</li>');
 	stageCount++;
-	
-	for(i=1;i<stageCount;i++)
+
+	for(var i=1;i<stageCount;i++)
 		$('#workflow-stages li:last-child select.workflow_requirePrevious').append('<option value=\"-'+i+'\">".addslashes(Yii::t('workflow','Stage'))." '+i+'</option>');
 	$('#workflow-stages li select.workflow_requirePrevious').append('<option value=\"'+stageCount+'\">".addslashes(Yii::t('workflow','Stage'))." '+stageCount+'</option>');
 	$('#workflow-stages li:last-child').slideDown(300);
@@ -134,7 +152,7 @@ $(function() {
 	<div class="row">
 		<div class="cell">
 			<?php echo $form->labelEx($model,'name'); ?>
-			<?php echo $form->textField($model,'name',array('size'=>60,'maxlength'=>250)); ?>
+			<?php echo $form->textField($model,'name',array('maxlength'=>250, 'class'=>'x2-wide-input')); ?>
 			<?php echo $form->error($model,'name'); ?>
 		</div>
 		<div class="cell">
@@ -147,11 +165,11 @@ $(function() {
 
 	$stageRequirements = array(
 		'0'=>Yii::t('workflow','None'),
-		'1'=>Yii::t('workflow','All')
+		'1'=>Yii::t('workflow','All Previous')
 	);
 	for($i=1;$i<=count($model->stages);$i++)
 		$stageRequirements['-'.$i] = Yii::t('workflow','Stage').' '.$i;
-	
+
 	// $model->stages = array_reverse($model->stages);
 
 	for($i=0; $i<count($model->stages); $i++) {
@@ -165,7 +183,7 @@ $(function() {
 				<?php echo CHtml::textField('WorkflowStages['.($i+1).'][name]',$stage->name,array('class'=>'workflow_name','style'=>'width:140px','maxlength'=>40)); ?>
 				<?php echo CHtml::error($stage,'name'); ?>
 			</div>
-			
+
 			<div class="cell">
 				<?php echo $form->labelEx($stage,'requirePrevious'); ?>
 				<?php
@@ -190,8 +208,22 @@ $(function() {
 	</ol>
 	</div>
 	<a href="javascript:void(0)" onclick="addStage()" class="x2-sortlist-add">[<?php echo Yii::t('workflow','Add'); ?>]</a>
+
+    <?php
+    $firstColor = isset($model->colors['first']) ? $model->colors['first'] : '';
+    $lastColor = isset($model->colors['last']) ? $model->colors['last'] : '';
+    ?>
+    <div class='row color-picker-row'>
+        <label for='colors[first]'><?php echo Yii::t('workflow', 'First Stage Color:'); ?></label>
+        <input name='colors[first]' class='x2-color-picker' 
+         value='<?php echo $firstColor; ?>'>
+        <label for='colors[last]'><?php echo Yii::t('workflow', 'Last Stage Color:'); ?></label>
+        <input name='colors[last]' class='x2-color-picker' 
+         value='<?php echo $lastColor; ?>'>
+    </div>
+
 	<div class="row buttons">
-		<?php echo CHtml::submitButton($model->isNewRecord ? 'Create' : 'Save',array('class'=>'x2-button')); ?>
+		<?php echo CHtml::submitButton($model->isNewRecord ? Yii::t('app','Create') : Yii::t('app','Save'),array('class'=>'x2-button')); ?>
 	</div>
 
 <?php $this->endWidget(); ?>

@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -37,7 +37,7 @@
 /**
  * This is the model class for table "x2_sessions".
  *
- * @package X2CRM.models
+ * @package application.models
  * @property integer $id
  * @property string $user
  * @property integer $lastUpdated
@@ -45,6 +45,7 @@
  * @property integer $status
  */
 class Session extends CActiveRecord {
+
 	/**
 	 * Returns the static model of the specified AR class.
 	 * @return Session the static model class
@@ -61,22 +62,6 @@ class Session extends CActiveRecord {
 	}
 
 	/**
-	 * @return array validation rules for model attributes.
-	 */
-	public function rules() {
-		// NOTE: you should only define rules for those attributes that
-		// will receive user inputs.
-		return array(
-			array('lastUpdated', 'numerical', 'integerOnly'=>true),
-			array('id, IP', 'length', 'max'=>40),
-			array('user', 'length', 'max'=>20),
-			// The following rule is used by search().
-			// Please remove those attributes that should not be searched.
-			array('id, user, lastUpdated', 'safe', 'on'=>'search'),
-		);
-	}
-
-	/**
 	 * @return array relational rules.
 	 */
 	public function relations() {
@@ -90,11 +75,11 @@ class Session extends CActiveRecord {
 	 */
 	public function attributeLabels() {
 		return array(
-			'id' => Yii::t('sessions','Sesesion ID'),
-			'user' => Yii::t('sessions','User'),
-			'lastUpdated' => Yii::t('sessions','Last Updated'),
-			'IP' => Yii::t('sessions','IP Address'),
-			'status' => Yii::t('sessions','Login Status'),
+			'id' => Yii::t('app','Sesesion ID'),
+			'user' => Yii::t('app','User'),
+			'lastUpdated' => Yii::t('app','Last Updated'),
+			'IP' => Yii::t('app','IP Address'),
+			'status' => Yii::t('app','Login Status'),
 		);
 	}
 
@@ -126,10 +111,63 @@ class Session extends CActiveRecord {
 			// $temp[] = $session->user;
 		// return $temp;
 
-		$query = Yii::app()->db->createCommand()->selectDistinct('user')->from('x2_sessions')->where('status=1');
+		$query = Yii::app()->db->createCommand()
+            ->selectDistinct('user')
+            ->from('x2_sessions')
+            ->where('status=1');
 		if($useTimeout)
 			$query = $query->where('lastUpdated > "'.(time()-900).'"');
 
 		return $query->queryColumn();
 	}
+
+    /**
+     * @param string $username
+     * @return bool true if user has a recently updated session record, false otherwise
+     */
+	public static function isOnline ($username) {
+		$record = Yii::app()->db->createCommand()
+            ->select('*')
+            ->from('x2_sessions')
+            ->where('status=1 and user=:username and lastUpdated > "'.(time () - 900).
+                '"', array ('username' => $username))
+            ->queryAll ();
+
+		return (!empty ($record));
+    }
+
+    /**
+     * Clear session records which have timed out. Log the timeout.
+     */
+    public static function cleanUpSessions () {
+        // Only select users with active sessions to clear out, in case there are
+        // dozens of inactive users, to make things more efficient:
+        $users = Yii::app()->db->createCommand()
+                ->select('x2_users.id,x2_users.username')
+                ->from('x2_users')
+                ->rightJoin('x2_sessions', 'x2_sessions.user = x2_users.username')
+                ->where('x2_users.username IS NOT NULL AND x2_users.username != ""')
+                ->queryAll();
+        foreach($users as $user){
+            $timeout = Roles::getUserTimeout($user['id']);
+            $sessions = X2Model::model('Session')->findAllByAttributes(
+                    array('user' => $user['username']), 
+                    'lastUpdated < :cutoff', 
+                    array(':cutoff' => time() - $timeout));
+            foreach($sessions as $session){
+                SessionLog::logSession($session->user, $session->id, 'passiveTimeout');
+                $session->delete();
+            }
+        }
+
+        // check timeout on sessions not corresponding to any existing user
+        $defaultTimeout = 900;
+        self::model ()->deleteAll (
+            array (
+                'condition' => 'lastUpdated < :cutoff and 
+                    user not in (select distinct (username) from x2_users)',
+                'params' => array (':cutoff' => time () - $defaultTimeout)
+            )
+        );
+    }
 }

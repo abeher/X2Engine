@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -39,7 +39,7 @@ Yii::import('application.models.X2Model');
 /**
  * This is the model class for table "x2_opportunities".
  *
- * @package X2CRM.modules.opportunities.models
+ * @package application.modules.opportunities.models
  */
 class Opportunity extends X2Model {
 	/**
@@ -123,7 +123,7 @@ class Opportunity extends X2Model {
 
 		$links = array();
 		foreach($allOpportunities as $model) {
-			$links[] = CHtml::link($model->name,array('/opportunities/view','id'=>$model->id));
+			$links[] = CHtml::link($model->name,array('/opportunities/opportunities/view','id'=>$model->id));
 		}
 		return implode(', ',$links);
 	}
@@ -201,35 +201,19 @@ class Opportunity extends X2Model {
 		return $temp;
 	}
 
-	public function search() {
+	public function search($resultsPerPage=null, $uniqueId=null) {
 		$criteria=new CDbCriteria;
-		// $parameters=array("condition"=>"salesStage='Working'",'limit'=>ceil(ProfileChild::getResultsPerPage()));
-		$parameters=array('limit'=>ceil(ProfileChild::getResultsPerPage()));
+		// $parameters=array("condition"=>"salesStage='Working'",'limit'=>ceil(Profile::getResultsPerPage()));
+		$parameters=array('limit'=>ceil(Profile::getResultsPerPage()));
 		$criteria->scopes=array('findAll'=>array($parameters));
 
-		return $this->searchBase($criteria);
+		return $this->searchBase($criteria, $resultsPerPage);
 	}
 
 	public function searchAdmin() {
 		$criteria=new CDbCriteria;
 
 		return $this->searchBase($criteria);
-	}
-
-	/**
-	 * Base search method for all data providers.
-	 * Sets up record-level security checks.
-	 *
-	 * @param CDbCriteria $criteria starting criteria for this search
-	 * @return SmartDataProvider data provider using the provided criteria and any conditions added by {@link X2Model::compareAttributes}
-	 */
-	public function searchBase($criteria=null) {
-		if($criteria === null)
-			$criteria = $this->getAccessCriteria();
-		else
-			$criteria->mergeWith($this->getAccessCriteria());
-
-		return parent::searchBase($criteria);
 	}
 
 

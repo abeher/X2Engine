@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -39,50 +39,134 @@
  *
  * Displays tabs for "log a call","new action" and the like.
  *
- * @package X2CRM.components
+ * @package application.components
  */
 class Publisher extends X2Widget {
-	public $associationType;		// type of record to associate actions with
-	public $associationId = '';		// record to associate actions with
-	public $assignedTo = null;	// user actions will be assigned to by default
 
-	// show all tabs by default
-	public $showLogACall = true;
-	public $showNewAction = true;
-	public $showNewComment = true;
-	public $showNewEvent = false;
-	public $halfWidth = false;
-    public $showQuickNote = true;
+    public $model;
+    public $associationType; // type of record to associate actions with
+    public $associationId = ''; // record to associate actions with
+    public $assignedTo = null; // user actions will be assigned to by default
 
-	public function run() {
-		$model = new Actions;
-		$model->associationType = $this->associationType;
-		$model->associationId = $this->associationId;
-		if($this->assignedTo)
-			$model->assignedTo = $this->assignedTo;
-		else
-			$model->assignedTo = Yii::app()->user->getName();
+    public $viewParams = array(
+        'model',
+        'associationId',
+        'associationType',
+    );
 
-        Yii::app()->clientScript->registerScript('loadEmails',"
-            function loadFrame(id,type){
-                if(type!='Action'){
-                    var frame='<iframe style=\"width:99%;height:99%\" src=\"".(Yii::app()->controller->createUrl('/actions/viewEmail/'))."?id='+id+'\"></iframe>';
-                }else{
-                    var frame='<iframe style=\"width:99%;height:99%\" src=\"".(Yii::app()->controller->createUrl('/actions/viewAction/'))."?id='+id+'&publisher=true\"></iframe>';
+    protected $_packages;
+    private $_tabs; // available tabs with tab titles
+    private $_hiddenTabs;
+
+    public function getTabs () {
+        if (!isset ($this->_tabs)) {
+            $visibleTabs = array_filter (Yii::app()->settings->actionPublisherTabs,
+                function ($shown) {
+                    return $shown; 
+                });
+            $this->_tabs = array ();
+            foreach ($visibleTabs as $tabName => $shown) {
+                $this->_tabs[] = new $tabName ();
+            }
+        }
+        return $this->_tabs;
+    }
+
+    public function setTabs ($tabs) {
+        $this->_tabs = $tabs;
+    }
+
+    /**
+     * Magic getter. Returns this widget's packages. 
+     */
+    public function getPackages () {
+        if (!isset ($this->_packages)) {
+            $this->_packages = array (
+                'auxlib' => array(
+                    'baseUrl' => Yii::app()->request->baseUrl,
+                    'js' => array(
+                        'js/auxlib.js',
+                    ),
+                ),
+                'PublisherJS' => array(
+                    'baseUrl' => Yii::app()->request->baseUrl,
+                    'js' => array(
+                        'js/publisher/Publisher.js',
+                    ),
+                    'depends' => array ('auxlib')
+                ),
+                'MultiRowTabsJS' => array(
+                    'baseUrl' => Yii::app()->request->baseUrl,
+                    'js' => array(
+                        'js/MultiRowTabs.js',
+                    ),
+                ),
+            );
+        }
+        return $this->_packages;
+    }
+
+    public function run() {
+        $model = new Actions;
+        $model->associationType = $this->associationType;
+        $model->associationId = $this->associationId;
+        if($this->assignedTo) {
+            $model->assignedTo = $this->assignedTo;
+        } else {
+            $model->assignedTo = Yii::app()->user->getName();
+        }
+        
+        $this->model = $model;
+        $tabs = $this->tabs;
+        $selectedTab = $this->tabs[0]->tabId;
+        $selectedTabObj = $this->tabs[0];
+        $selectedTabObj->startVisible = true;
+
+        Yii::app()->clientScript
+            ->registerCoreScript('jquery')
+            ->registerCoreScript('jquery.ui');
+        Yii::app()->clientScript->registerPackages($this->packages);
+
+        Yii::app()->clientScript->registerScript('publisherScript',"
+        ;(function () {
+            // construct publisher object, passing tab objects to it
+            x2.publisher = new x2.Publisher ({
+                translations: {},
+                initTabId: '".$selectedTab."',
+                publisherCreateUrl: '".
+                    Yii::app()->controller->createUrl ('/actions/actions/publisherCreate')."'
+            });
+            x2.publisher.isCalendar = ".json_encode($this->calendar).";
+
+            x2.publisher.loadFrame = function (id,type){
+                if(type!='Action' && type!='QuotePrint'){
+                    var frame=
+                        '<iframe style=\"width:99%;height:99%\" ' +
+                          'src=\"".(Yii::app()->controller->createUrl('/actions/actions/viewEmail')).
+                            "?id='+id+'\"></iframe>';
+                }else if(type=='Action'){
+                    var frame=
+                        '<iframe style=\"width:99%;height:99%\" ' +
+                          'src=\"".(Yii::app()->controller->createUrl('/actions/actions/viewAction')).
+                            "?id='+id+'&publisher=true\"></iframe>';
+                } else if(type=='QuotePrint'){
+                    var frame=
+                        '<iframe style=\"width:99%;height:99%\" ' +
+                          'src=\"".(Yii::app()->controller->createUrl('/quotes/quotes/print')).
+                            "?id='+id+'\"></iframe>';
                 }
-                if(typeof x2ViewEmailDialog != 'undefined') {
-                    if($(x2ViewEmailDialog).is(':hidden')){
-                        $(x2ViewEmailDialog).remove();
-
+                if(typeof x2.actionFrames.viewEmailDialog != 'undefined') {
+                    if($(x2.actionFrames.viewEmailDialog).is(':hidden')){
+                        $(x2.actionFrames.viewEmailDialog).remove();
                     }else{
                         return;
                     }
                 }
-
-                x2ViewEmailDialog = $('<div></div>', {id: 'x2-view-email-dialog'});
-
-                x2ViewEmailDialog.dialog({
-                    title: 'View '+type,
+    
+                x2.actionFrames.viewEmailDialog = $('<div></div>', {id: 'x2-view-email-dialog'});
+    
+                x2.actionFrames.viewEmailDialog.dialog({
+                    title: '".Yii::t('app', 'View History Item')."',
                     autoOpen: false,
                     resizable: true,
                     width: '650px',
@@ -97,43 +181,99 @@ class Publisher extends X2Widget {
                             jQuery('#x2-view-email-dialog').dialog('close');
                         }
                     });
-
-                x2ViewEmailDialog.data('inactive', true);
-                if(x2ViewEmailDialog.data('inactive')) {
-                    x2ViewEmailDialog.append(frame);
-                    x2ViewEmailDialog.dialog('open').height('400px');
-					x2ViewEmailDialog.data('inactive', false);
+    
+                x2.actionFrames.viewEmailDialog.data('inactive', true);
+                if(x2.actionFrames.viewEmailDialog.data('inactive')) {
+                    x2.actionFrames.viewEmailDialog.append(frame);
+                    x2.actionFrames.viewEmailDialog.dialog('open').height('400px');
+                    x2.actionFrames.viewEmailDialog.data('inactive', false);
                 } else {
-                    x2ViewEmailDialog.dialog('open');
+                    x2.actionFrames.viewEmailDialog.dialog('open');
                 }
-            }
-            $(document).on('ready',function(){
-                var t;
-                $(document).on('mouseenter','.email-frame',function(){
-                    var id=$(this).attr('id');
-                    t=setTimeout(function(){loadFrame(id,'Email')},500);
-                });
-                $(document).on('mouseleave','.email-frame',function(){
-                    clearTimeout(t);
-                });
-                $('.quote-frame').mouseenter(function(){
-                    var id=$(this).attr('id');
-                    t=setTimeout(function(){loadFrame(id,'Quote')},500);
-                }).mouseleave(function(){
-                    clearTimeout(t);
-                });
-            });
-        ",CClientScript::POS_HEAD);
+            };
 
-		$this->render($this->halfWidth? 'publisherHalfWidth':'publisher',
-			array(
-				'model' => $model,
-				'showLogACall'=>$this->showLogACall,
-				'showNewAction'=>$this->showNewAction,
-				'showNewComment'=>$this->showNewComment,
-				'showNewEvent'=>$this->showNewEvent,
-                'showQuickNote'=>$this->showQuickNote,
-			)
-		);
-	}
+        }) ();
+        ", CClientScript::POS_END);
+
+        Yii::app()->clientScript->registerScript('loadEmails', "
+
+        $(document).on('ready',function(){
+            var timeout;
+            $(document).on('mouseenter','.email-frame',function(){
+                var id=$(this).attr('id');
+                timeout = setTimeout(function(){x2.publisher.loadFrame(id,'Email')},500);
+            });
+            $(document).on('mouseleave','.email-frame',function(){
+                clearTimeout(timeout);
+            });
+            $(document).on ('mouseenter', '.quote-frame', function(){
+                var id=$(this).attr('id');
+                timeout = setTimeout(function(){x2.publisher.loadFrame(id,'Quote')},500);
+            }).mouseleave(function(){
+                clearTimeout(timeout);
+            }); // Legacy quote pop-out view
+
+            $('.quote-print-frame').mouseenter(function(){
+                var id=$(this).attr('id');
+                timeout = setTimeout(function(){x2.publisher.loadFrame(id,'QuotePrint')},500);
+            }).mouseleave(function(){
+                clearTimeout(timeout);
+            }); // New quote pop-out view
+        });
+        ", CClientScript::POS_HEAD);
+        Yii::app()->clientScript->registerCss('recordViewPublisherCss', '
+            .action-event-panel {
+                margin-top: 5px;
+            }
+            .action-duration {
+                margin-right: 10px;
+            }
+            .action-duration .action-duration-display {
+                font-size: 30px;
+                font-family: Consolas, monaco, monospace;
+            }
+            .action-duration input {
+                width: 50px;
+            }
+            .action-duration .action-duration-input {
+                display:inline-block;
+            }
+            .action-duration label {
+                font-size: 10px;
+            }
+            #publisher .text-area-wrapper {
+                /*margin-right: 75px;*/
+            }
+        ');
+
+        $that = $this;
+        $this->render(
+            'application.components.views.publisher.publisher',
+            array_merge (
+                array_combine(
+                    $this->viewParams,
+                    array_map(function($p)use($that){return $that->$p;}, $this->viewParams)
+                ),
+                array (
+                    'tabs' => $tabs,
+                )
+            )
+        );
+    }
+
+    //////////////////////////////////////////////////////////////
+    // BACKWARDS COMPATIBILITY FUNCTIONS FOR OLD CUSTOM MODULES //
+    //////////////////////////////////////////////////////////////
+
+    /**
+     * Old Publisher had "halfWidth" property
+     */
+    public function setHalfWidth($value) {
+        $this->calendar = !$value;
+    }
+    public $calendar = false; 
+    public $hideTabs = array ();
+    public $selectedTab = '';
+
+
 }

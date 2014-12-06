@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -38,7 +38,7 @@
  * 
  * ContactForm class. ContactForm is the data structure for keeping contact form data. It is used 
  * by the 'contact' action of 'SiteController'.
- * @package X2CRM.models
+ * @package application.models
  */
 class ContactForm extends CFormModel {
 	public $name;

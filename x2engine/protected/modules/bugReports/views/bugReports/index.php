@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -36,8 +36,12 @@
 include("protected/modules/bugReports/bugReportsConfig.php");
 
 $this->actionMenu = $this->formatMenu(array(
-	array('label'=>Yii::t('module','{X} List',array('{X}'=>$moduleConfig['recordName']))),
-	array('label'=>Yii::t('module','Create {X}',array('{X}'=>$moduleConfig['recordName'])), 'url'=>array('create')),
+    array('label'=>Yii::t('module','{X} List',array('{X}'=>Modules::itemDisplayName()))),
+    array('label'=>Yii::t('module','Create {X}',array('{X}'=>Modules::itemDisplayName())), 'url'=>array('create')),
+    array('label'=>Yii::t('module','Import {X}', array('{X}'=>Modules::itemDisplayName())),
+        'url'=>array('admin/importModels', 'model'=>ucfirst($moduleConfig['moduleName'])), 'visibility'=>Yii::app()->params->isAdmin),
+    array('label'=>Yii::t('module','Export {X}', array('{X}'=>Modules::itemDisplayName())),
+        'url'=>array('admin/exportModels', 'model'=>ucfirst($moduleConfig['moduleName'])), 'visibility'=>Yii::app()->params->isAdmin),
 ));
 
 Yii::app()->clientScript->registerScript('search', "
@@ -53,12 +57,6 @@ $('.search-form form').submit(function(){
 });
 ");
 
-function trimText($text) {
-	if(mb_strlen($text,'UTF-8')>150)
-		return mb_substr($text,0,147,'UTF-8').'...';
-	else
-		return $text;
-}
 ?>
 <div class="search-form" style="display:none">
 <?php $this->renderPartial('_search',array(
@@ -67,10 +65,10 @@ function trimText($text) {
 </div><!-- search-form -->
 <?php
 
-$this->widget('application.components.X2GridView', array(
+$this->widget('X2GridView', array(
 	'id'=>'bugReports-grid',
 	'title'=>$moduleConfig['title'],
-	'buttons'=>array('advancedSearch','clearFilters','columnSelector'),
+	'buttons'=>array('advancedSearch','clearFilters','columnSelector','autoResize'),
 	'template'=> '<div class="page-title">{title}{buttons}{filterHint}{summary}</div>{items}{pager}',
 	'dataProvider'=>$model->searchWithStatusFilter(),
 	// 'enableSorting'=>false,
@@ -91,24 +89,24 @@ $this->widget('application.components.X2GridView', array(
 	'specialColumns'=>array(
 		'name'=>array(
 			'name'=>'name',
-			'value'=>'CHtml::link($data->name,array("view","id"=>$data->id))',
+			'value'=>'CHtml::link($data->renderAttribute("name"),array("view","id"=>$data->id))',
 			'type'=>'raw',
 		),
         'subject'=>array(
 			'name'=>'subject',
-			'value'=>'CHtml::link($data->subject,array("view","id"=>$data->id))',
+			'value'=>'CHtml::link($data->renderAttribute("subject"),array("view","id"=>$data->id))',
 			'type'=>'raw',
 		),
 		'description'=>array(
 			'name'=>'description',
-			'header'=>Yii::t('bugReports','Description'),
-			'value'=>'trimText($data->description)',
+			'header'=>Yii::t('app','Description'),
+			'value'=>'Formatter::trimText($data->renderAttribute("description"))',
 			'type'=>'raw',
 		),
         'severity'=>array(
             'name'=>'severity',
-            'header'=>Yii::t('bugReports','Severity'),
-            'value'=>'X2Model::model("Dropdowns")->getDropdownValue(116,$data->severity)',
+            'header'=>Yii::t('app','Severity'),
+            'value'=>'X2Model::model("Dropdowns")->getDropdownValue(116,$data->renderAttribute("severity"))',
             'type'=>'raw',
         )
 	),

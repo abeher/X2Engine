@@ -1,68 +1,17 @@
 <?php
-/*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
- * 
- * This program is free software; you can redistribute it and/or modify it under
- * the terms of the GNU Affero General Public License version 3 as published by the
- * Free Software Foundation with the addition of the following permission added
- * to Section 15 as permitted in Section 7(a): FOR ANY PART OF THE COVERED WORK
- * IN WHICH THE COPYRIGHT IS OWNED BY X2ENGINE, X2ENGINE DISCLAIMS THE WARRANTY
- * OF NON INFRINGEMENT OF THIRD PARTY RIGHTS.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU Affero General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU Affero General Public License along with
- * this program; if not, see http://www.gnu.org/licenses or write to the Free
- * Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
- * 02110-1301 USA.
- * 
- * You can contact X2Engine, Inc. P.O. Box 66752, Scotts Valley,
- * California 95067, USA. or at email address contact@x2engine.com.
- * 
- * The interactive user interfaces in modified source and object code versions
- * of this program must display Appropriate Legal Notices, as required under
- * Section 5 of the GNU Affero General Public License version 3.
- * 
- * In accordance with Section 7(b) of the GNU Affero General Public License version 3,
- * these Appropriate Legal Notices must retain the display of the "Powered by
- * X2Engine" logo. If the display of the logo is not reasonably feasible for
- * technical reasons, the Appropriate Legal Notices must display the words
- * "Powered by X2Engine".
- *****************************************************************************************/
-
 return array (
 // Campaign model
-'Campaign'=>'キャンペーン',
 'Campaigns'=>'キャンペーン',
-'ID'=>'番号',
 'Master Campaign ID'=>'マスター·キャンペーンのID',
-'Name'=>'名前',
-'Assigned To'=>'割り当て',
 'Contact List'=>'連絡先リスト',
-'Active'=>'アクティブ',
-'Description'=>'説明',
-'Type'=>'種類',
 'Cost'=>'コスト',
-'Subject'=>'テーマ',
 'Content'=>'コンテンツ',
-'Complete'=>'完了です',
-'Visibility'=>'視認性',
-'Create Date'=>'作成日',
 'Launch Date'=>'日付を起動します。',
-'Last Updated'=>'最後を更新する',
-'Updated By'=>'更新した人',
-'None'=>'なし',
 'Basic Info'=>'基本情報',
-'Email'=>'メール',
 'Call List'=>'リストを呼び出す',
 'Physical Mail'=>'通常の郵便',
 'Email Template'=>'メールテンプレート',
 'Update Campaign'=>'キャンペーンを更新',
-'Last Activity'=>'最後の活動',
 'Template'=>'テンプレート',
 
 // Menu
@@ -70,8 +19,8 @@ return array (
 'Create Campaign'=>'キャンペーンの作成',
 'Newsletters'=>'ニュースレター',
 'Create Newsletter'=>'ニュースレターを作成する',
-'Create Web Form'=>'Webフォームを作成する',
 'Web Tracker'=>'ウェブトラッカー',
+'Email List'=>'電子メールリスト',
 
 // Launching
 'The campaign has already been launched.'=>'キャンペーンは既に開始された。',
@@ -89,7 +38,6 @@ return array (
 'Opened'=>'開かれた',
 'Clicked'=>'クリックされた',
 'Unsubscribed'=>'サブスクライブ解除',
-'Status'=>'ステータス',
 
 // Mailing
 'The email sending limit has been reached.'=>'メール送信の上限に達しました。',
@@ -122,11 +70,9 @@ return array (
 'Contact has clicked a link'=>'連絡先はリンクをクリックした',
 'has clicked a link'=>'リンクをクリックした',
 'To stop receiving these messages, click here'=>'これらのメッセージの受信を停止するには、ここをクリックしてください',
+'Send As'=>'送信者',
 
 // WebForm model
-'Model Name'=>'モデルの名前',
-'Fields'=>'フィールズ',
-'Parameters'=>'パラメータ',
 'CSS'=>'CSS',
 
 // Web Lead Form creator
@@ -138,25 +84,92 @@ return array (
 'Copy and paste this code into your website to include the web lead form.'=>'ウェブリードフォームを含めるためにあなたのウェブサイトにこのコードをコピーして貼り付けます。',
 'Choose an existing form as a starting point.'=>'出発点として、既存のフォームを選択してください。',
 'Text Color'=>'テキストの色',
-'Background Color'=>'背景色',
 'Font'=>'活字体',
 'Border'=>'ボーダー',
 'Size'=>'サイズ',
 'pixels'=>'ピクセル',
-'Color'=>'色',
-'Tags'=>'タグ',
-'Default'=>'デフォルトでの',
 'black'=>'黒',
 'transparent'=>'透明な',
 'none'=>'なし',
-'Example'=>'例',
 'These tags will be applied to any contact created by the form.'=>'これらのタグは、フォームによって作成された連絡先に適用されます。',
-'Save'=>'保存',
 'Enter a name and save this form to edit later.'=>'名前を入力して、後で編集するには、このフォームを保存します。',
 'Form Saved'=>'フォームが保存され',
 'Reset Form'=>'フォームの内容をリセットする',
 'Embed Code'=>'埋め込むためのコード',
 'Saved Forms'=>'保存されたフォーム',
-'Settings'=>'設定',
-'Preview'=>'プレビュー',
+'Enter custom css for the web form.'=>'WebフォームのカスタムCSSを入力してください。',
+'Custom &lt;HEAD&gt;'=>'カスタム&lt;HEAD&gt;',
+'Enter any HTML you would like inserted into the &lt;HEAD&gt; tag.'=>'&lt;HEAD&gt;タグに挿入されたご希望の任意のHTMLを入力します。',
+'Select email templates to send to the new weblead and the user assigned to the weblead.'=>'新しいwebleadとwebleadに割り当てられているユーザーに送信する電子メールテンプレートを選択します。',
+'NOTE: The weblead form must be saved for these emails to be sent.'=>'注：これらのメールが送信されるためwebleadフォームを保存する必要があります。',
+'User Email'=>'ユーザメール',
+'Weblead Email'=>'Webleadメール',
+'Drag and Drop fields from Fields List to Form.'=>'ドラッグして、フィールドリストからフォームにフィールドをドロップします。',
+'Live web form preview.'=>'Webフォームのプレビューを生きる。',
+'Label:'=>'レーベル：',
+'Position:'=>'ポジション：',
+
+// Web Tracker
+'Web Tracker Code'=>'ウェブトラッカーコード',
+'This HTML tag will allow you to track contacts who visit your website.'=>'このHTMLタグを使用すると、あなたのウェブサイトを訪問する連絡先を追跡することができるようになります。',
+'Paste this code into the body section of every page of your website.'=>'あなたのウェブサイトの各ページのbodyセクションには、このコードを貼り付けます。',
+'<b>Note:</b> Contacts can be tracked only if they filled out the web lead capture form, or clicked on a tracking link in an email campaign.'=>'<b>注：</b>彼らはウェブリードキャプチャフォームに記入、または電子メールキャンペーンの追跡リンクをクリックした場合のみ、コンタクトを追跡することができる。',
+'Web Tracker Settings'=>'ウェブトラッカー設定',
+'You can enable or disable the web tracker. The tracker will ignore repeat hits from a given contact during the cooldown period.'=>'あなたは、ウェブトラッカーを有効または無効にすることができます。トラッカーはクールダウン期間中に与えられた接触からリピートヒットを無視します。',
+'If a contact visits several pages in a short time, you will only get one notification.'=>'接触が短時間で複数のページを訪問した場合は、唯一つの通知を取得します。',
+'Turn it down all the way to receive notifications about every page hit.'=>'すべてのページのヒットに関する通知を受け取るためにすべての方法をそれを断る。',
+'Contact has opened the email sent on '=>'お問い合わせは、上で送信された電子メールを開いている',
+'Email sent'=>'メールで送信',
+'Header Code'=>'ヘッダコード',
+'Batch completed, sending again in '=>'バッチで再度送信、完了',
+'A new web lead has been assigned to you: '=>'新しいWebリードはあなたに割り当てられている：',
+'Marketing Automation'=>'マーケティングオートメーション',
+'Contacts for Account Report ('=>'アカウントレポートの連絡先（',
+'Mailing for Account Report ('=>'アカウントレポート用メーリングリスト（',
+'Create a public form to receive new services cases. When the form is submitted, a new '=>'新しいサービスの例を受信するために、公共のフォームを作成します。フォームが送信されると、新しい',
+'This HTML tag will allow you to track contacts who visit your '=>'このHTMLタグを使用すると、あなたの訪問の連絡先を追跡できるようになります',
+'Paste this code into the body section of every page of your '=>'あなたのすべてのページのbodyセクションにこのコードを貼り付けます',
+'You can enable or disable the web tracker. The tracker will '=>'あなたがウェブトラッカーを有効または無効にすることができます。トラッカーます',
+'If a contact visits several pages in a short time, you '=>'接触は短時間で複数のページを訪問した場合、',
+'Turn it down all the way to receive notifications about '=>'に関する通知を受け取るためにすべての方法でそれを断る',
+'The contact you enter here will be used for variable replacement, i.e. for "John Doe" the token {firstName} will get replaced with "John"'=>'ここで入力した連絡先は、トークンすなわち「ジョン·ドウ」のために、変数の置換に使用される{firstName} &quot;ジョン&quot;に置き換えられてしまいます',
+'If you want to keep your current HTML forms but still get web leads into X2, please see the wiki article located here: {link}'=>'：あなたの現在のHTMLフォームを維持したいが、それでもウェブは、X2に通じて取得した場合、次の場所にWikiの記事を参照してください{link}',
+'Web Lead API'=>'ウェブリードAPI',
+'Custom HTML could not be removed.'=>'カスタムHTMLは削除できませんでした。',
+'Custom HTML could not be saved.'=>'カスタムHTMLを保存できませんでした。',
+'Select email templates to send to the new weblead and the user '=>'新しいwebleadしてユーザーに送信する電子メールテンプレートを選択する',
+'Type:'=>'タイプ：',
+'Value:'=>'値：',
+'The web form must be saved for custom fields to get '=>'Webフォームは、取得するには、カスタムフィールドに保存する必要があります',
+'The web form must be saved for your custom fields or custom HTML to '=>'Webフォームは、カスタムフィールドまたはカスタムHTMLにするために保存する必要があります',
+'Anonymous Contacts'=>'匿名のコンタクト',
+'Fingerprints'=>'フィンガープリント',
+'Anonymous Contact {email}'=>'匿名の連絡{email}',
+'Anonymous Contact'=>'匿名の連絡',
+'X2Identity Settings'=>'X2Identity設定',
+'X2Identity uses browser fingerprinting as an alternative '=>'X2Identityは代替手段として、ブラウザのフィンガープリントを使用しています',
+'If browser fingerprinting is enabled, the tracker will '=>'ブラウザのフィンガープリントが有効になっている場合は、トラッカーは意志',
+'You can set the threshold for the minimum number of attributes that '=>'あなたはその属性の最小数のしきい値を設定することができます',
+'Disable Slider'=>'スライダを無効にする',
+'Import Campaigns'=>'輸入キャンペーン',
+'Export Campaigns'=>'輸出キャンペーン',
+'Email Delivery Progress'=>'メール配信進捗',
+'Click to refresh displays of campaign data on this page.'=>'このページ上のキャンペーンデータのディスプレイを更新する場合にクリックします。',
+'Errors that occurred when attempting to send email:'=>'電子メールを送信しようとしたときに発生したエラー：',
+'You have unsent mail in this campaign. Are you sure you want to forcibly mark this campaign as complete?'=>'あなたはこのキャンペーンで未送信メールを持っている。あなたが強制的に完全なこのキャンペーンをマークしてもよろしいですか？',
+'Please try again in {t} {units}.'=>'後にもう一度試してください{t} {units} 。',
+'Skipping {email}; another concurrent send operation is handling delivery to this address.'=>'スキップ{email} ;別の同時送信操作は、このアドレスへの配信を処理している。',
+'Skipping delivery for recipient {id}; email address has been set to blank.'=>'受信者のためのスキップ配信{id} ;電子メールアドレスは空白に設定されている。',
+'Skipping {email}; the contact has unsubscribed.'=>'スキップ{email} ;連絡先が登録解除しました。',
+'Email has already been sent to {address}'=>'電子メールは、すでにに送信されている{address}',
+'Email sent successfully to {address}.'=>'メールに正常に送信{address} 。',
+'Email could not be sent to {address}. The message given was: {message}'=>'メールに送信できませんでした{address} 。与えられたメッセージだった： {message}',
+'All emails sent.'=>'送信されたすべての電子メール。',
+'Batch timeout limit reached.'=>'バッチタイムアウト制限に達しました。',
+'Failed to save temporary list.'=>'一時リストの保存に失敗しました。',
+'Specified campaign does not exist.'=>'指定されたキャンペーンは存在しません。',
+'Delete Form'=>'フォームを削除',
+'Select email templates to send to the new web lead and the user '=>'新しいWebリードしてユーザーに送信する電子メールテンプレートを選択する',
+'NOTE: The web lead form must be saved for these emails to be sent.'=>'注：Webリードフォームが送信されるように、これらの電子メールを保存する必要があります。',
+'NOTE: The web lead form must be saved for these tags to be applied.'=>'注：これらのタグを適用するためのウェブリードフォームが保存されなければならない。',
 );

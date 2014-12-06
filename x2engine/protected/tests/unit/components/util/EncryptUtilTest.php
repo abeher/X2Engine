@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -40,7 +40,7 @@ Yii::import('application.components.util.*');
  * Test for the standalone encryption utilities class.
  *
  * @author Demitri Morgan <demitri@x2engine.com>
- * @package X2CRM.tests.unit.components.util
+ * @package application.tests.unit.components.util
  */
 class EncryptUtilTest extends FileOperTestCase {
 
@@ -86,6 +86,18 @@ class EncryptUtilTest extends FileOperTestCase {
 		$this->assertEquals($expected,$enc->decrypt($encrypted),'Failed asserting the encryption key and IV were properly saved and re-used.');
 		$this->removeTestDirs();
 	}
+
+    public function testSecureUniqueIdHash64() {
+        foreach(range(1,3) as $method) {
+            foreach(range(1,2) as $hash) {
+                $id = EncryptUtil::secureUniqueIdHash64($method,$hash);
+                if(VERBOSE_MODE >= 1) {
+                    echo "\nmethod $method hash $hash $id";
+                }
+                $this->assertEquals(64,strlen($id));
+            }
+        }
+    }
 
 }
 

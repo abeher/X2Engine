@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -65,6 +65,12 @@ $this->widget('zii.widgets.grid.CGridView', array(
                 'value' => '$data["importId"]',
                 'type' => 'raw',
             ),
+            'type'=>array(
+                'name' => 'type',
+                'header' => Yii::t('admin', 'Type of Record Imported'),
+                'value' => '$data["type"]',
+                'type' => 'raw',
+            ),
             'records'=>array(
                 'name' => 'records',
                 'header' => Yii::t('admin', "# of Records Imported"),
@@ -80,7 +86,7 @@ $this->widget('zii.widgets.grid.CGridView', array(
             'link'=>array(
                 'name' => 'link',
                 'header' => Yii::t('admin', "Rollback Link"),
-                'value' => '"<a href=\'rollbackImport?importId=".$data["importId"]."\' class=\'x2-button rollback-link\'>Rollback</a>"',
+                'value' => '"<a href=\'rollbackImport?importId=".$data["importId"]."\' class=\'x2-button rollback-link\'>".Yii::t("admin","Rollback")."</a>"',
                 'type' => 'raw',
             ),
         ),
@@ -97,7 +103,7 @@ $this->widget('zii.widgets.grid.CGridView', array(
     <?php echo CHtml::link('Begin Rollback','#',array('id'=>'rollback-link','class'=>'x2-button'));?>
 </div>
 <div class="form" style="width:600px;color:green;display:none;" id="status-box">
-    
+
 </div>
 <?php }
 ?>
@@ -128,11 +134,13 @@ $this->widget('zii.widgets.grid.CGridView', array(
                             rollbackStage(model+1,0);
                         }else{
                             $('#status-box').append("<br><br><b>Rollback Complete</b>");
+                            $('#rollback-link').hide();
                             alert("Done!");
                         }
                     }
                 }else{
                     $('#status-box').append("<br><br><b>Rollback Complete</b>");
+                    $('#rollback-link').hide();
                     alert("Done!");
                 }
             }

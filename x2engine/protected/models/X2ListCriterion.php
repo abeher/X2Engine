@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -37,7 +37,7 @@
 /**
  * This is the model class for table "x2_list_criteria".
  *
- * @package X2CRM.models
+ * @package application.models
  * @property integer $id
  * @property integer $listId
  * @property string $type
@@ -103,7 +103,7 @@ class X2ListCriterion extends CActiveRecord {
 			'value' => Yii::t('contacts','Value'),
 		);
 	}
-	
+
 	/**
 	 * @return array available comparison types (value=>label)
 	 */
@@ -115,7 +115,7 @@ class X2ListCriterion extends CActiveRecord {
 			'<>'=>Yii::t('contacts','not equal to'),
 			'list'=>Yii::t('contacts','in list'),
 			'notList'=>Yii::t('contacts','not in list'),
-			'empty'=>Yii::t('empty','empty'),
+			'empty'=>Yii::t('contacts','empty'),
 			'notEmpty'=>Yii::t('contacts','not empty'),
 			'contains'=>Yii::t('contacts','contains'),
 			'noContains'=>Yii::t('contacts','does not contain'),

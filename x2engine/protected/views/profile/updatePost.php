@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -69,12 +69,19 @@ window.newPostEditor = createCKEditor (
 ');
 ?>
 
+<div class='page-title'>
 <h2>Edit Social Post</h2>
+</div>
 <div class="form">
 
 <?php $form=$this->beginWidget('CActiveForm', array(
 	'id'=>'event-update-form',
 	'enableAjaxValidation'=>false,
+    'action'=>array (
+        '/profile/updatePost',
+        'id' => $id,
+        'profileId' => $profileId
+    )
 )); ?>
 
 	<div class="top row">
@@ -96,6 +103,9 @@ window.newPostEditor = createCKEditor (
 
     $this->widget('zii.widgets.CListView', array(
                 'dataProvider'=>$commentDataProvider,
+                'viewData' => array (
+                    'profileId' => $profileId
+                ),
                 'itemView'=>'../social/_view',
                 'template'=>'<h2>Comments</h2>{pager}{items}',
                 'id'=>$model->id.'-comments',

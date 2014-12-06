@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -34,13 +34,13 @@
  * "Powered by X2Engine".
  *****************************************************************************************/
 
+Yii::import('application.components.TransformedFieldStorageBehavior');
+Yii::import('application.components.util.EncryptUtil');
+
 /**
  * Behavior class for storing encrypted values in database fields.
  * 
- * The recommended field type is "BLOB"; values returned by the encryption
- * utility are raw/binary.
- *
- * @package X2CRM.components
+ * @package application.components
  * @author Demitri Morgan <demitri@x2engine.com>
  */
 class EncryptedFieldsBehavior extends TransformedFieldStorageBehavior {
@@ -89,10 +89,10 @@ class EncryptedFieldsBehavior extends TransformedFieldStorageBehavior {
 	 * Checks for whether a working encryption object is available before attaching.
 	 * @throws Exception 
 	 */
-	public function attach($owner){
+    public function attach($owner){
 		if(!isset(self::$encryption) && $this->checkObject)
 			throw new Exception('Cannot use '.__CLASS__.'; encryption utility object has not been instantiated.');
-		parent::attach($owner);
+        parent::attach($owner);
 	}
 	/**
 	 * Encrypts the attribute for database storage.

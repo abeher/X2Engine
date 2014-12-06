@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -38,16 +38,16 @@ return array (
 // Attributes
 'ID'=>'ID',
 'Assigned To'=>'Назначено',
-'Name'=>'имя',
-'Description'=>'описание',
+'Name'=>'Имя',
+'Description'=>'Описание',
 'Create Date'=>'Дата создания',
 'Last Updated'=>'Последнее обновление',
 'Updated By'=>'Обновил',
 
-'Data fields'=>'поля данных',
-'Show'=>'шоу',
-'Hide'=>'скрывать',
-'Module Title'=>'Модуль Название',
+'Data fields'=>'Поля данных',
+'Show'=>'Показать',
+'Hide'=>'Скрыть',
+'Module Title'=>'Название модуля',
 'The name for your new module'=>'Имя для нового модуля',
 'Item Name'=>'Наименование',
 '(Optional) What to call individual records, e.g. "Create new X"'=>'(Дополнительно), как назвать отдельные записи, например, "Создать новый X"',
@@ -58,11 +58,11 @@ return array (
 '{X} List'=>'{X} Список',
 'View {X}'=>'Посмотреть {X}',
 'Create {X}'=>'Создать {X}',
-'Update {X}'=>'Обновление {X}',
+'Update {X}'=>'Обновить {X}',
 'Delete {X}'=>'Удалить {X}',
 'View'=>'Посмотреть',
 'Create'=>'Создать',
-'Update'=>'Обновление',
+'Update'=>'Обновить',
 'Delete'=>'Удалить',
 
 // Page Titles
@@ -79,4 +79,11 @@ return array (
 'Enter field name here'=>'Введите имя поля здесь',
 
 
+'A module with that name already exists'=>'Модуль с таким именем уже существует',
+'Unable to create custom module directory.'=>'Не удается создать каталог пользовательского модуля.',
+'Unable to create config file for custom module.'=>'Не удается создать файл конфигурации для пользовательского модуля.',
+'Unable to create table for custom module.'=>'Невозможно создать таблицу для пользовательского модуля.',
+'Import {X}'=>'Импорт {X}',
+'Export {X}'=>'Экспорт {X}',
+'{modelName} Attributes'=>'{modelName} Атрибуты',
 );

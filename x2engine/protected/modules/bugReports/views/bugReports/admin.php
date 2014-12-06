@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -37,8 +37,8 @@
 include("protected/modules/bugReports/bugReportsConfig.php");
 
 $this->actionMenu = $this->formatMenu(array(
-	array('label'=>Yii::t('module','{X} List',array('{X}'=>$moduleConfig['recordName'])), 'url'=>array('index')),
-	array('label'=>Yii::t('module','Create {X}',array('{X}'=>$moduleConfig['recordName'])), 'url'=>array('create')),
+	array('label'=>Yii::t('module','{X} List',array('{X}'=>Modules::itemDisplayName())), 'url'=>array('index')),
+	array('label'=>Yii::t('module','Create {X}',array('{X}'=>Modules::itemDisplayName())), 'url'=>array('create')),
 ));
 
 Yii::app()->clientScript->registerScript('search', "
@@ -54,12 +54,6 @@ $('.search-form form').submit(function(){
 });
 ");
 
-function trimText($text) {
-	if(mb_strlen($text,'UTF-8')>150)
-		return mb_substr($text,0,147,'UTF-8').'...';
-	else
-		return $text;
-}
 ?>
 
 <h2><?php echo Yii::t('module','Manage {X}',array('{X}'=>$moduleConfig['title'])); ?></h2>
@@ -71,10 +65,10 @@ function trimText($text) {
 )); ?>
 </div><!-- search-form -->
 
-<?php $this->widget('application.components.X2GridView', array(
+<?php $this->widget('X2GridView', array(
 	'id'=>'bugReports-grid',
-	'title'=>Yii::t('bugReports','Bug Reports'),
-	'buttons'=>array('advancedSearch','clearFilters','columnSelector'),
+	'title'=>Yii::t('app','Bug Reports'),
+	'buttons'=>array('advancedSearch','clearFilters','columnSelector','autoResize'),
 	'template'=> '<div class="page-title">{title}{buttons}{filterHint}{summary}</div>{items}{pager}',
 
 	'dataProvider'=>$model->search(),
@@ -98,8 +92,8 @@ function trimText($text) {
 		),
 		'description'=>array(
 			'name'=>'description',
-			'header'=>Yii::t('bugReports','Description'),
-			'value'=>'trimText($data->description)',
+			'header'=>Yii::t('app','Description'),
+			'value'=>'Formatter::trimText($data->description)',
 			'type'=>'raw',
 		),
 	),

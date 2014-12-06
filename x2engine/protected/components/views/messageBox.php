@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -36,14 +36,14 @@
 ?>
 <div id="motd-box"><?php echo Yii::t('app',$content);?></div>
 <?php
-if(Yii::app()->user->getName()=='admin')
+if(Yii::app()->params->isAdmin)
 	echo CHtml::link(Yii::t('app','Edit Message'),'#',array('onclick'=>"$('#motd-form').show(); $('#motd-link').hide(); return false;",'id'=>'motdLink'));
 ?>
 <div id="motd-form" style="display:none;">
 <?php
 echo CHtml::beginForm();
 
-echo CHtml::textArea('message','',array('cols'=>16,'onclick'=>'clearText(this)'));
+echo CHtml::textArea('message','',array('class' => 'x2-textarea', 'cols'=>16,'onclick'=>'clearText(this)'));
 echo CHtml::ajaxSubmitButton('Submit',
 	array('/site/motd'),
 	array('update'=>'#motd-box'),

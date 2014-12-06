@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -34,19 +34,17 @@
  * "Powered by X2Engine".
  *****************************************************************************************/
 
-$this->pageTitle = Yii::app()->name . ' - People';
+$this->pageTitle = Yii::app()->settings->appName . ' - People';
 ?>
 <div>
     <?php
     
     $menuItems = array();
     foreach($users as $user) {
-    	if($user->username != 'admin' && $user->username != 'api') {
-    		$menuItems[] = array('label' => $user->firstName .' '. $user->lastName, 'url' => array("site/profile/{$user->id}"));
-    	}
+        $menuItems[] = array('label' => $user->firstName .' '. $user->lastName, 'url' => array("/mobile/site/profile",'id'=>$user->id));
     }
     
-    $menuItems[] = array('label' => Yii::t('mobile', 'Back'), 'url' => array('site/home/'), 'left'=>true);
+    $menuItems[] = array('label' => Yii::t('mobile', 'Back'), 'url' => array('/mobile/site/home'), 'left'=>true);
 
     //render main menu items
     $this->widget('MenuList', array(

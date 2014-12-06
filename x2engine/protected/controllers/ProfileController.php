@@ -1,8 +1,7 @@
 <?php
-
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -38,7 +37,7 @@
 /**
  * User profiles controller
  *
- * @package X2CRM.controllers
+ * @package application.controllers
  */
 class ProfileController extends x2base {
 
@@ -52,19 +51,26 @@ class ProfileController extends x2base {
      * This method is used by the 'accessControl' filter.
      * @return array access control rules
      */
-    public function accessRules(){
+    public function accessRules() {
         return array(
             array('allow', // allow authenticated user to perform 'create' and 'update' actions
                 'actions' => array(
-                    'index', 'view', 'update', 'search', 'addPost', 'deletePost', 'uploadPhoto', 'profiles',
-                    'settings', 'addComment', 'deleteSound', 'deleteBackground',
-                    'changePassword', 'setResultsPerPage', 'hideTag', 'unhideTag', 'resetWidgets', 'updatePost',
-                    'loadTheme', 'createTheme', 'saveTheme', 'createUpdateCredentials','manageCredentials','deleteCredentials'),
+                    'index', 'view', 'update', 'search', 'addPost', 'deletePost', 'uploadPhoto',
+                    'getEvents', 'getEventsBetween', 'broadcastEvent', 'loadComments',
+                    'loadLikeHistory', 'likePost', 'flagPost', 'stickyPost', 'minimizePosts',
+                    'publishPost', 'createChartSetting', 'ajaxExportTheme',
+                    'deleteChartSetting', 'addComment',
+                    'toggleFeedControls', 'toggleFeedFilters', 'setWidgetSetting',
+                    'showWidgetContents', 'getWidgetContents',
+                    'setWidgetOrder', 'profiles', 'settings', 'deleteSound', 'deleteBackground',
+                    'changePassword', 'setResultsPerPage', 'hideTag', 'unhideTag', 'resetWidgets',
+                    'updatePost', 'loadTheme', 'createTheme', 'saveTheme', 'saveMiscLayoutSetting',
+                    'createUpdateCredentials', 'manageCredentials', 'deleteCredentials', 'verifyCredentials',
+                    'setDefaultCredentials', 'activity', 'ajaxSaveDefaultEmailTemplate',
+                    'deleteActivityReport', 'createActivityReport', 'manageEmailReports',
+                    'toggleEmailReport', 'deleteEmailReport', 'sendTestActivityReport',
+                    'createProfileWidget','deleteSortableWidget','deleteTheme','previewTheme'),
                 'users' => array('@'),
-            ),
-            array('allow', // allow admin user to perform 'admin' and 'delete' actions
-                'actions' => array('admin', 'delete'),
-                'users' => array('admin'),
             ),
             array('deny', // deny all users
                 'users' => array('*'),
@@ -72,21 +78,28 @@ class ProfileController extends x2base {
         );
     }
 
-    public function filters(){
-        return array(
-            'accessControl',
-            'setPortlets',
+    public function behaviors() {
+        return array_merge(parent::behaviors(), array(
+            'ImportExportBehavior' => array('class' => 'ImportExportBehavior'),
+                )
         );
     }
 
-    public function actionHideTag($tag){
-        $tag = "#".$tag;
+    public function filters() {
+        return array_merge(parent::filters(), array(
+            'accessControl',
+            'setPortlets',
+        ));
+    }
+
+    public function actionHideTag($tag) {
+        $tag = "#" . $tag;
         $profile = Yii::app()->params->profile;
-        if(isset($profile)){
+        if (isset($profile)) {
             $hiddenTags = json_decode($profile->hiddenTags, true);
-            if(!is_array($hiddenTags))
+            if (!is_array($hiddenTags))
                 $hiddenTags = array();
-            if(!in_array($tag, $hiddenTags)){
+            if (!in_array($tag, $hiddenTags)) {
                 array_push($hiddenTags, $tag);
                 $profile->hiddenTags = json_encode($hiddenTags);
                 $profile->save();
@@ -94,14 +107,14 @@ class ProfileController extends x2base {
         }
     }
 
-    public function actionUnhideTag($tag){
-        $tag = "#".$tag;
+    public function actionUnhideTag($tag) {
+        $tag = "#" . $tag;
         $profile = Yii::app()->params->profile;
-        if(isset($profile)){
+        if (isset($profile)) {
             $hiddenTags = json_decode($profile->hiddenTags, true);
-            if(!is_array($hiddenTags))
+            if (!is_array($hiddenTags))
                 $hiddenTags = array();
-            if(in_array($tag, $hiddenTags)){
+            if (in_array($tag, $hiddenTags)) {
                 unset($hiddenTags[array_search($tag, $hiddenTags)]);
                 $profile->hiddenTags = json_encode($hiddenTags);
                 $profile->save();
@@ -109,21 +122,24 @@ class ProfileController extends x2base {
         }
     }
 
-    public function actionUpdatePost($id){
+    public function actionUpdatePost($id, $profileId) {
         $post = Events::model()->findByPk($id);
-        if(isset($_POST['Events'])){
+        if (isset($_POST['Events'])) {
             $post->text = $_POST['Events']['text'];
             $post->save();
-            $this->redirect(array('site/whatsNew'));
+            $this->redirect(array('view', 'id' => $profileId));
+            //$this->redirect(array('/profile/profile'));
         }
         $commentDataProvider = new CActiveDataProvider('Events', array(
-                    'criteria' => array(
-                        'order' => 'timestamp ASC',
-                        'condition' => "type='comment' AND associationType='Events' AND associationId=$id",
-                        )));
+            'criteria' => array(
+                'order' => 'timestamp ASC',
+                'condition' => "type='comment' AND associationType='Events' AND associationId=$id",
+        )));
         $this->render('updatePost', array(
+            'id' => $id,
             'model' => $post,
-            'commentDataProvider' => $commentDataProvider
+            'commentDataProvider' => $commentDataProvider,
+            'profileId' => $profileId
         ));
     }
 
@@ -131,65 +147,114 @@ class ProfileController extends x2base {
      * Deletes a post in the public feed for the current user.
      * @param integer $id
      */
-    public function actionDeletePost($id){
+    public function actionDeletePost($id, $profileId) {
         $post = Events::model()->findByPk($id);
-        if(isset($post)){
-            if($post->type == 'comment'){
+        if (isset($post)) {
+            if ($post->type == 'comment') {
                 $postParent = X2Model::model('Events')->findByPk($post->associationId);
-                $user = ProfileChild::model()->findByPk($postParent->associationId);
-            }else{
-                $user = ProfileChild::model()->findByPk($post->associationId);
+                $user = Profile::model()->findByPk($postParent->associationId);
+            } else {
+                $user = Profile::model()->findByPk($post->associationId);
             }
-            if(isset($postParent) && $post->user != Yii::app()->user->getName()){
-                if($postParent->associationId == Yii::app()->user->getId())
+            if (isset($postParent) && $post->user != Yii::app()->user->getName()) {
+                if ($postParent->associationId == Yii::app()->user->getId())
                     $post->delete();
             }
-            if($post->user == Yii::app()->user->getName() || $post->associationId == Yii::app()->user->getId() || Yii::app()->params->isAdmin){
-                if($post->delete()){
-
+            if ($post->user == Yii::app()->user->getName() || $post->associationId == Yii::app()->user->getId() || Yii::app()->params->isAdmin) {
+                if ($post->delete()) {
+                    
                 }
             }
         }
-        $this->redirect(array('site/whatsNew'));
+        $this->redirect(array('view', 'id' => $profileId));
     }
 
     /**
-     * Displays a particular model.
-     * @param integer $id the ID of the model to be displayed
+     * Saves settings as a property of the miscLayoutSettings JSON field of the profile model. This 
+     * should be used to make miscellaneous layout settings persistent.
+     * POST Parameters:
+     *  settingName - string - must be an existing property name of the JSON field
+     *  settingVal - mixed - the value to which the JSON field property will get set
      */
-    public function actionView($id){
-
-        $dataProvider = new CActiveDataProvider('Events', array(
-                    'criteria' => array(
-                        'order' => 'timestamp DESC',
-                        'condition' => "type='feed' AND associationId=$id AND (visibility=1 OR associationId=".Yii::app()->user->getId()." OR user='".Yii::app()->user->getName()."')",
-                        )));
-
-        $this->render('view', array(
-            'model' => $this->loadModel($id),
-            'dataProvider' => $dataProvider,
-        ));
+    public function actionSaveMiscLayoutSetting() {
+        if (!isset($_POST['settingName']) || !isset($_POST['settingVal'])) {
+            echo 'failure';
+            return;
+        }
+        Profile::setMiscLayoutSetting($_POST['settingName'], $_POST['settingVal']);
     }
 
     /**
      */
-    public function actionLoadTheme ($themeName) {
+    public function actionLoadTheme($themeId) {
         $theme = Yii::app()->db->createCommand()
-            ->select('description')
-            ->from('x2_media')
-            ->where('fileName=:fileName and associationType="theme"',array(':fileName'=>$themeName))
-            ->queryScalar();
+                ->select('description')
+                ->from('x2_media')
+                ->where('id=:id and associationType="theme"', array(':id' => $themeId))
+                ->queryScalar();
         echo $theme;
     }
 
-    /**
-    Overwrite an existing theme that the user uploaded.
-     */
-    public function actionSaveTheme ($themeAttributes) {
-        $themeAttributesArr = CJSON::decode ($themeAttributes);
-        if (!in_array ('themeName', array_keys ($themeAttributesArr))) return;
+    public function canEditTheme($themeName) {
+        if ($themeName == 'Default') {
+            return false;
+        }
 
-        $themeModel = X2Model::model('Media')->findByAttributes (array (
+
+        $themes = X2Model::model('Media')->findByAttributes(array(
+            'uploadedBy' => Yii::app()->user->id,
+            'fileName' => $themeName
+        ));
+
+        if ( $themes ) {
+            return false;
+        } 
+
+        return true;
+    }
+
+    public function actionDeleteTheme($themeName) {
+        if( !$this->canEditTheme($themeName) ) {
+            echo 'error';
+            return;
+        }
+
+        $theme = Media::model()->findByAttributes( 
+            array('associationType' => 'theme ',
+            'fileName' => $themeName)
+            );
+        if($theme){
+            $theme->delete();
+        }
+    }
+
+    public function actionPreviewTheme($themeName) {
+        $theme = Media::model()->findByAttributes( 
+            array('associationType' => 'theme ',
+            'fileName' => $themeName)
+            );
+
+        if($theme){
+            $settings = CJSON::decode($theme->description);
+            ThemeGenerator::previewTheme($settings);
+        }
+    }
+
+    /**
+     * Overwrite an existing theme that the user uploaded.
+     */
+    public function actionSaveTheme($themeAttributes) {
+        $themeAttributesArr = CJSON::decode($themeAttributes);
+        if (!in_array('themeName', array_keys($themeAttributesArr)))
+            return;
+
+        if( !$this->canEditTheme( $themeAttributesArr['themeName'] ) ) {
+            echo t('profile', 'Cannot edit theme');
+            return;
+        }
+
+
+        $themeModel = X2Model::model('Media')->findByAttributes(array(
             'uploadedBy' => Yii::app()->user->name,
             'fileName' => $themeAttributesArr['themeName'],
             'associationType' => 'theme'
@@ -197,129 +262,150 @@ class ProfileController extends x2base {
         if ($themeModel !== null) {
             $themeModel->fileName = $themeAttributesArr['themeName'];
             $themeModel->description = $themeAttributes;
-            if ($themeModel->save ()) {
+            if ($themeModel->save()) {
                 echo Yii::t('profile', 'Theme saved successfully.');
             }
         }
     }
 
-    private static function getThemeErrorMsg () {
-        $errorArr = array (
-            'success'=> false,
-            'errorListHeader'=> Yii::t('profile', 'Please fix the following errors:'),
-            'errorMsg'=> Yii::t('profile', 'Theme name already exists or is invalid.'));
-        return CJSON::encode ($errorArr);
+    private static function getThemeErrorMsg() {
+        $errorArr = array(
+            'success' => false,
+            'errorListHeader' => Yii::t('profile', 'Please fix the following errors:'),
+            'errorMsg' => Yii::t('profile', 'Theme name already exists or is invalid.'));
+        return CJSON::encode($errorArr);
     }
 
-    private static function getThemeSuccessMsg () {
-        $successArr = array (
+    private static function getThemeSuccessMsg($data = array()) {
+        $successArr = array_merge(array(
             'success' => true,
-            'msg' => Yii::t('profile', 'Theme created successfully.'));
-        return CJSON::encode ($successArr);
+            'msg' => Yii::t('profile', 'Theme created successfully.')), $data);
+        return CJSON::encode($successArr);
     }
 
     /**
-    Create a new theme record in the Media table, prevent duplicate filenames.
-    If theme cannot be saved, error message object is returned.
+     * Create a new theme record in the Media table, prevent duplicate filenames.
+     * If theme cannot be saved, error message object is returned.
      */
-    public function actionCreateTheme ($themeAttributes) {
-        $themeAttributesArr = CJSON::decode ($themeAttributes);
-        if (!in_array ('themeName', array_keys ($themeAttributesArr)) ||
-            !in_array ('themeName', array_keys ($themeAttributesArr))) {
-            echo self::getThemeErrorMsg ();
+    public function actionCreateTheme($themeAttributes) {
+        $themeAttributesArr = CJSON::decode($themeAttributes);
+        if (!in_array('themeName', array_keys($themeAttributesArr)) ||
+                !in_array('themeName', array_keys($themeAttributesArr))) {
+            echo self::getThemeErrorMsg();
         }
         $theme = new Media;
-        $theme->setScenario ('themeCreate');
+        $theme->setScenario('themeCreate');
         $theme->fileName = $themeAttributesArr['themeName'];
         $theme->private = $themeAttributesArr['private'];
         $theme->associationType = "theme";
         $theme->uploadedBy = Yii::app()->user->name;
         $theme->description = $themeAttributes;
-        if (!$theme->save ()) {
-            echo self::getThemeErrorMsg ();
+        if (!$theme->save()) {
+            echo self::getThemeErrorMsg();
         } else {
-            echo self::getThemeSuccessMsg ();
+            echo self::getThemeSuccessMsg(array('id' => $theme->id));
         }
     }
+
+    
 
     /**
      * Display/set user profile settings.
      */
-    public function actionSettings(){
+    public function actionSettings() {
         $model = $this->loadModel(Yii::app()->user->getId());
+
+        
 
         if (isset($_POST['Profile']) || isset($_POST['preferences'])) {
             if (isset($_POST['Profile'])) {
                 $model->attributes = $_POST['Profile'];
-    
-                if ($model->save()){
+
+                if ($model->save()) {
                     //$this->redirect(array('view','id'=>$model->id));
                 }
             }
             if (isset($_POST['preferences'])) {
-                $model->theme = $_POST['preferences'];
-                $model->save ();
+                $model->theme = ThemeGenerator::generatePalette($_POST['preferences']);
+                if ( $model->save() ) {
+                    Yii::import('application.components.ThemeGenerator.LoginThemeHelper');
+                    LoginThemeHelper::saveProfileTheme($_POST['preferences']['themeName']);
+                }
             }
             $this->refresh();
         }
 
         $modules = Modules::model()->findAllByAttributes(array('visible' => 1));
         $menuItems = array();
-        foreach($modules as $module){
-            if($module->name == 'document'){
+        foreach ($modules as $module) {
+            if ($module->name == 'document') {
                 $menuItems[$module->title] = $module->title;
-            }else{
-                $menuItems[$module->name] = $module->title;
+            } else {
+                $menuItems[$module->name] = Yii::t('app', $module->title);
             }
         }
-        $menuItems = array('' => Yii::t('app', "What's New")) + $menuItems;
+        $menuItems = array('' => Yii::t('app', 'Activity Feed')) + $menuItems;
 
         $languageDirs = scandir('./protected/messages'); // scan for installed language folders
 
         $languages = array('en' => 'English');
 
-        foreach($languageDirs as $code){  // look for langauges name
+        foreach ($languageDirs as $code) {  // look for langauges name
             $name = $this->getLanguageName($code, $languageDirs);  // in each item in $languageDirs
-            if($name !== false)
+            if ($name !== false)
                 $languages[$code] = $name; // add to $languages if name is found
         }
         $times = $this->getTimeZones();
 
         $myThemeProvider = new CActiveDataProvider('Media', array(
-                    'criteria' => array(
-                        'condition' => "((private = 1 AND uploadedBy = '".Yii::app()->user->name."') OR private = 0) AND associationType = 'theme'",
-                        'order' => 'createDate DESC'
-                    ),
-                ));
+            'criteria' => array(
+                'condition' => "((private = 1 AND uploadedBy = '" . Yii::app()->user->name . "') OR private = 0) AND associationType = 'theme'",
+                'order' => 'createDate DESC'
+            ),
+            'pagination' => false
+        ));
         $myBackgroundProvider = new CActiveDataProvider('Media', array(
-                    'criteria' => array(
-                        'condition' => "(associationType = 'bg-private' AND associationId = '".Yii::app()->user->getId()."') OR associationType = 'bg'",
-                        'order' => 'createDate DESC'
-                    ),
-                ));
+            'criteria' => array(
+                'condition' => "(associationType = 'bg-private' AND associationId = '" . Yii::app()->user->getId() . "') OR associationType = 'bg'",
+                'order' => 'createDate DESC',
+            ),
+            'pagination' => false
+        ));
+
         $myLoginSoundProvider = new CActiveDataProvider('Media', array(
-                    'criteria' => array(
-                        'condition' => "(associationType='loginSound' AND (private=0 OR private IS NULL OR uploadedBy='".Yii::app()->user->getName()."'))",
-                        'order' => 'createDate DESC'
-                    ),
-                ));
+            'criteria' => array(
+                'condition' => "(associationType='loginSound' AND (private=0 OR private IS NULL OR uploadedBy='" . Yii::app()->user->getName() . "'))",
+                'order' => 'createDate DESC'
+            ),
+            'pagination' => false
+        ));
         $myNotificationSoundProvider = new CActiveDataProvider('Media', array(
-                    'criteria' => array(
-                        'condition' => "(associationType='notificationSound' AND (private=0 OR private IS NULL OR uploadedBy='".Yii::app()->user->getName()."'))",
-                        'order' => 'createDate DESC'
-                    ),
-                ));
+            'criteria' => array(
+                'condition' => "(associationType='notificationSound' AND (private=0 OR private IS NULL OR uploadedBy='" . Yii::app()->user->getName() . "'))",
+                'order' => 'createDate DESC'
+            ),
+            'pagination' => false
+        ));
         $hiddenTags = json_decode(Yii::app()->params->profile->hiddenTags, true);
-        if(empty($hiddenTags))
+        if (empty($hiddenTags))
             $hiddenTags = array();
-        $allTags = Yii::app()->db->createCommand()
-                ->select('COUNT(*) AS count, tag')
-                ->from('x2_tags')
-                ->group('tag')
-                ->where('tag IS NOT NULL AND tag IN (\''.implode("','", $hiddenTags).'\')')
-                ->order('tag ASC')
-                ->limit(20)
-                ->queryAll();
+
+        if (sizeof($hiddenTags)) {
+            $tagParams = AuxLib::bindArray($hiddenTags);
+            $allTags = Yii::app()->db->createCommand()
+                    ->select('COUNT(*) AS count, tag')
+                    ->from('x2_tags')
+                    ->group('tag')
+                    ->where('tag IS NOT NULL AND tag IN (' .
+                            implode(',', array_keys($tagParams)) . ')', $tagParams)
+                    ->order('tag ASC')
+                    ->limit(20)
+                    ->queryAll();
+        } else {
+            $allTags = array();
+        }
+
+        $admin = Yii::app()->settings;
 
         $this->render('settings', array(
             'model' => $model,
@@ -330,94 +416,133 @@ class ProfileController extends x2base {
             'myLoginSounds' => $myLoginSoundProvider,
             'myNotificationSounds' => $myNotificationSoundProvider,
             'menuItems' => $menuItems,
-            'allTags' => $allTags
+            'allTags' => $allTags,
+            
         ));
     }
 
-	public function actionManageCredentials() {
-		$this->pageTitle = Yii::t('app','Manage Credentials');
-		$this->render('manageCredentials',array('profile'=>Yii::app()->params->profile));
-	}
+    public function actionManageCredentials() {
+        $this->pageTitle = Yii::t('app', 'Manage Credentials');
+        Yii::app()->clientScript->registerScriptFile(Yii::app()->getBaseUrl() . '/js/manageCredentials.js');
+        $this->render('manageCredentials', array('profile' => Yii::app()->params->profile));
+    }
 
-	/**
-	 * Basic CRUD for application credentials
-	 * @param type $id
-	 * @param type $class
-	 * @throws CHttpException
-	 */
-	public function actionCreateUpdateCredentials($id=null,$class=null) {
-		$this->pageTitle = Yii::t('app','Edit Credentials');
-		$profile = Yii::app()->params->profile;
-		// Create or retrieve model:
-		$isAdmin = Yii::app()->user->checkAccess('AdminIndex');
-		if(empty($id)) {
-			if(empty($class))
-				throw new CHttpException(400,'Class must be specified when creating new credentials.');
-			$model = new Credentials();
-			$model->modelClass = $class;
-		} else {
-			$model = Credentials::model()->findByPk($id);
-			if(empty($model))
-				throw new CHttpException(404);
-			if($profile->user->id != $model->userId) {
-				if(empty($model->userId)){ // Only the admin user can view/edit system-wide credentials.
-					if(!$isAdmin)
-						throw new CHttpException(403,Yii::t('app','You are not authorized to view/edit these credentials.'));
-				} else // Under no circumstances may a user view/edit another's credentials.
-					throw new CHttpException(403,Yii::t('app','You are not authorized to view/edit other users\' credentials.'));
-			}
-		}
-		if($isAdmin)
-			$model->scenario = 'admin';
+    /**
+     * Basic CRUD for application credentials
+     * @param type $id
+     * @param type $class embedded model class name
+     * @throws CHttpException
+     */
+    public function actionCreateUpdateCredentials($id = null, $class = null) {
+        if (!Yii::app()->params->isAdmin && $class === 'TwitterApp')
+            $this->denied ();
 
-		// Apply changes if any:
-		$message = null;
-		if(isset($_POST['Credentials'])) {
-			$model->attributes = $_POST['Credentials'];
-			// Save the model:
-			if($model->validate()) {
-				// Set timestamps
-				$time = time();
-				if($model->isNewRecord)
-					$model->createDate = $time;
-				$model->lastUpdated = $time;
-				// Set owner
-				if(empty($model->userId) && !$isAdmin)
-					$model->userId = $profile->user->id;
-				$model->save();
-				$message = Yii::t('application', 'Saved').' '.Formatter::formatLongDateTime($time);
-				
-				// Set as default if applicable:
-				if(!$model->isNewRecord && isset($_POST['default'])){
-					if(!is_array($_POST['default'])){ // It's a yes or no
-						if($_POST['default']){
-							$defaults = $model->defaultSubstitutesInv[$model->modelClass];
-						}
-					}else{ // It's a selector
-						$defaults = $_POST['default'];
-					}
-					if(isset($defaults)){
-						foreach($defaults as $serviceType){
-							$model->makeDefault($profile->user->id, $serviceType);
-						}
-					}
-				}
-				$this->redirect(array('profile/manageCredentials'));
-			}
-		}
-		$this->render('createUpdateCredentials',array('model'=>$model,'profile'=>$profile,'message' => $message));
-	}
+        $this->pageTitle = Yii::t('app', 'Edit Credentials');
+        $profile = Yii::app()->params->profile;
+        // Create or retrieve model:
+        if (empty($id)) {
+            if (empty($class))
+                throw new CHttpException(
+                    400, 'Class must be specified when creating new credentials.');
+            $model = new Credentials();
+            $model->modelClass = $class;
+        } else {
+            $model = Credentials::model()->findByPk($id);
+            if (empty($model))
+                throw new CHttpException(404);
+        }
+        if ($model->modelClass === 'TwitterApp') {
+            $model->private = 1;
+            $model->userId = Credentials::SYS_ID;
+            $model->name = 'Twitter app';
+            $disableMetaDataForm = true;
+        }
+        $model->scenario = $model->isNewRecord ? 'create' : 'update';
 
-	public function actionDeleteCredentials($id){
-		$cred = Credentials::model()->findByPk($id);
-		if(empty($cred))
-			throw new CHttpException(404);
-		if($cred->userId != Yii::app()->user->id && !Yii::app()->user->checkAccess('AdminIndex'))
-			throw new CHttpException(403,'You cannot delete credentials that you do not own.');
-		$cred->delete();
-		Yii::app()->db->createCommand()->delete('x2_credentials_default','credId=:cid',array(':cid'=>$id));
-		$this->redirect(array('profile/manageCredentials'));
-	}
+        // Apply changes if any:
+        $message = null;
+        if (isset($_POST['Credentials'])) {
+            $model->attributes = $_POST['Credentials'];
+            // Check to see if user has permission:
+            if (!Yii::app()->user->checkAccess('CredentialsCreateUpdate', array('model' => $model)))
+                $this->denied();
+            // Save the model:
+            if ($model->validate()) {
+                // Set timestamps
+                $time = time();
+                if ($model->isNewRecord)
+                    $model->createDate = $time;
+                $model->lastUpdated = $time;
+                if ($model->save()) {
+                    $message = Yii::t('app', 'Saved') . ' ' . Formatter::formatLongDateTime($time);
+                    $this->redirect(array('manageCredentials'));
+                }
+            } else {
+                //AuxLib::debugLogR ($model->getErrors ());
+            }
+        }
+        $this->render(
+            'createUpdateCredentials', 
+            array(
+                'model' => $model,
+                'profile' => $profile,
+                'disableMetaDataForm' => isset ($disableMetaDataForm) ? 
+                    $disableMetaDataForm : false,
+                'message' => $message));
+    }
+
+    /**
+     * Action to be called via ajax to verify authentication to the SMTP server
+     */
+    public function actionVerifyCredentials() {
+        $attributes = array('email', 'password', 'server', 'port', 'security');
+        foreach ($attributes as $attr)
+            ${$attr} = isset($_POST[$attr])? $_POST[$attr] : "";
+        $this->attachBehavior('EmailDeliveryBehavior', new EmailDeliveryBehavior);
+        $valid = $this->testUserCredentials($email, $password, $server, $port, $security);
+        if (!$valid) echo "Failed";
+    }
+
+    /**
+     * Make a credentials record default for the active user.
+     * @param type $id
+     * @throws CHttpException
+     */
+    public function actionSetDefaultCredentials($id) {
+        $model = Credentials::model()->findByPk($id);
+
+        if (!isset($_POST['userId']))
+            throw new Exception(400, 'Invalid request');
+        $userId = $_POST['userId'];
+        if (empty($model))
+            throw new CHttpException(404);
+        if (!Yii::app()->user->checkAccess('CredentialsSetDefault', array('model' => $model, 'userId' => $userId)))
+            $this->denied();
+        if (!is_array($_POST['default'])) { // It's a yes or no
+            if ($_POST['default']) {
+                $defaults = $model->defaultSubstitutesInv[$model->modelClass];
+            }
+        } else { // It's a selector
+            $defaults = $_POST['default'];
+        }
+
+        if (isset($defaults)) {
+            foreach ($defaults as $serviceType) {
+                $model->makeDefault($userId, $serviceType);
+            }
+        }
+        $this->redirect(array('manageCredentials'));
+    }
+
+    public function actionDeleteCredentials($id) {
+        $cred = Credentials::model()->findByPk($id);
+        if (empty($cred))
+            throw new CHttpException(404);
+        if (!Yii::app()->user->checkAccess('CredentialsDelete', array('model' => $cred)))
+            $this->denied();
+        $cred->delete();
+        $this->redirect(array('/profile/manageCredentials'));
+    }
 
     /**
      * Updates a particular model.
@@ -425,21 +550,20 @@ class ProfileController extends x2base {
      * If update is successful, the browser will be redirected to the 'view' page.
      * @param integer $id the ID of the model to be updated
      */
-    public function actionUpdate($id){
-        if($id == Yii::app()->user->getId() || Yii::app()->params->isAdmin){
+    public function actionUpdate($id) {
+        if ($id == Yii::app()->user->getId() || Yii::app()->params->isAdmin) {
             $model = $this->loadModel($id);
             $users = User::getNames();
-            $accounts = Accounts::getNames();
 
-            if(isset($_POST['Profile'])){
+            if (isset($_POST['Profile'])) {
 
-                foreach($_POST['Profile'] as $name => $value){
-                    if($value == $model->getAttributeLabel($name)){
+                foreach ($_POST['Profile'] as $name => $value) {
+                    if ($value == $model->getAttributeLabel($name)) {
                         $_POST['Profile'][$name] = '';
                     }
                     $model->$name = $value;
                 }
-                if($model->save()){
+                if ($model->save()) {
                     $this->redirect(array('view', 'id' => $model->id));
                 }
             }
@@ -447,10 +571,9 @@ class ProfileController extends x2base {
             $this->render('update', array(
                 'model' => $model,
                 'users' => $users,
-                'accounts' => $accounts,
             ));
-        }else{
-            $this->redirect(array('/profile/'.$id));
+        } else {
+            $this->redirect(array('/profile/view', 'id' => $id));
         }
     }
 
@@ -458,22 +581,22 @@ class ProfileController extends x2base {
      * Changes the password for the user given by its record ID number.
      * @param integer $id ID of the user to be updated.
      */
-    public function actionChangePassword($id){
-        if($id == Yii::app()->user->getId()){
+    public function actionChangePassword($id) {
+        if ($id == Yii::app()->user->getId()) {
             $user = UserChild::model()->findByPk($id);
-            if(isset($_POST['oldPassword']) && isset($_POST['newPassword']) && isset($_POST['newPassword2'])){
+            if (isset($_POST['oldPassword']) && isset($_POST['newPassword']) && isset($_POST['newPassword2'])) {
 
                 $oldPass = $_POST['oldPassword'];
                 $newPass = $_POST['newPassword'];
                 $newPass2 = $_POST['newPassword2'];
-                if((crypt($oldPass, '$5$rounds=32678$'.$user->password) == '$5$rounds=32678$'.$user->password) || md5($oldPass) == $user->password){
-                    if($newPass == $newPass2){
+                if ((crypt($oldPass, '$5$rounds=32678$' . $user->password) == '$5$rounds=32678$' . $user->password) || md5($oldPass) == $user->password) {
+                    if ($newPass == $newPass2) {
                         $user->password = md5($newPass);
                         $user->save();
 
-                        $this->redirect($this->createUrl('profile/'.$id));
+                        $this->redirect($this->createUrl('/profile/view', array('id' => $id)));
                     }
-                }else{
+                } else {
                     Yii::app()->clientScript->registerScript('alertPassWrong', "alert('Old password is incorrect.');");
                 }
             }
@@ -488,25 +611,27 @@ class ProfileController extends x2base {
      * Upload a profile photo.
      * @param integer $id ID of the user in question.
      */
-    public function actionUploadPhoto($id){
-        if($id == Yii::app()->user->getId()){
-            $prof = ProfileChild::model()->findByPk($id);
-            if(isset($_FILES['photo'])){
-                if($_FILES["photo"]["size"] < 2000000){
-                    if($prof->avatar != '' && isset($prof->avatar) && file_exists($prof->avatar)){
+    public function actionUploadPhoto($id) {
+        if ($id == Yii::app()->user->getId()) {
+            $prof = Profile::model()->findByPk($id);
+            if (isset($_FILES['photo'])) {
+                if ($_FILES["photo"]["error"]) {
+                    Yii::app()->user->setFlash('error', Yii::t('app', "There was an error uploading the file."));
+                } else if ($_FILES["photo"]["size"] < 2000000) {
+                    if ($prof->avatar != '' && isset($prof->avatar) && file_exists($prof->avatar)) {
                         unlink($prof->avatar);
                     }
                     $temp = CUploadedFile::getInstanceByName('photo');
                     $name = $this->generatePictureName();
                     $ext = $temp->getExtensionName();
-                    $temp->saveAs('uploads/'.$name.'.'.$ext);
+                    $temp->saveAs('uploads/' . $name . '.' . $ext);
 
-                    $prof->avatar = 'uploads/'.$name.'.'.$ext;
-                    if($prof->save()){
-
+                    $prof->avatar = 'uploads/' . $name . '.' . $ext;
+                    if ($prof->save()) {
+                        
                     }
-                }else{
-                    echo "File is too large!";
+                } else {
+                    Yii::app()->user->setFlash('error', Yii::t('app', "File is too large!"));
                 }
             }
         }
@@ -518,35 +643,35 @@ class ProfileController extends x2base {
      *
      * @param type $id
      */
-    public function actionDeleteBackground($id){
+    public function actionDeleteBackground($id) {
 
         $image = X2Model::model('Media')->findByPk($id);
-        if($image->associationId == Yii::app()->user->getId() && ($image->associationType == 'bg' || $image->associationType == 'bg-private')){
+        if ($image->associationId == Yii::app()->user->getId() && ($image->associationType == 'bg' || $image->associationType == 'bg-private')) {
 
-            $profile = X2Model::model('ProfileChild')->findByPk(Yii::app()->user->getId());
+            $profile = X2Model::model('Profile')->findByPk(Yii::app()->user->getId());
 
-            if($profile->backgroundImg == $image->fileName){ // if this BG is currently in use, clear user's background image setting
+            if ($profile->backgroundImg == $image->fileName) { // if this BG is currently in use, clear user's background image setting
                 $profile->backgroundImg = '';
                 $profile->save();
             }
 
-            if($image->delete()){
-                unlink('uploads/'.$image->fileName); // delete file
+            if ($image->delete()) {
+                unlink('uploads/' . $image->fileName); // delete file
                 echo 'success';
             }
         }
     }
 
-    public function actionDeleteSound($id, $sound){
+    public function actionDeleteSound($id, $sound) {
         $sound = X2Model::model('Media')->findByPk($id);
-        $profile=Yii::app()->params->profile;
-        $type=$sound->associationType;
-        if($profile->$type == $sound->fileName){ // if this sound is currently in use, clear user's sound setting
+        $profile = Yii::app()->params->profile;
+        $type = $sound->associationType;
+        if ($profile->$type == $sound->fileName) { // if this sound is currently in use, clear user's sound setting
             $profile->$type = '';
             $profile->update(array($sound->associationType));
         }
-        if($sound->delete()){
-            unlink('uploads/media/'.$sound->uploadedBy.'/'.$sound->fileName); // delete file
+        if ($sound->delete()) {
+            unlink('uploads/media/' . $sound->uploadedBy . '/' . $sound->fileName); // delete file
             echo 'success';
         }
         return true;
@@ -557,12 +682,12 @@ class ProfileController extends x2base {
      *
      * @return string
      */
-    private function generatePictureName(){
+    private function generatePictureName() {
 
         $time = time();
         $rand = chr(rand(65, 90));
-        $salt = $time.$rand;
-        $name = md5($salt.md5($salt).$salt);
+        $salt = $time . $rand;
+        $name = md5($salt . md5($salt) . $salt);
         return $name;
     }
 
@@ -571,13 +696,13 @@ class ProfileController extends x2base {
      *
      * @param integer $id ID of the user.
      */
-    public function actionAddPost($id, $redirect){
+    public function actionAddPost($id, $redirect) {
         $post = new Events;
         // $user = $this->loadModel($id);
-        if(isset($_POST['Events']) && $_POST['Events']['text'] != Yii::t('app', 'Enter text here...')){
+        if (isset($_POST['Events']) && $_POST['Events']['text'] != Yii::t('app', 'Enter text here...')) {
             $post->text = $_POST['Events']['text'];
             $post->visibility = $_POST['Events']['visibility'];
-            if(isset($_POST['Events']['associationId']))
+            if (isset($_POST['Events']['associationId']))
                 $post->associationId = $_POST['Events']['associationId'];
             //$soc->attributes = $_POST['Social'];
             //die(var_dump($_POST['Social']));
@@ -586,10 +711,10 @@ class ProfileController extends x2base {
             $post->subtype = $_POST['Events']['subtype'];
             $post->lastUpdated = time();
             $post->timestamp = time();
-            if(!isset($post->associationId) || $post->associationId == 0)
+            if (!isset($post->associationId) || $post->associationId == 0)
                 $post->associationId = $id;
-            if($post->save()){
-                if($post->associationId != Yii::app()->user->getId()){
+            if ($post->save()) {
+                if ($post->associationId != Yii::app()->user->getId()) {
 
                     $notif = new Notification;
 
@@ -604,128 +729,34 @@ class ProfileController extends x2base {
                             ->where('id=:id', array(':id' => $post->associationId))
                             ->queryScalar();
 
-                    // $prof = X2Model::model('ProfileChild')->findByAttributes(array('username'=>$post->user));
+                    // $prof = X2Model::model('Profile')->findByAttributes(array('username'=>$post->user));
                     // $notif->text = "$prof->fullName posted on your profile.";
                     // $notif->record = "profile:$prof->id";
                     // $notif->viewed = 0;
                     $notif->createDate = time();
-                    // $subject=X2Model::model('ProfileChild')->findByPk($id);
+                    // $subject=X2Model::model('Profile')->findByPk($id);
                     // $notif->user = $subject->username;
                     $notif->save();
                 }
             }
         }
-        if($redirect == "view")
+        if ($redirect == "view")
             $this->redirect(array('view', 'id' => $id));
         else
-            $this->redirect(array('site/whatsNew'));
+            $this->redirect(array('/profile/profile'));
     }
 
     /**
-     * Posts a comment on some post.
-     *
-     * @param $comment string the text you're posting
-     * @param $id integer the id of the post you're commenting on
+     * Redirect to current user's profile page
      */
-    public function actionAddComment($comment, $id){
-
-        // if(isset($_GET['comment'],$_GET['id'])) {
-
-        $postModel = Events::model()->findByPk($id);
-
-        if($postModel === null)
-            throw new CHttpException(404, Yii::t('app', 'The requested post does not exist.'));
-
-        $commentModel = new Events;
-        $commentModel->text = $comment;
-        $commentModel->user = Yii::app()->user->name;
-        $commentModel->type = 'comment';
-        $commentModel->associationId = $postModel->id;
-        $commentModel->associationType = 'Events';
-        $commentModel->timestamp = time();
-
-        if($commentModel->save()){
-
-            $postModel->lastUpdated = time();
-            $postModel->save();
-
-            $profileUser = Yii::app()->db->createCommand()
-                    ->select('username')
-                    ->from('x2_users')
-                    ->where('id=:id', array(':id' => $postModel->associationId))
-                    ->queryScalar();
-
-
-            // notify the owner of the feed containing the post you commented on (unless that person is you)
-            if($postModel->associationId != Yii::app()->user->getId()){
-                $postNotif = new Notification;
-                $postNotif->type = 'social_comment';
-                $postNotif->createdBy = $commentModel->user;
-                $postNotif->modelType = 'Profile';
-                $postNotif->modelId = $postModel->associationId;
-
-                // look up the username of the owner of the feed
-                $postNotif->user = $profileUser;
-
-                $postNotif->createDate = time();
-                $postNotif->save();
-            }
-            // now notify the person whose post you commented on (unless they're the same person as the first notification)
-            if($profileUser != $postModel->user && $postModel->user != Yii::app()->user->name){
-                $commentNotif = new Notification;
-                $commentNotif->type = 'social_comment';
-                $commentNotif->createdBy = $commentModel->user;
-                $commentNotif->modelType = 'Profile';
-                $commentNotif->modelId = $postModel->associationId;
-
-                $commentNotif->user = $postModel->user;
-
-                $commentNotif->createDate = time();
-                $commentNotif->save();
-            }
-
-            // $notif=new Notifications;
-            // $prof=X2Model::model('ProfileChild')->findByAttributes(array('username'=>$comment->user));
-            // $notif->text="$prof->fullName added a comment to a post.";
-            // $notif->record="profile:$model->associationId";
-            // $notif->viewed=0;
-            // $notif->createDate=time();
-            // $subject=X2Model::model('ProfileChild')->findByAttributes(array('username'=>$post->user));
-            // $notif->user=$subject->username;
-            // if($notif->user!=Yii::app()->user->getName())
-            // $notif->save();
-            // $notif=new Notifications;
-            // $prof=X2Model::model('ProfileChild')->findByAttributes(array('username'=>$comment->user));
-            // $subject=X2Model::model('ProfileChild')->findByPk($post->associationId);
-            // $notif->text="$prof->fullName added a comment to a post.";
-            // $notif->record="profile:$model->associationId";
-            // $notif->viewed=0;
-            // $notif->createDate=time();
-            // $notif->user=$subject->username;
-            // if($notif->user!=Yii::app()->user->getName())
-            // $notif->save();
-        }
-        // }
-        if(isset($_GET['redirect'])){
-            if($_GET['redirect'] == "view")
-                $this->redirect(array('view', 'id' => $postModel->associationId));
-            if($_GET['redirect'] == "index")
-                $this->redirect(array('index'));
-        } else
-            $this->redirect(array('index'));
-    }
-
-    /**
-     * Lists all models.
-     */
-    public function actionIndex(){
-        $this->redirect(array('/site/whatsNew'));
+    public function actionIndex() {
+        $this->redirect(array('view', 'id' => Yii::app()->user->getId()));
     }
 
     /**
      * Lists users profiles.
      */
-    public function actionProfiles(){
+    public function actionProfiles() {
         $model = new Profile('search');
         $this->render('profiles', array('model' => $model));
     }
@@ -740,12 +771,12 @@ class ProfileController extends x2base {
      * @param array $languageDirs
      * @return mixed
      */
-    private function getLanguageName($code, $languageDirs){ // lookup language name for the language code provided
-        if(in_array($code, $languageDirs)){ // is the language pack here?
+    private function getLanguageName($code, $languageDirs) { // lookup language name for the language code provided
+        if (in_array($code, $languageDirs)) { // is the language pack here?
             $appMessageFile = "protected/messages/$code/app.php";
-            if(file_exists($appMessageFile)){ // attempt to load 'app' messages in
+            if (file_exists($appMessageFile)) { // attempt to load 'app' messages in
                 $appMessages = include($appMessageFile);     // the chosen language
-                if(is_array($appMessages) and isset($appMessages['languageName']) && $appMessages['languageName'] != 'Template')
+                if (is_array($appMessages) and isset($appMessages['languageName']) && $appMessages['languageName'] != 'Template')
                     return $appMessages['languageName'];       // return language name
             }
         }
@@ -756,7 +787,7 @@ class ProfileController extends x2base {
      * Return a mapping of Olson TZ code names to timezone names.
      * @return array
      */
-    private function getTimeZones(){
+    private function getTimeZones() {
         return array(
             'Pacific/Midway' => "(GMT-11:00) Midway Island",
             'US/Samoa' => "(GMT-11:00) Samoa",
@@ -879,12 +910,12 @@ class ProfileController extends x2base {
      * Sets the the option for the number of results per page.
      * @param integer $results
      */
-    public function actionSetResultsPerPage($results){
+    public function actionSetResultsPerPage($results) {
         Yii::app()->params->profile->resultsPerPage = $results;
         Yii::app()->params->profile->save();
     }
 
-    public function actionResetWidgets($id){
+    public function actionResetWidgets($id) {
         $model = $this->loadModel($id);
 
         $model->layout = json_encode($model->initLayout());
@@ -892,5 +923,794 @@ class ProfileController extends x2base {
 
         $this->redirect(array('view', 'id' => $id));
     }
+
+    /***********************************************************************
+     * Profile Page Methods
+     ***********************************************************************/
+
+    public function actionCreateProfileWidget () {
+        if (!isset ($_POST['widgetLayoutName']) || !isset ($_POST['widgetType'])) {
+            throw new CHttpException (400, 'Bad Request');
+        }
+        $widgetClass = $_POST['widgetType'];
+        $widgetSettings = array ();
+        if (preg_match ('/::/', $widgetClass)) {
+            // Custom module summary widget. extract model name
+            $widgetSettings['modelType'] = preg_replace ('/::.*$/', '', $widgetClass);
+            $widgetSettings['label'] = $widgetSettings['modelType'] . ' Summary';
+            $widgetClass = preg_replace ('/^.*::/', '', $widgetClass);
+            if (!class_exists ($widgetSettings['modelType'])) {
+                echo 'false';
+            }
+        }
+
+        $widgetLayoutName = $_POST['widgetLayoutName'];
+        list ($success, $uid) = SortableWidget::createSortableWidget (
+            Yii::app()->params->profile, $widgetClass, $widgetLayoutName, $widgetSettings);
+        if ($success) {
+            echo $widgetClass::getWidgetContents(
+                $this, Yii::app()->params->profile, $widgetLayoutName, $uid);
+        } else {
+            echo 'false';
+        }
+
+    }
+
+    public function actionDeleteSortableWidget () {
+        if (!isset ($_POST['widgetLayoutName']) || !isset ($_POST['widgetKey'])) {
+            throw new CHttpException (400, 'Bad Request');
+        }
+        $widgetKey = $_POST['widgetKey'];
+
+        $profile = self::getModelFromPost();
+
+        list($widgetClass, $widgetUID) = SortableWidget::parseWidgetLayoutKey ($widgetKey);
+            $widgetLayoutName = $_POST['widgetLayoutName'];
+        if (SortableWidget::subtypeIsValid ($widgetLayoutName, $widgetClass)) {
+            if (SortableWidget::deleteSortableWidget (
+                $profile, $widgetClass, $widgetUID, $widgetLayoutName)) {
+
+                echo 'success';
+                return;
+            }
+        }
+        echo 'failure';
+    }
+
+    public static function getModelFromPost() {
+        if (isset($_POST['modelName']) && isset($_POST['modelId'])) {
+            if ($_POST['modelName'] && $_POST['modelId']) {
+                return X2Model::model($_POST['modelName'])->findByPk($_POST['modelId']);
+            }
+        } 
+
+        return $profile = Yii::app()->params->profile;
+    }
+
+
+
+    /**
+     * Called to save profile widget sort order
+     * Expected POST data:
+     *  widgetOrder - an array of strings, each corresponding to a widget class name
+     * Echoes:
+     *  'failure' if the request action fails, 'success' otherwise
+     */
+    public function actionSetWidgetOrder() {
+        if (!isset($_POST['widgetOrder']) ||
+                !is_array($_POST['widgetOrder']) || !isset($_POST['widgetType'])) {
+
+            echo 'Failure: invalid post params';
+            return;
+        }
+        $profile = self::getModelFromPost();
+        $widgetOrder = $_POST['widgetOrder'];
+        $widgetType = $_POST['widgetType'];
+
+        if (SortableWidget::setSortOrder($profile, $widgetOrder, $widgetType)) {
+            echo 'success';
+            return;
+        }
+        echo 'Failure: failed to set sort order';
+    }
+
+    /**
+     * Called to retieve widget contents
+     * Expected POST data:
+     *  widgetClass - the name of the widget class
+     * Echoes:
+     *  'failure' if the request action fails, an HTML string containing the widget contents 
+     *      otherwise
+     */
+    public function actionShowWidgetContents() {
+        if (!isset($_POST['widgetClass']) || !isset($_POST['widgetType'])) {
+
+            echo 'failure';
+            return;
+        }
+        if (isset($_POST['widgetType']) === 'recordView' && (!isset ($_POST['modelId']) ||
+            !isset ($_POST['modelType']))) {
+
+            echo 'failure';
+            return;
+        }
+        $profile = self::getModelFromPost();
+        // AuxLib::debugLogR($profile->attributes);
+        $widgetKey = $_POST['widgetClass'];
+        $widgetType = $_POST['widgetType'];
+        list($widgetClass, $widgetUID) = SortableWidget::parseWidgetLayoutKey ($widgetKey);
+
+        if ($profile && class_exists($widgetClass)) {
+            if ($widgetClass::setJSONProperty($profile, 'hidden', 0, $widgetType, $widgetUID)) {
+                if ($widgetType === 'recordView') {
+                    $model = X2Model::getModelOfTypeWithId (
+                        $_POST['modelType'], $_POST['modelId']);
+                    if ($model !== null) {
+                        echo $widgetClass::getWidgetContents(
+                            $this, $profile, $widgetType, $widgetUID, 
+                            array (
+                                'model' => $model, 
+                            ));
+                    }
+                } else {
+                    echo $widgetClass::getWidgetContents($this, $profile, $widgetType, $widgetUID);
+                }
+                return;
+            }
+        }
+        echo 'failure';
+        return;
+    }
+
+    /**
+     * A wrapper around actionShowWidgetContents () which allows widget contents to be requested
+     * with a GET request. This is used for gridview widgets.
+     */
+    public function actionGetWidgetContents() {
+        if (!isset($_GET['widgetClass']) ||
+                !isset($_GET['widgetType'])) {
+
+            echo 'failure';
+            return;
+        }
+        $_POST['widgetClass'] = $_GET['widgetClass'];
+        $_POST['widgetType'] = $_GET['widgetType'];
+
+        if (isset($_GET['modelName'])) {
+            $_POST['modelName'] = $_GET['modelName'];
+        }
+
+        if (isset($_GET['modelId'])) {
+            $_POST['modelId'] = $_GET['modelId'];
+        }
+
+
+        $this->actionShowWidgetContents();
+        return;
+    }
+
+    /**
+     * Called to save settings for a particular profile widget
+     * Expected POST data:
+     *  widgetClass - the name of the widget class
+     *  key - the widget settings JSON property 
+     *  value - the value which the JSON property will be set to 
+     * Echoes:
+     *  'failure' if the request action fails, 'success' otherwise
+     */
+    public function actionSetWidgetSetting() {
+        if (!isset($_POST['widgetClass']) || !isset($_POST['key']) || !isset($_POST['value']) ||
+            !isset($_POST['widgetType']) || !isset($_POST['widgetUID'])) {
+
+            throw new CHttpException (404, 'Bad Request');
+        }
+
+        $profile = self::getModelFromPost();
+        $widgetClass = $_POST['widgetClass'];
+        $key = $_POST['key'];
+        $value = $_POST['value'];
+        $widgetType = $_POST['widgetType'];
+        $widgetUID = $_POST['widgetUID'];
+        if (class_exists($widgetClass) &&
+            method_exists($widgetClass, 'setJSONProperty')) {
+
+            if ($widgetClass::setJSONProperty($profile, $key, $value, $widgetType, $widgetUID)) {
+                echo 'success';
+                return;
+            }
+
+        }
+        echo 'failure';
+    }
+
+    private function getActivityFeedViewParams($id, $publicProfile) {
+        Events::deleteOldEvents();
+
+        $isMyProfile = !$publicProfile && $id === Yii::app()->params->profile->id;
+        $profile = $this->loadModel($id);
+
+        if (!Yii::app()->request->isAjaxRequest) {
+            $_SESSION['lastDate'] = 0;
+            unset($_SESSION['lastEventId']);
+        }
+
+        unset($_SESSION['feed-condition']);
+        unset($_SESSION['feed-condition-params']);
+        if (!isset($_GET['filters'])) {
+            unset($_SESSION['filters']);
+        }
+        if (isset(Yii::app()->params->profile->defaultFeedFilters)) {
+            $_SESSION['filters'] = json_decode(Yii::app()->params->profile->defaultFeedFilters, true);
+        }
+
+        $filters = null;
+        $filtersOn = false;
+        if (isset($_GET['filters'])) {
+            $filters = $_GET;
+            if ($_GET['filters']) {
+                $filtersOn = true;
+            }
+        }
+
+        extract(Events::getFilteredEventsDataProvider(
+                        $profile, $isMyProfile, $filters, $filtersOn));
+
+        $data = $dataProvider->getData();
+        if (isset($data[count($data) - 1]))
+            $firstId = $data[count($data) - 1]->id;
+        else
+            $firstId = 0;
+
+        if ($isMyProfile) {
+            $users = User::getUserIds();
+        } else {
+            $users = array($profile->id => $profile->fullName);
+        }
+
+        $_SESSION['firstFlag'] = true;
+        $stickyDataProvider = new CActiveDataProvider('Events', array(
+            'criteria' => array(
+                'condition' => 'sticky=1',
+                'order' => 'timestamp DESC, id DESC',
+            ),
+            'pagination' => array(
+                'pageSize' => 20
+            ),
+        ));
+        $_SESSION['stickyFlag'] = false;
+
+        $usersDataProvider = User::getUsersDataProvider();
+        return array(
+            'model' => $profile,
+            'isMyProfile' => !$publicProfile && $id === Yii::app()->params->profile->id,
+            'dataProvider' => $dataProvider,
+            'users' => $users,
+            'lastEventId' => !empty($lastId) ? $lastId : 0,
+            'firstEventId' => !empty($firstId) ? $firstId : 0,
+            'lastTimestamp' => $lastTimestamp,
+            'stickyDataProvider' => $stickyDataProvider,
+            'usersDataProvider' => $usersDataProvider
+        );
+    }
+
+    
+
+    public function actionActivity() {
+        $id = Yii::app()->params->profile->id;
+        $params = $this->getActivityFeedViewParams($id, false);
+        $this->render('activity', $params);
+    }
+
+    /**
+     * Default landing page action for the web application.
+     *
+     * Displays a feed of new records that have been created since the last
+     * login of the current web user.
+     */
+    public function actionView($id, $publicProfile = false) {
+        if (isset($_GET['ajax'])) { // ajax request from grid view widget
+            $_POST['widgetClass'] = $_GET['ajax'];
+            $_POST['widgetType'] = 'profile';
+            $this->actionShowWidgetContents();
+            return;
+        }
+        if (isset($_GET['widgetClass']) && // record view widget update request
+            isset($_GET['widgetType']) &&
+            $_GET['widgetType'] === 'recordView' &&
+            isset ($_GET['modelId']) &&
+            isset ($_GET['modelType'])) {
+
+            $_POST['widgetClass'] = $_GET['widgetClass'];
+            $_POST['widgetType'] = $_GET['widgetType'];
+            $_POST['modelId'] = $_GET['modelId'];
+            $_POST['modelType'] = $_GET['modelType'];
+            $this->actionShowWidgetContents();
+            return;
+        }
+        if (isset($_GET['widgetClass']) && // widget update request
+            isset($_GET['widgetType'])) {
+
+            $_POST['widgetClass'] = $_GET['widgetClass'];
+            $_POST['widgetType'] = $_GET['widgetType'];
+            $this->actionShowWidgetContents();
+            return;
+        }
+
+        if (!Yii::app()->user->isGuest) {
+            $params = $this->getActivityFeedViewParams($id, $publicProfile);
+
+            $this->render('profile', $params);
+        } else {
+            $this->redirect('login');
+        }
+
+    }
+
+    public function actionGetEvents($lastEventId, $lastTimestamp, $myProfileId, $profileId) {
+
+        $myProfile = Profile::model()->findByPk($myProfileId);
+        $profile = Profile::model()->findByPk($profileId);
+        if (!isset($myProfile) || !isset($profile))
+            return false;
+
+
+        $result = Events::getEvents(
+                        $lastEventId, $lastTimestamp, null, null, null, $myProfile, $profile);
+
+        $events = $result['events'];
+        $eventData = "";
+        $newLastEventId = $lastEventId;
+        $newLastTimestamp = $lastTimestamp;
+        foreach ($events as $event) {
+            if ($event instanceof Events) {
+                if ($event->id > $newLastEventId) {
+                    $newLastEventId = $event->id;
+                }
+                if ($event->timestamp > $newLastTimestamp) {
+                    $newLastTimestamp = $event->timestamp;
+                }
+                $eventData.=$this->renderPartial(
+                        'application.views.profile._viewEvent', array(
+                    'data' => $event,
+                    'noDateBreak' => true,
+                    'profileId' => $profileId,
+                        ), true
+                );
+            }
+        }
+        $commentCriteria = new CDbCriteria();
+        $sqlParams = array(
+            ':lastEventId' => $lastEventId
+        );
+        $condition = "type='comment' AND timestamp <=" . time() . " AND id > :lastEventId";
+        $parameters = array('order' => 'id ASC');
+        $parameters['condition'] = $condition;
+        $parameters['params'] = $sqlParams;
+        $commentCriteria->scopes = array('findAll' => array($parameters));
+        $comments = X2Model::model('Events')->findAll($commentCriteria);
+        $commentCounts = array();
+        $lastCommentId = $lastEventId;
+        foreach ($comments as $comment) {
+            $parentPost = X2Model::model('Events')->findByPk($comment->associationId);
+            if (isset($parentPost) && !isset($commentCounts[$parentPost->id])) {
+                $commentCounts[$parentPost->id] = count($parentPost->children);
+            }
+            $lastCommentId = $comment->id;
+        }
+
+        echo CJSON::encode(array(
+            $newLastEventId,
+            $newLastEventId != $lastEventId ? $eventData : '',
+            $commentCounts,
+            $lastCommentId,
+            $newLastTimestamp,
+        ));
+    }
+
+    public function actionGetEventsBetween ($startTimestamp, $endTimestamp, $widgetType) {
+        if (class_exists ($widgetType) && is_subclass_of ($widgetType, 'SortableWidget')) {
+            echo CJSON::encode($widgetType::getChartData($startTimestamp, $endTimestamp));
+        } else {
+            throw new CHttpException (404, 'Bad Request.');
+        }
+    }
+
+    public function actionLoadComments($id, $profileId) {
+        $commentDataProvider = new CActiveDataProvider('Events', array(
+            'criteria' => array(
+                'order' => 'timestamp ASC',
+                'condition' => "type='comment' AND associationType='Events' AND associationId=$id",
+        )));
+        $this->widget('zii.widgets.CListView', array(
+            'dataProvider' => $commentDataProvider,
+            'viewData' => array(
+                'profileId' => $profileId
+            ),
+            'itemView' => '../social/_view',
+            'template' => '&nbsp;{items}',
+            'id' => $id . '-comments',
+        ));
+    }
+
+    /*
+      Used for both like and unlike buttons. If the user has alread liked the
+      post, the post will be unliked and visa versa. The function returns a string
+      indicating whether the post was liked or unliked.
+      Parameter:
+      $id - the user's id
+     */
+
+    public function actionLikePost($id) {
+        $userId = Yii::app()->user->id;
+
+        $likedPost = Yii::app()->db->createCommand()
+                ->select('count(userId)')
+                ->from('x2_like_to_post')
+                ->where('userId=:userId and postId=:postId', array(':userId' => Yii::app()->user->id, ':postId' => $id))
+                ->queryScalar();
+
+        if (!$likedPost) {
+            Yii::app()->db->createCommand()
+                    ->insert('x2_like_to_post', array('userId' => $userId, 'postId' => $id));
+            echo 'liked post';
+        } else {
+            Yii::app()->db->createCommand()
+                    ->delete('x2_like_to_post', 'userId=:userId and postId=:postId', array('userId' => $userId, 'postId' => $id));
+            echo 'unliked post';
+        }
+    }
+
+    /*
+      Returns an array of links to the user profiles of users who have liked the
+      post.
+      Parameter:
+      $id - the id of the post
+     */
+
+    public function actionLoadLikeHistory($id) {
+        $likeHistory = Yii::app()->db->createCommand()
+                ->select('concat (firstName, " ", lastName), usrs.id')
+                ->from('x2_like_to_post as likes, x2_users as usrs')
+                ->where('likes.userId=usrs.id and likes.postId=:postId', array('postId' => $id))
+                ->queryAll();
+
+        $likeHistoryLinks = array();
+        foreach ($likeHistory as $like) {
+            $likeHistoryLinks[] = CHtml::link($like['concat (firstName, " ", lastName)'], array('/profile/view', 'id' => $like['id']));
+        }
+
+        echo CJSON::encode($likeHistoryLinks);
+    }
+
+    /*
+      Indicates that a post is important by changing it's css properties.
+      Called via ajax from the make important dialog.
+     */
+
+    public function actionFlagPost() {
+        if (isset($_GET['id']) && isset($_GET['attr'])) {
+            $id = $_GET['id'];
+            $important = $_GET['attr'];
+            $event = X2Model::model('Events')->findByPk($id);
+            if (isset($event)) {
+                if (isset($_GET['color']) && !empty($_GET['color'])) {
+                    $event->color = $_GET['color'];
+                } else {
+                    $event->color = null;
+                }
+                if (isset($_GET['fontColor']) && !empty($_GET['fontColor'])) {
+                    $event->fontColor = $_GET['fontColor'];
+                } else {
+                    $event->fontColor = null;
+                }
+                if (isset($_GET['linkColor']) && !empty($_GET['linkColor'])) {
+                    $event->linkColor = $_GET['linkColor'];
+                } else {
+                    $event->linkColor = null;
+                }
+                if ($important == 'important') {
+                    $event->important = 1;
+                } else {
+                    $event->important = 0;
+                }
+                if( $event->save() ) {
+                    echo 'success';
+                    return;
+                }
+            }
+        }
+
+        echo 'failure';
+
+    }
+
+    /*
+      Broadcasts an event via email or notification to a list of users.
+      Called via ajax from the broadcast event dialog.
+     */
+
+    public function actionBroadcastEvent($id, $email, $notify, $users) {
+        $event = X2Model::model('Events')->findByPk($id);
+        if (isset($event)) {
+            $users = Profile::model()->findAllByPk(CJSON::decode($users));
+            if ($email === 'true') { // broadcast via email
+                // Check if user has set a default account for email delivery
+                $subject = "Event Broadcast";
+                $fromName = Yii::app()->params->profile->fullName;
+                $body = "$fromName has broadcast an event on your X2Engine Activity Feed:<br><br>" .
+                        $event->getText(array('requireAbsoluteUrl' => true));
+                $recipients = array('to' => array());
+                foreach ($users as $user)
+                    $recipients['to'][] = array($user->fullName, $user->emailAddress);
+                //$this->sendUserEmail($recipients, $subject, $body, null, Credentials::$sysUseId['systemNotificationEmail']);
+                $this->sendUserEmail($recipients, $subject, $body);
+            }
+            if ($notify === 'true') { // broadcast via notifation
+                $time = time();
+                foreach ($users as $user) {
+                    $notif = new Notification;
+                    $notif->modelType = 'Events';
+                    $notif->createdBy = Yii::app()->user->getName();
+                    $notif->modelId = $event->id;
+                    $notif->user = $user->username;
+                    $notif->createDate = $time;
+                    $notif->type = 'event_broadcast';
+                    $notif->save();
+                }
+            }
+        }
+    }
+
+    public function actionStickyPost($id) {
+        if (Yii::app()->params->isAdmin) {
+            $event = X2Model::model('Events')->findByPk($id);
+            if (isset($event)) {
+                $event->sticky = !$event->sticky;
+                $event->update(array('sticky'));
+            }
+            echo (date("M j", time()) == date("M j", $event->timestamp) ? Yii::t('app', "Today") : Yii::app()->locale->dateFormatter->formatDateTime($event->timestamp, 'long', null));
+        }
+    }
+
+    public function actionMinimizePosts() {
+        if (isset($_GET['minimize'])) {
+            $profile = Yii::app()->params->profile;
+            if ($_GET['minimize'] == 'minimize') {
+                $profile->minimizeFeed = 1;
+            } else {
+                $profile->minimizeFeed = 0;
+            }
+            echo $_GET['minimize'] == true;
+            $profile->save();
+        }
+    }
+
+    /**
+      Create a new chart setting record in the chart settings table.
+      Called via ajax from the chart setting creation dialog.
+     */
+    function actionCreateChartSetting() {
+        if (isset($_POST['chartSettingAttributes'])) {
+            $chartSettingAttributes = $_POST['chartSettingAttributes'];
+            $chartSetting = new ChartSetting;
+            if (is_array($chartSettingAttributes) &&
+                    array_key_exists('settings', $chartSettingAttributes) &&
+                    array_key_exists('chartType', $chartSettingAttributes) &&
+                    array_key_exists('name', $chartSettingAttributes)) {
+
+                $chartSetting->settings = $chartSettingAttributes['settings'];
+                $chartSetting->name = $chartSettingAttributes['name'];
+                $chartSetting->chartType = $chartSettingAttributes['chartType'];
+                $chartSetting->userId = Yii::app()->user->id;
+                if ($chartSetting->validate()) {
+                    if ($chartSetting->save()) {
+                        return;
+                    }
+                }
+                echo CJSON::encode($chartSetting->getErrors());
+                return;
+            }
+        }
+        echo CJSON::encode(array('failure'));
+    }
+
+    /**
+      Delete a chart setting record from the chart settings table.
+      Called via ajax from the feed chart UI.
+     */
+    function actionDeleteChartSetting($chartSettingName) {
+        $chartSetting = ChartSetting::model()->findByAttributes(array(
+            'userId' => Yii::app()->user->id,
+            'name' => $chartSettingName
+        ));
+        if (!empty($chartSetting) && $chartSetting->delete()) {
+            echo 'success';
+        } else {
+            echo 'failure';
+        }
+    }
+
+    public function actionPublishPost() {
+        $post = new Events;
+        // $user = $this->loadModel($id);
+        if (isset($_POST['text']) && $_POST['text'] != "") {
+            $post->text = $_POST['text'];
+            $post->visibility = $_POST['visibility'];
+            if (isset($_POST['associationId']))
+                $post->associationId = $_POST['associationId'];
+            //$soc->attributes = $_POST['Social'];
+            //die(var_dump($_POST['Social']));
+            $post->user = Yii::app()->user->getName();
+            $post->type = 'feed';
+            $post->subtype = $_POST['subtype'];
+            $post->lastUpdated = time();
+            $post->timestamp = time();
+            if ($post->save()) {
+                if (!empty($post->associationId) && $post->associationId != Yii::app()->user->getId()) {
+
+                    $notif = new Notification;
+
+                    $notif->type = 'social_post';
+                    $notif->createdBy = $post->user;
+                    $notif->modelType = 'Profile';
+                    $notif->modelId = $post->associationId;
+
+                    $notif->user = Yii::app()->db->createCommand()
+                            ->select('username')
+                            ->from('x2_users')
+                            ->where('id=:id', array(':id' => $post->associationId))
+                            ->queryScalar();
+
+                    // $prof = X2Model::model('Profile')->findByAttributes(array('username'=>$post->user));
+                    // $notif->text = "$prof->fullName posted on your profile.";
+                    // $notif->record = "profile:$prof->id";
+                    // $notif->viewed = 0;
+                    $notif->createDate = time();
+                    // $subject=X2Model::model('Profile')->findByPk($id);
+                    // $notif->user = $subject->username;
+                    $notif->save();
+                }
+            }
+        }
+    }
+
+    public function actionAddComment() {
+        if (isset($_POST['id']) && isset($_POST['text']) && $_POST['text'] != '') {
+            $id = $_POST['id'];
+            $comment = $_POST['text'];
+            $postModel = Events::model()->findByPk($id);
+
+            if ($postModel === null)
+                throw new CHttpException(404, Yii::t('app', 'The requested post does not exist.'));
+
+            $commentModel = new Events;
+            $commentModel->text = $comment;
+            $commentModel->user = Yii::app()->user->name;
+            $commentModel->type = 'comment';
+            $commentModel->associationId = $postModel->id;
+            $commentModel->associationType = 'Events';
+            $commentModel->timestamp = time();
+
+            if ($commentModel->save()) {
+                $commentCount = X2Model::model('Events')->countByAttributes(array(
+                    'type' => 'comment',
+                    'associationType' => 'Events',
+                    'associationId' => $postModel->id,
+                ));
+                $postModel->lastUpdated = time();
+                $postModel->save();
+
+                $profileUser = Yii::app()->db->createCommand()
+                        ->select('username')
+                        ->from('x2_users')
+                        ->where('id=:id', array(':id' => $postModel->associationId))
+                        ->queryScalar();
+
+
+                // notify the owner of the feed containing the post you commented on (unless that person is you)
+                if ($postModel->associationId != Yii::app()->user->getId()) {
+                    $postNotif = new Notification;
+                    $postNotif->type = 'social_comment';
+                    $postNotif->createdBy = $commentModel->user;
+                    $postNotif->modelType = 'Profile';
+                    $postNotif->modelId = $postModel->associationId;
+
+                    // look up the username of the owner of the feed
+                    $postNotif->user = $profileUser;
+
+                    $postNotif->createDate = time();
+                    $postNotif->save();
+                }
+                // now notify the person whose post you commented on (unless they're the same person as the first notification)
+                if ($profileUser != $postModel->user && $postModel->user != Yii::app()->user->name) {
+                    $commentNotif = new Notification;
+                    $commentNotif->type = 'social_comment';
+                    $commentNotif->createdBy = $commentModel->user;
+                    $commentNotif->modelType = 'Profile';
+                    $commentNotif->modelId = $postModel->associationId;
+
+                    $commentNotif->user = $postModel->user;
+
+                    $commentNotif->createDate = time();
+                    $commentNotif->save();
+                }
+            }
+            echo $commentCount;
+        } else {
+            echo "";
+        }
+    }
+
+    public function actionToggleFeedFilters($filter) {
+        $profile = Yii::app()->params->profile;
+        if (isset($profile)) {
+            $filters = json_decode($profile->feedFilters, true);
+            if (isset($filters[$filter])) {
+                $filters[$filter] = $filters[$filter] == 1 ? 0 : 1;
+            } else {
+                $filters[$filter] = 0;
+            }
+            $flag = $filters[$filter];
+            $profile->feedFilters = json_encode($filters);
+            $profile->update(array('feedFilters'));
+            echo $flag;
+        }
+    }
+
+    public function actionToggleFeedControls() {
+        $profile = Yii::app()->params->profile;
+        if (isset($profile)) {
+            $profile->fullFeedControls = !$profile->fullFeedControls;
+            $profile->update(array('fullFeedControls'));
+        }
+    }
+
+    /**
+     * Saves a default template for the specified module into the users profile settings
+     * @param string $moduleName
+     * @param int $templateId
+     */
+    public function actionAjaxSaveDefaultEmailTemplate($moduleName, $templateId) {
+        $profile = Yii::app()->params->profile;
+        $errors = false;
+        $message = '';
+        if (isset($profile)) {
+            $defaultEmailTemplates = CJSON::decode($profile->defaultEmailTemplates);
+
+            if ($templateId !== '') {
+                $template = Docs::model()->findByPk($templateId);
+                if (!$this->checkPermissions($template, 'view')) {
+                    $errors = true;
+                    $message = Yii::t(
+                                    'profile', 'You do not have permission to view that template');
+                } else {
+                    // check that template exists, that it's of the correct doc type, and is 
+                    // associated with the correct model type
+                    if ($template && $template->type === 'email' &&
+                            $template->associationType === X2Model::getModelName($moduleName)) {
+
+                        $defaultEmailTemplates[$moduleName] = $templateId;
+                        $profile->defaultEmailTemplates = CJSON::encode($defaultEmailTemplates);
+                        $profile->save();
+                    } else {
+                        $errors = true;
+                        $message = Yii::t('profile', 'Invalid template');
+                    }
+                }
+            } else { // remove default
+                if (isset($defaultEmailTemplates[$moduleName]))
+                    unset($defaultEmailTemplates[$moduleName]);
+                $profile->defaultEmailTemplates = CJSON::encode($defaultEmailTemplates);
+                $profile->save();
+            }
+        } else {
+            $message = Yii::t('profile', 'Profile not found');
+        }
+        echo CJSON::encode(array(
+            'success' => !$errors,
+            'message' => $message,
+        ));
+    }
+
 
 }

@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -34,18 +34,36 @@
  * "Powered by X2Engine".
  *****************************************************************************************/
 
+$isGuest = Yii::app()->user->isGuest;
 $cs = Yii::app()->clientScript;
 $cs->scriptMap = array();
 $baseUrl = $this->module->assetsUrl;
+$cs->registerCoreScript('jquery');
 $cs->registerPackage('jquerymobile');
+$cs->registerCssFile($this->module->getAssetsUrl() . '/css/jqueryMobileCssOverrides.css');
+$cs->registerCssFile($this->module->getAssetsUrl() . '/css/main.css');
+$cs->registerScriptFile(Yii::app()->baseUrl.'/js/webtoolkit.sha256.js');
 
-// JQuery Mobile CSS framework
-//$cs->registerCssFile($baseUrl.'/css/jquery.mobile-1.0b2.css','all');
-//
-//$cs->registerScriptFile($baseUrl.'/js/jquery-1.6.2.js');
-//$cs->registerScriptFile($baseUrl.'/js/jquery.mobile-1.0b2.js');
-//
 $cs->registerScriptFile($baseUrl . '/js/x2mobile.js');
+
+$jsVersion = '?'.Yii::app()->params->buildDate;
+$cs->registerScriptFile(Yii::app()->getBaseUrl ().'/js/auxlib.js'.$jsVersion);
+$cs->registerScriptFile(Yii::app()->getBaseUrl ().'/js/jstorage.min.js'.$jsVersion)
+   ->registerScriptFile(Yii::app()->getBaseUrl ().'/js/notifications.js'.$jsVersion, 
+     CClientScript::POS_BEGIN)
+   ->registerScriptFile(Yii::app()->getBaseUrl ().'/js/Attachments.js'.$jsVersion, 
+     CClientScript::POS_HEAD);
+$cs->registerScript ('X2ClientScript.registerAttachments',"
+    x2.attachments = new x2.Attachments ({
+        translations: ".CJSON::encode (array (
+            'filetypeError' => Yii::t('app', '"{X}" is not an allowed filetype.'),
+        ))."
+    });
+", CClientScript::POS_END);
+
+
+
+
 ?><!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
@@ -59,20 +77,25 @@ $cs->registerScriptFile($baseUrl . '/js/x2mobile.js');
 </head>
 <body> 
 <div id="container"> 
-	<div id="<?php echo $this->pageId; ?>" data-role="page" data-url="<?php echo $this->dataUrl; ?>/" data-theme="b">
-		<div data-role="header" data-theme="b">
-			<div  class="figure"><a href="<?php echo $this->createUrl('site/home');?>" rel="external"><img style="margin-left:20px;" src="<?php echo $this->module->getAssetsUrl() . '/css/images/x2touch-logo.png'; ?>" alt="x2engine" /></a></div>
-		</div>
+	<div id="<?php echo $this->pageId; ?>" data-role="page" data-url="<?php echo $this->dataUrl; ?>/" data-theme="a">
+		<!--div data-role="header" data-theme="a">
+			<div  class="figure"><a href="<?php echo $this->createUrl('/mobile/site/home');?>" rel="external"><img style="margin-left:20px;" src="<?php echo $this->module->getAssetsUrl() . '/css/images/x2touch-logo.png'; ?>" alt="x2engine" /></a></div>
+		</div-->
 		<div data-role="content">
 			<?php
 			echo $content;
 			?>
 		</div>
-		<div data-role="footer" data-theme="b">
+		<div data-role="footer" data-theme="a">
 			<p>&nbsp;&nbsp;&copy; <?php echo date('Y') . ' ' . CHtml::link('X2Engine Inc.', 'http://www.x2engine.com')." ";
 				echo Yii::t('app', 'Rights Reserved.'); ?>
-				<?php echo CHtml::link(Yii::t('mobile', 'Go to Full Site'),Yii::app()->getBaseUrl().'/index.php/site/index?mobile=false',array('rel'=>'external', 'onClick'=>'setMobileBrowserFalse()')); ?>
+				<?php //echo CHtml::link(Yii::t('mobile', 'Go to Full Site'),Yii::app()->getBaseUrl().'/index.php/site/index?mobile=false',array('rel'=>'external', 'onClick'=>'setMobileBrowserFalse()')); ?>
 			</p>
+            <div id='logo-container'>
+            <?php
+            echo CHtml::image(Yii::app()->params->x2Power,'',array('id'=>'powered-by-x2engine')); 
+            ?>
+            </div>
 		</div>
 	</div>
 </div>

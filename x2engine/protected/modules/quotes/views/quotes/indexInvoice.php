@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -34,11 +34,10 @@
  * "Powered by X2Engine".
  *****************************************************************************************/
 
-$this->actionMenu = $this->formatMenu(array(
-	array('label'=>Yii::t('quotes','Quotes List'), 'url'=>array('index')),
-	array('label'=>Yii::t('quotes','Invoice List')),
-	array('label'=>Yii::t('quotes','Create'), 'url'=>array('create')),
-));
+$menuOptions = array(
+    'index', 'invoices', 'create',
+);
+$this->insertMenu($menuOptions);
 
 Yii::app()->clientScript->registerScript('search', "
 $('.search-button').click(function(){
@@ -59,12 +58,12 @@ $('.search-form form').submit(function(){
 	'model'=>$model,
 )); ?>
 </div><!-- search-form -->
-<?php 
-$this->widget('application.components.X2GridView', array(
+<?php
+$this->widget('X2GridView', array(
 	'id'=>'invoices-grid',
 	'title'=>Yii::t('quotes','Invoices'),
-	'buttons'=>array('advancedSearch','clearFilters','columnSelector'),
-	'template'=> '<div class="page-title">{title}{buttons}{filterHint}{summary}</div>{items}{pager}',
+	'buttons'=>array('advancedSearch','clearFilters','columnSelector','autoResize'),
+	'template'=> '<div class="page-title icon quotes">{title}{buttons}{filterHint}{summary}</div>{items}{pager}',
 	'dataProvider'=>$model->searchInvoice(),
 	// 'enableSorting'=>false,
 	// 'model'=>$model,
@@ -83,7 +82,7 @@ $this->widget('application.components.X2GridView', array(
 		'name'=>array(
 			'name'=>'name',
 			'header'=>Yii::t('quotes','Name'),
-			'value'=>'CHtml::link($data->name,array("view","id"=>$data->id))',
+			'value'=>'$data->link',
 			'type'=>'raw',
 		),
 	),

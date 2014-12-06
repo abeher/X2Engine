@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -34,20 +34,16 @@
  * "Powered by X2Engine".
  *****************************************************************************************/
 
-include("protected/modules/products/productConfig.php");
+$menuOptions = array(
+    'index', 'create', 'view', 'edit', 'delete',
+);
+$this->insertMenu($menuOptions, $model);
 
-$this->actionMenu = $this->formatMenu(array(
-	array('label'=>Yii::t('module','{X} List',array('{X}'=>$moduleConfig['recordName'])), 'url'=>array('index')),
-	array('label'=>Yii::t('module','Create',array('{X}'=>$moduleConfig['recordName'])), 'url'=>array('create')),
-	array('label'=>Yii::t('module','View',array('{X}'=>$moduleConfig['recordName'])), 'url'=>array('view', 'id'=>$model->id)),
-	array('label'=>Yii::t('module','Update',array('{X}'=>$moduleConfig['recordName']))),
-	array('label'=>Yii::t('module','Delete',array('{X}'=>$moduleConfig['recordName'])), 'url'=>'#', 'linkOptions'=>array('submit'=>array('delete','id'=>$model->id),'confirm'=>Yii::t('app','Are you sure you want to delete this item?'))),
-));
 ?>
 <?php //echo CHtml::link('['.Yii::t('contacts','Show All').']','javascript:void(0)',array('id'=>'showAll','class'=>'right hide','style'=>'text-decoration:none;')); ?>
 <?php //echo CHtml::link('['.Yii::t('contacts','Hide All').']','javascript:void(0)',array('id'=>'hideAll','class'=>'right','style'=>'text-decoration:none;')); ?>
 <div class="page-title icon products">
-	<h2><span class="no-bold"><?php echo Yii::t('module','Update {X}',array('{X}'=>$moduleConfig['recordName'])); ?></span> <?php echo $model->name; ?></h2>
+	<h2><span class="no-bold"><?php echo Yii::t('products','Update {module}', array('{module}'=>Modules::displayName(false))); ?></span> <?php echo CHtml::encode($model->name); ?></h2>
 	<a class="x2-button highlight right" href="javascript:void(0);" onclick="$('#save-button').click();"><?php echo Yii::t('app','Save'); ?></a>
 </div>
 

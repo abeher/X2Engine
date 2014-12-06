@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -34,10 +34,10 @@
  * "Powered by X2Engine".
  *****************************************************************************************/
 ?>
-<div class="page-title"><h2><?php echo Yii::t('admin','Add Exception'); ?></h2></div>
+<div class="page-title rounded-top"><h2><?php echo Yii::t('admin','Add Exception'); ?></h2></div>
 <div class="form">
-<div style="width:500px">
-    <?php echo Yii::t('admin','Adding an exception will alter a Role\'s behavior while the contact is on a particular workflow stage.  You can change which fields are editable by whom to be dependent on where a contact is in workflow this way.') ?>
+<div style="max-width:500px">
+    <?php echo Yii::t('admin',"Adding an exception will alter a Role's behavior while the contact is on a particular process stage.  You can change which fields are editable by whom to be dependent on where a contact is in the process this way.") ?>
 </div><br>
 <?php
 //Yii::app()->clientScript->registerScriptFile(Yii::app()->getBaseUrl().'/js/multiselect/js/ui.multiselect.js');
@@ -63,40 +63,40 @@ foreach($list as $role){
         'action'=>'roleException',
 )); ?>
 
-        <label><?php echo Yii::t('admin','Workflow'); ?></label>
+        <label><?php echo Yii::t('workflow','Processes'); ?></label>
         <?php echo CHtml::dropDownList('workflow','',$workflows,array(
-        'empty'=>'Select a workflow',
+        'empty'=>'Select a process',
                 'ajax' => array(
                 'type'=>'POST', //request type
-                'url'=>CController::createUrl('admin/getWorkflowStages'), //url to call.
+                'url'=>CController::createUrl('/admin/getWorkflowStages'), //url to call.
                 //Style: CController::createUrl('currentController/methodToCall')
                 'update'=>'#workflowStages', //selector to update
-                //'data'=>'js:"modelType="+$("'.CHtml::activeId($model,'modelType').'").val()' 
+                //'data'=>'js:"modelType="+$("'.CHtml::activeId($model,'modelType').'").val()'
                 //leave out the data key to pass all form values through
                 ))); ?>
-        <label><?php echo Yii::t('admin','Workflow Stage'); ?></label>
-        <?php echo CHtml::dropDownList('workflowStages','',array(),array('id'=>'workflowStages','empty'=>'Select a workflow first'));?>
+        <label><?php echo Yii::t('workflow','Process Stage'); ?></label>
+        <?php echo CHtml::dropDownList('workflowStages','',array(),array('id'=>'workflowStages','empty'=>'Select a process first'));?>
         <div class="row">
             <label>Role Name</label>
             <?php echo $form->dropDownList($model,'name',$names,array(
-                'empty'=>'Select a role',
+                'empty'=>Yii::t('admin','Select a role'),
                 'ajax' => array(
                 'type'=>'POST', //request type
-                'url'=>CController::createUrl('admin/getRole'), //url to call.
+                'url'=>CController::createUrl('/admin/getRole', array('mode'=>'exception')), //url to call.
                 //Style: CController::createUrl('currentController/methodToCall')
                 'update'=>'#roleFormTwo', //selector to update
                 'complete'=>"function(){
                     $('.multiselect').multiselect();
                     $('#users').hide();
                 }"
-                //'data'=>'js:"modelType="+$("'.CHtml::activeId($model,'modelType').'").val()' 
+                //'data'=>'js:"modelType="+$("'.CHtml::activeId($model,'modelType').'").val()'
                 //leave out the data key to pass all form values through
                 ))); ?>
             <?php echo $form->error($model,'name'); ?>
         </div>
-        
+
         <div id="roleFormTwo">
-            
+
         </div>
         <br />
 	<div class="row buttons">

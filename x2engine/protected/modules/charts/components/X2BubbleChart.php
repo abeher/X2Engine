@@ -1,8 +1,8 @@
 <?php
 
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -36,7 +36,7 @@
  *****************************************************************************************/
 
 /**
- * @package X2CRM.modules.charts.components 
+ * @package application.modules.charts.components 
  */
 class X2BubbleChart extends X2ChartWidget {
 
@@ -123,9 +123,9 @@ class X2BubbleChart extends X2ChartWidget {
 		$cs->registerPackage('jqbubbleplot');
 		$jsChartOptions = CJavaScript::encode($this->chartOptions);
 		$jsChartOptions = str_replace("'jquery.jqplot.BubbleRenderer'", "$.jqplot.BubbleRenderer", $jsChartOptions);
-		$cmd = "$.jqplot('$id', $chartVals, $jsChartOptions)";
-                if(count($this->plotData)!=0)
-		$cs->registerScript($id, $cmd, CClientScript::POS_LOAD);
+        $cmd = "x2.chartManager.addChart ($.jqplot('$id', $chartVals, $jsChartOptions));";
+        if(count($this->plotData)!=0)
+            $cs->registerScript($id, $cmd, CClientScript::POS_LOAD);
 	}
 
 }

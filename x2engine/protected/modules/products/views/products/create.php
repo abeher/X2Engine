@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -34,14 +34,17 @@
  * "Powered by X2Engine".
  *****************************************************************************************/
 
-include("protected/modules/products/productConfig.php");
-$this->actionMenu = $this->formatMenu(array(
-	array('label'=>Yii::t('module','{X} List',array('{X}'=>$moduleConfig['recordName'])), 'url'=>array('index')),
-	array('label'=>Yii::t('module','Create',array('{X}'=>$moduleConfig['recordName']))),
-));
+$menuOptions = array(
+    'index', 'create',
+);
+$this->insertMenu($menuOptions);
 ?>
-<div class="page-title icon products"><h2><?php echo Yii::t('module','Create New {X}',array('{X}'=>$moduleConfig['recordName'])); ?></h2></div>
-<?php 
+<div class="page-title icon products"><h2>
+    <?php echo Yii::t('products','Create New {module}', array(
+        '{module}' => Modules::displayName(false),
+    )); ?>
+</h2></div>
+<?php
 if(!isset($model->status) || $model->status == '') {
 	$model->status = 'Active';
 }

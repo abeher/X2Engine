@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -39,12 +39,12 @@ Yii::import('application.components.*');
 Yii::import('application.components.util.*');
 
 /**
- * Test for JSONFieldsBehavior.
+ * Test for NormalizedJSONFieldsBehavior.
  *
- * @package X2CRM.tests.unit.components
+ * @package application.tests.unit.components
  * @author Demitri Morgan <demitri@x2engine.com>, Derek Mueller <derek@x2engine.com>
  */
-class JSONFieldsBehaviorTest extends CActiveRecordBehaviorTestCase {
+class NormalizedJSONFieldsBehaviorTest extends CActiveRecordBehaviorTestCase {
 
 		public $arrayTemplate = array(
 			'this' => null,
@@ -61,7 +61,7 @@ class JSONFieldsBehaviorTest extends CActiveRecordBehaviorTestCase {
 	public function testPackAttribute() {
 		$model = new CActiveMock();
 		$model->foo = $this->arrayOld;
-		$jfb = new JSONFieldsBehavior();
+		$jfb = new NormalizedJSONFieldsBehavior();
 		$jfb->transformAttributes = array('foo' => array_keys($this->arrayTemplate));
 		$jfb->attach($model);
 		$template = array_fill_keys(array_keys($this->arrayTemplate),null);
@@ -73,7 +73,7 @@ class JSONFieldsBehaviorTest extends CActiveRecordBehaviorTestCase {
 	public function testUnpackAttribute() {
 		$model = new CActiveMock();
 		$model->foo = CJSON::encode($this->arrayOld);
-		$jfb = new JSONFieldsBehavior();
+		$jfb = new NormalizedJSONFieldsBehavior();
 		$jfb->transformAttributes = array('foo' => array_keys($this->arrayTemplate));
 		$jfb->attach($model);
 		$template = array_fill_keys(array_keys($this->arrayTemplate),null);

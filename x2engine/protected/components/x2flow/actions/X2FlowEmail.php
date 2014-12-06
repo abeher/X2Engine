@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -36,46 +36,82 @@
 
 /**
  * Create Record action
- * 
- * @package X2CRM.components.x2flow.actions
+ *
+ * @package application.components.x2flow.actions
  */
-class X2FlowEmail extends X2FlowAction {
+class X2FlowEmail extends BaseX2FlowEmail {
 	public $title = 'Email';
 	public $info = 'Send a template or custom email to the specified address.';
-	
+
+
 	public function paramRules() {
-		return array(
-			'title' => Yii::t('studio',$this->title),
-			'info' => Yii::t('studio',$this->info),
-			'options' => array(
-				array('name'=>'to','label'=>'To:','type'=>'email'),
-				array('name'=>'from','label'=>'From:','type'=>'email'),
-				array('name'=>'template','label'=>'Template','type'=>'dropdown','options'=>array(''=>Yii::t('studio','Custom'))+Docs::getEmailTemplates(),'optional'=>1),
-				array('name'=>'subject','label'=>'Subject'),
-				array('name'=>'cc','label'=>'CC:','optional'=>1,'type'=>'email'),
-				array('name'=>'bcc','label'=>'BCC:','optional'=>1,'type'=>'email'),
-				array('name'=>'body','label'=>'Message','optional'=>1,'type'=>'richtext'),
-				// 'time','dateTime'),
-			));
-	}
-	
+        $parentRules = parent::paramRules ();
+        $parentRules['options'] = array_merge (
+            $parentRules['options'],
+            array (
+                array('name'=>'to','label'=>Yii::t('studio','To:'),'type'=>'email'),
+                array(
+                    'name' => 'template',
+                    'label' => Yii::t('studio', 'Template'),
+                    'type' => 'dropdown',
+                    'defaultVal' => '',
+                    'options' => array('' => Yii::t('studio', 'Custom')) + 
+                        Docs::getEmailTemplates('email', 'Contacts')
+                ),
+                array(
+                    'name' => 'subject',
+                    'label' => Yii::t('studio', 'Subject'),
+                    'optional' => 1
+                ),
+                array(
+                    'name' => 'cc',
+                    'label' => Yii::t('studio', 'CC:'),
+                    'optional' => 1,
+                    'type' => 'email'
+                ),
+                array(
+                    'name' => 'bcc', 
+                    'label' => Yii::t('studio', 'BCC:'),
+                    'optional' => 1,
+                    'type' => 'email'
+                ),
+                array(
+                    'name' => 'body', 
+                    'label' => Yii::t('studio', 'Message'),
+                    'optional' => 1,
+                    'type' => 'richtext'
+                ),
+
+            )
+        );
+        return $parentRules;
+    }
+
 	public function execute(&$params) {
-		// die(var_dump(array_keys($params)));
 		$eml = new InlineEmail;
 		$options = &$this->config['options'];
-		
+		$eml->to = Formatter::replaceVariables ($this->parseOption('to',$params), $params['model']);
+        
+        $historyFlag = false;
+        if(isset($params['model'])){
+            $historyFlag = true;
+            $eml->targetModel=$params['model'];
+        }
 		if(isset($options['cc']['value']))
 			$eml->cc = $this->parseOption('cc',$params);
-		if(isset($options['bcc']['value']))
+		if(isset($options['bcc']['value'])){
 			$eml->bcc = $this->parseOption('bcc',$params);
-		$eml->to = $this->parseOption('to',$params);
-		
-		$eml->from = array('address'=>$this->parseOption('from',$params),'name'=>'');
-		$eml->subject = $this->parseOption('subject',$params);
-		
-		if(isset($options['body']['value']) && !empty($options['body']['value'])) {	// "body" option (deliberately-entered content) takes precedence over template
-			$eml->scenario = 'custom';
-			$eml->message = InlineEmail::emptyBody($this->parseOption('body',$params));
+        }
+
+		//$eml->from = array('address'=>$this->parseOption('from',$params),'name'=>'');
+        $eml->credId = $this->parseOption('from',$params);
+        //printR ($eml->from, true);
+		$eml->subject = Formatter::replaceVariables($this->parseOption('subject',$params),$params['model']);
+
+        // "body" option (deliberately-entered content) takes precedence over template
+		if(isset($options['body']['value']) && !empty($options['body']['value'])) {	
+            $eml->scenario = 'custom';
+			$eml->message = InlineEmail::emptyBody(Formatter::replaceVariables($this->parseOption('body',$params),$params['model']));
 			$eml->prepareBody();
 			// $eml->insertSignature(array('<br /><br /><span style="font-family:Arial,Helvetica,sans-serif; font-size:0.8em">','</span>'));
 		} elseif(!empty($options['template']['value'])) {
@@ -83,19 +119,21 @@ class X2FlowEmail extends X2FlowAction {
 			$eml->template = $this->parseOption('template',$params);
 			$eml->prepareBody();
 		}
-		$result = $eml->send(false);
-		// die(var_dump($result));
-		return isset($result['code']) && $result['code'] == 200;
+
+        list ($success, $message) = $this->checkDoNotEmailFields ($eml);
+        if (!$success) {
+            return array ($success, $message);
+        }
+
+		$result = $eml->send($historyFlag);
+		if (isset($result['code']) && $result['code'] == 200) {
+            if (YII_DEBUG && YII_UNIT_TESTING) {
+                return array(true, $eml->message);
+            } else {
+                return array(true, "");
+            }
+        } else {
+            return array (false, Yii::t('app', "Email could not be sent"));
+        }
 	}
 }
-
-
-
-
-
-
-
-
-
-
-

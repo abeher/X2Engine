@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -58,6 +58,11 @@
 			<?php echo $form->error($model,'officePhone'); ?>
 		</div>
 		<div class="cell">
+			<?php echo $form->labelEx($model,'extension'); ?>
+			<?php echo $form->textField($model,'extension',array('size'=>20,'maxlength'=>20)); ?>
+			<?php echo $form->error($model,'extension'); ?>
+		</div>
+		<div class="cell">
 			<?php echo $form->labelEx($model,'cellPhone'); ?>
 			<?php echo $form->textField($model,'cellPhone',array('size'=>20,'maxlength'=>20)); ?>
 			<?php echo $form->error($model,'cellPhone'); ?>
@@ -72,9 +77,9 @@
 		</div>
 		<div class="cell">
 			<?php
-			$userChoice = (Yii::app()->params->admin->emailUseSignature == 'user'); 
+			$userChoice = (Yii::app()->settings->emailUseSignature == 'user'); 
 			if(!$userChoice)
-				$model->emailUseSignature = Yii::app()->params->admin->emailUseSignature;
+				$model->emailUseSignature = Yii::app()->settings->emailUseSignature;
 			?>
 			<?php echo $form->labelEx($model,'emailUseSignature'); ?>
 			<?php echo $form->dropDownList($model,'emailUseSignature',array(
@@ -90,11 +95,24 @@
 	<div class="row">
 		<div class="cell">
 			<?php echo $form->labelEx($model,'googleId'); ?>
-			<?php echo $form->textField($model,'googleId',array('size'=>40,'maxlength'=>250)).' <span class="x2-hint" title="This field should contain a Google Account (i.e. yourname@gmail.com) which you can use to log in to X2CRM with if Google Integration has been enabled.">[?]</span>'; ?>
+			<?php echo $form->textField($model,'googleId',array('size'=>40,'maxlength'=>250)).' <span class="x2-hint" title="This field should contain a Google Account (i.e. yourname@gmail.com) which you can use to log in to X2Engine with if Google Integration has been enabled.">[?]</span>'; ?>
 			<?php echo $form->error($model,'googleId'); ?>
 		</div>
 	</div>
 	
+	<div class="row">
+		<div class="cell">
+			<?php 
+            echo $form->labelEx($model,'leadRoutingAvailability'); 
+			echo $form->checkBox($model, 'leadRoutingAvailability');
+            echo X2Html::hint (
+                Yii::t('profile', 'Uncheck this box if you do no want to be automatically '.
+                    'assigned new leads through lead routing.'),
+                false, null, true);
+            ?>
+		</div>
+	</div>
+
 	<div class="row">
 		<?php
 		Yii::app()->clientScript->registerScriptFile(Yii::app()->getBaseUrl().'/js/ckeditor/ckeditor.js');

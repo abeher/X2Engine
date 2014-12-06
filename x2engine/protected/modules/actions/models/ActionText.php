@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -36,7 +36,7 @@
 
 /**
  * This is the model class for table "x2_action_text".
- * @package X2CRM.models
+ * @package application.models
  */
 class ActionText extends CActiveRecord
 {
@@ -73,7 +73,6 @@ class ActionText extends CActiveRecord
 		return array(
 			'actionId' => Yii::t('actions','Action ID'),
 			'text' => Yii::t('actions','Action Text'),
-
 		);
 	}
 

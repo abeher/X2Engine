@@ -1,8 +1,7 @@
 <?php
-
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -36,126 +35,109 @@
  *****************************************************************************************/
 
 /**
- * Class for displaying tags on a record.
+ * Class for displaying center widgets
  *
- * @package X2CRM.components
+ * @package application.components
  */
 class X2WidgetList extends X2Widget {
 
     public $model;
-    public $modelType;
-    public $block; // left, right, or center
-    public $layout; // associative array with 3 lists of widgets: left, right, and center
 
-    public function init(){
-        // widget layout
-        if(!Yii::app()->user->isGuest){
-        $this->layout = Yii::app()->params->profile->layout;
+    private $_profile;
 
-        if(!$this->layout){ // layout hasn't been initialized?
-            $this->layout = $this->initLayout(); // initilize layout
-            Yii::app()->params->profile->layout = json_encode($this->layout);
-            Yii::app()->params->profile->update();
-        }else{
-            $this->layout = json_decode($this->layout, true); // json to associative array
+    public function getProfile () {
+        if (!isset ($this->_profile)) {
+            $this->_profile = (Yii::app()->user->isGuest ? 
+                new Profile : Yii::app()->params->profile);
         }
-        }else{
-            $this->layout = $this->initLayout();
-        }
-
-        parent::init();
+        return $this->_profile;
     }
 
-    public function run(){
+    /**
+     * @var array (<widget name> => <array of parameters to pass to widget) 
+     */
+    public $widgetParamsByWidgetName = array ();
 
-        if($this->block == 'center'){
-            echo '<div id="content-widgets">';
-            foreach($this->layout['center'] as $name => $widget){ // list of widgets
-				$exclude = $this->modelType == 'BugReports' && $name != 'InlineRelationships';
-				$exclude = $exclude || $this->modelType == 'Quote' && $name == 'WorkflowStageDetails';
-                if(!$exclude){
-                    $this->render('centerWidget', array('widget' => $widget, 'name' => $name, 'model' => $this->model, 'modelType' => $this->modelType));
+    /**
+     * Renders widgets in layout 
+     */
+    private function renderWidget () {
+        $layout = $this->profile->recordViewWidgetLayout;
+
+        foreach($layout as $widgetClass => $settings){ // list of widgets
+            $widgetParams = array(
+                'model' => $this->model,
+                'profile' => $this->profile,
+                'widgetType' => 'recordView',
+            );
+
+            if (isset ($this->widgetParamsByWidgetName[$widgetClass])) {
+                foreach ($this->widgetParamsByWidgetName[$widgetClass] as $paramName => $value) {
+                    $widgetParams[$paramName] = $value;
                 }
             }
 
-            echo '</div>';
+            if(!$this->isExcluded ($widgetClass)){
+                Yii::app()->controller->widget(
+                    'application.components.sortableWidget.recordViewWidget.'.$widgetClass, 
+                    $widgetParams);
+            }
         }
     }
 
-    function initLayout(){
-        return array(
-            'left' => array(),
-            'center' => array(
-                'InlineTags' => array(
-                    'title' => 'Tags',
-                    'minimize' => false,
-                ),
-                'WorkflowStageDetails' => array(
-                    'title' => 'Workflow',
-                    'minimize' => false,
-                ),
-                'InlineRelationships' => array(
-                    'title' => 'Relationships',
-                    'minimize' => false,
-                ),
-            ),
-            'right' => array(
-                'ActionMenu' => array(
-                    'title' => 'My Actions',
-                    'minimize' => false,
-                ),
-                'ChatBox' => array(
-                    'title' => 'Activity Feed',
-                    'minimize' => false,
-                ),
-                'GoogleMaps' => array(
-                    'title' => 'Google Map',
-                    'minimize' => false,
-                ),
-                'OnlineUsers' => array(
-                    'title' => 'Active Users',
-                    'minimize' => false,
-                ),
-                'TagCloud' => array(
-                    'title' => 'Tag Cloud',
-                    'minimize' => false,
-                ),
-                'TimeZone' => array(
-                    'title' => 'Time Zone',
-                    'minimize' => false,
-                ),
-                'MessageBox' => array(
-                    'title' => 'Message Board',
-                    'minimize' => false,
-                ),
-                'QuickContact' => array(
-                    'title' => 'Quick Contact',
-                    'minimize' => false,
-                ),
-                'NoteBox' => array(
-                    'title' => 'Note Pad',
-                    'minimize' => false,
-                ),
-                'MediaBox' => array(
-                    'title' => 'Media',
-                    'minimize' => false,
-                ),
-                'DocViewer' => array(
-                    'title' => 'Doc Viewer',
-                    'minimize' => false,
-                ),
-                'TopSites' => array(
-                    'title' => 'Top Sites',
-                    'minimize' => false,
-                ),
-                'HelpfulTips' => array(
-                    'title' => 'Helpful Tips',
-                    'minimize' => false,
-                ),
-            ),
-            'hidden' => array(),
-            'hiddenRight' => array(), // x2temp, should be merged into 'hidden' when widgets can be placed anywhere
-        );
+    public function run(){
+        echo '<div id="content-widgets">';
+        echo '<div id="recordView-widgets-container-inner">';
+        $this->renderWidget ();
+        echo '</div>';
+        echo '</div>';
+
+
+        Yii::app()->clientScript->registerScriptFile(
+            Yii::app()->getBaseUrl().'/js/sortableWidgets/SortableWidgetManager.js', 
+            CClientScript::POS_END);
+        Yii::app()->clientScript->registerScriptFile(
+            Yii::app()->getBaseUrl().'/js/sortableWidgets/RecordViewWidgetManager.js', 
+            CClientScript::POS_END);
+        Yii::app()->clientScript->registerScript ('profilePageWidgetInitScript', "
+            x2.recordViewWidgetManager = new RecordViewWidgetManager ({
+                setSortOrderUrl: '".
+                    Yii::app()->controller->createUrl ('/profile/setWidgetOrder')."',
+                showWidgetContentsUrl: '".Yii::app()->controller->createUrl (
+                    '/profile/view', array ('id' => 1))."',
+                translations: ".CJSON::encode (array (
+                    'Create' => Yii::t('app',  'Create'),
+                    'Cancel' => Yii::t('app',  'Cancel'),
+                )).",
+                modelId: {$this->model->id},
+                modelType: '".get_class ($this->model)."'
+            });
+        ", CClientScript::POS_READY);
+
     }
 
+    private function isExcluded ($name) {
+        $modelType = get_class ($this->model);
+
+        if ($modelType === 'Actions' && $name !== 'InlineTagsWidget' ||
+            $modelType !== 'Campaign' && $name === 'CampaignChartWidget' ||
+            ($modelType == 'BugReports' && $name!='WorkflowStageDetailsWidget') ||
+            ($modelType == 'Quote' && $name == 'WorkflowStageDetailsWidget') ||
+            ($modelType == 'Campaign' &&
+             ($name == 'WorkflowStageDetailsWidget' || $name === 'InlineRelationshipsWidget')) ||
+            ($modelType === 'Product' && $name === 'WorkflowStageDetailsWidget')) {
+
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /***********************************************************************
+    * Legacy properties
+    * Preserved for backwards compatibility with custom modules
+    ***********************************************************************/
+    
+    public $block; 
+    public $modelType;
 }

@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -37,19 +37,46 @@
 include("protected/modules/bugReports/bugReportsConfig.php");
 
 $this->actionMenu = $this->formatMenu(array(
-	array('label'=>Yii::t('module','{X} List',array('{X}'=>$moduleConfig['recordName'])), 'url'=>array('index')),
-	array('label'=>Yii::t('module','Create {X}',array('{X}'=>$moduleConfig['recordName'])), 'url'=>array('create')),
-	array('label'=>Yii::t('module','View {X}',array('{X}'=>$moduleConfig['recordName']))),
-	array('label'=>Yii::t('module','Update {X}',array('{X}'=>$moduleConfig['recordName'])), 'url'=>array('update', 'id'=>$model->id)),
-	array('label'=>Yii::t('module','Delete {X}',array('{X}'=>$moduleConfig['recordName'])), 'url'=>'#', 'linkOptions'=>array('submit'=>array('delete','id'=>$model->id),'confirm'=>Yii::t('app','Are you sure you want to delete this item?'))),
+	array('label'=>Yii::t('module','{X} List',array('{X}'=>Modules::itemDisplayName())), 'url'=>array('index')),
+	array('label'=>Yii::t('module','Create {X}',array('{X}'=>Modules::itemDisplayName())), 'url'=>array('create')),
+	array('label'=>Yii::t('module','View {X}',array('{X}'=>Modules::itemDisplayName()))),
+	array('label'=>Yii::t('module','Update {X}',array('{X}'=>Modules::itemDisplayName())), 'url'=>array('update', 'id'=>$model->id)),
+	array('label'=>Yii::t('module','Delete {X}',array('{X}'=>Modules::itemDisplayName())), 'url'=>'#', 'linkOptions'=>array('submit'=>array('delete','id'=>$model->id),'confirm'=>Yii::t('app','Are you sure you want to delete this item?'))),
     array('label'=>Yii::t('app','Attach A File/Photo'),'url'=>'#','linkOptions'=>array('onclick'=>'toggleAttachmentForm(); return false;')),
+
 ));
 ?>
-<div class="page-title"><h2><?php echo Yii::t('module','View {X}',array('{X}'=>$moduleConfig['recordName'])); ?>: <?php echo $model->name; ?></h2></div>
+<div class="page-title">
+    <h2>
+    <?php 
+         echo Yii::t('module','View {X}',array('{X}'=>Modules::itemDisplayName())); ?>: <?php 
+         echo $model->name; 
+    ?>
+    </h2>
+    <?php
+    echo X2Html::emailFormButton();
+    echo X2Html::inlineEditButtons();
+    ?>
+</div>
 <div id="main-column" class="half-width">
-<?php $this->renderPartial('application.components.views._detailView',array('model'=>$model, 'modelName'=>'BugReports')); ?>
+<?php $this->renderPartial('application.components.views._detailView',array('model'=>$model, 'modelName'=>'BugReports')); 
 
-<?php $this->widget('Attachments',array('associationType'=>'bugReports','associationId'=>$model->id,'startHidden'=>true)); ?>
+$this->widget('InlineEmailForm',
+	array(
+		'attributes'=>array(
+			'to'=>implode (', ', $model->getRelatedContactsEmails ()),
+			'modelName'=>'BugReports',
+			'modelId'=>$model->id,
+		),
+		'insertableAttributes' => 
+            array(
+                Yii::t('accounts','Bug Report Attributes')=>$model->getEmailInsertableAttrs ($model)
+            ),
+		'startHidden'=>true,
+	)
+);
+
+$this->widget('Attachments',array('associationType'=>'bugReports','associationId'=>$model->id,'startHidden'=>true)); ?>
 
 <?php
 $this->widget('X2WidgetList', array('block'=>'center', 'model'=>$model, 'modelType'=>'BugReports'));
@@ -63,7 +90,7 @@ $this->widget('Publisher',
 		'associationType'=>'bugReports',
 		'associationId'=>$model->id,
 		'assignedTo'=>Yii::app()->user->getName(),
-		'halfWidth'=>true
+		'calendar' => false
 	)
 );
 $this->widget('History',array('associationType'=>'BugReports','associationId'=>$model->id));

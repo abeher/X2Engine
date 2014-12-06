@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -35,19 +35,19 @@
  *****************************************************************************************/
 ?>
 
-<?php 
+<?php
 $form=$this->beginWidget('CActiveForm', array(
    'id'=>'create-records-form',
    'enableAjaxValidation'=>false,
 )); ?>
-<div class="page-title"><h2><?php echo Yii::t('quotes','Contact'); ?></h2></div>
-<?php $this->renderPartial('application.components.views._form', array('model'=>$contact, 'users'=>$users,'modelName'=>'contacts', 'form'=>$form, 'isQuickCreate'=>true, 'hideAccount'=>true)); ?>
+<div class="page-title"><h2><?php echo Yii::t('contacts','Contact'); ?></h2></div>
+<?php $this->renderPartial('application.components.views._form', array('model'=>$contact, 'users'=>$users,'modelName'=>'contacts', 'form'=>$form, 'suppressForm'=>true, 'hideAccount'=>true)); ?>
 
-<div class="page-title"><h2><?php echo Yii::t('quotes','Account'); ?></h2></div>
-<?php $this->renderPartial('application.components.views._form', array('model'=>$account, 'users'=>$users,'modelName'=>'accounts', 'form'=>$form, 'isQuickCreate'=>true)); ?>
+<div class="page-title rounded-top"><h2><?php echo Yii::t('quotes','Account'); ?></h2></div>
+<?php $this->renderPartial('application.components.views._form', array('model'=>$account, 'users'=>$users,'modelName'=>'accounts', 'form'=>$form, 'suppressForm'=>true)); ?>
 
-<div class="page-title"><h2><?php echo Yii::t('quotes','Opportunity'); ?></h2></div>
-<?php $this->renderPartial('application.components.views._form', array('model'=>$opportunity, 'users'=>$users,'modelName'=>'Opportunity', 'form'=>$form, 'isQuickCreate'=>true, 'hideAccount'=>true)); ?>
+<div class="page-title rounded-top"><h2><?php echo Yii::t('opportunities','Opportunity'); ?></h2></div>
+<?php $this->renderPartial('application.components.views._form', array('model'=>$opportunity, 'users'=>$users,'modelName'=>'Opportunity', 'form'=>$form, 'suppressForm'=>true, 'hideAccount'=>true)); ?>
 
 <div class="row buttons">
 	<?php echo CHtml::submitButton(Yii::t('app','Create'),array('class'=>'x2-button','id'=>'save-button','tabindex'=>24))."\n"; ?>
@@ -58,7 +58,7 @@ $form=$this->beginWidget('CActiveForm', array(
 $(function() {
 	// first time user sets contact phone and website copy the values to account
 	$('div.formInputBox #Contacts_phone').data('setAccountPhone', true);
-	$('div.formInputBox #Contacts_website').data('setAccountWebsite', true);	
+	$('div.formInputBox #Contacts_website').data('setAccountWebsite', true);
 	$('div.formInputBox #Contacts_phone').blur(function() {
 		if($('div.formInputBox #Contacts_phone').data('setAccountPhone') == true && $('#Accounts_phone').val() == '' && $('div.formInputBox #Contacts_phone').val() != '') {
 			$('#Accounts_phone').val($('div.formInputBox #Contacts_phone').val());

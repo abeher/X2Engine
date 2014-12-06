@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -35,9 +35,9 @@
  *****************************************************************************************/
 
 /**
- * X2FlowTrigger 
- * 
- * @package X2CRM.components.x2flow.triggers
+ * X2FlowTrigger
+ *
+ * @package application.components.x2flow.triggers
  */
 abstract class BaseTagTrigger extends X2FlowTrigger {
 	public function paramRules() {
@@ -46,28 +46,40 @@ abstract class BaseTagTrigger extends X2FlowTrigger {
 			'info' => Yii::t('studio',$this->info),
 			'modelClass' => 'modelClass',
 			'options' => array(
-				array('name'=>'modelClass','label'=>Yii::t('studio','Record Type'),'type'=>'dropdown','options'=>X2Model::getModelTypes(true)),
-				array('name'=>'tags','label'=>Yii::t('studio','Tags'),'type'=>'tags'),
-			));
+				array(
+                    'name'=>'modelClass',
+                    'label'=>Yii::t('studio','Record Type'),
+                    'type'=>'dropdown',
+                    'options'=>X2Flow::getModelTypes(true)
+                ),
+				array(
+                    'name'=>'tags',
+                    'label'=>Yii::t('studio','Tags'),
+                    'type'=>'tags'
+                ),
+			)
+        );
 	}
 
-	public function check(&$params) {
-		$tags = Tags::parseTags($this->config['options']['tags']['value']);
-		$intersect = count(array_intersect($params['tags'],$tags));	// number of tags in both $params and $tags
-		
-		switch($this->config['options']['tags']['operator']) {
-			case '=':
-				$result = $intersect === count($tags);	// record must have every tag in $tags
-				break;
-			case 'list':
-				$result = $intersect > 0;	// must have at least 1 tag
-				break;
-			case 'notList':
-				$result = $intersect === 0;	// must have none
-				break;
-		}
-		if(!$result)
-			return false;
-		return $this->checkConditions($params);
-	}
+	public function check(&$params){
+        $tags = $this->config['options']['tags']['value'];
+        $tags = is_array($tags) ? $tags : Tags::parseTags($tags, true);
+        if(!empty($tags) && isset($params['tags'])){ // Check passed params to be sure they're set
+            if(!is_array($params['tags'])){
+                $params['tags'] = explode(',', $params['tags']);
+            }
+            $params['tags'] = array_map(function($item){ 
+                return preg_replace('/^#/','', $item); 
+            }, $params['tags']);
+
+            // must have at least 1 tag in the list:
+            if(count(array_intersect($params['tags'], $tags)) > 0){
+                return $this->checkConditions($params);
+            }else{
+                return array(false, Yii::t('studio','No tags on the record matched those in the tag trigger criteria.'));
+            }
+        }else{ // config is invalid or record has no tags (tags are not optional)
+            return array(false, empty($tags) ? Yii::t('studio','No tags in the trigger criteria!') : Yii::t('studio','Tags parameter missing!'));
+        }
+    }
 }

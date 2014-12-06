@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -39,25 +39,40 @@
  * 
  * It contains the authentication method that checks if the provided data can 
  * identity the user.
- * @package X2CRM.components
+ * @package application.components
  */
 class UserIdentity extends CUserIdentity {
 
+    const ERROR_DISABLED = 3;
+
 	private $_id;
 	private $_name;
+    private $_userModel;
 
 	public function authenticate($google=false) {
-		$user = X2Model::model('User')->findByAttributes(array('username' => $this->username));
+		$user = $this->getUserModel();
+        $isRealUser = $user instanceof User;
+        
+		if($isRealUser){
+            $this->username = $user->username;
+            if((integer) $user->status === User::STATUS_INACTIVE){
+                $this->errorCode = self::ERROR_DISABLED;
+                return false;
+            }
+        }
 
-		if(isset($user))
-			$this->username = $user->username;
-		if ($user === null || $user->status < 1) {				// username not found, or is disabled
+        if (!$isRealUser) { // username not found
 			$this->errorCode = self::ERROR_USERNAME_INVALID;
-		} elseif($google) {
+		} elseif($google) { // Completely bypasses password-based authentication
 			$this->errorCode = self::ERROR_NONE;
 			$this->_id = $user->id;
-			return !$this->errorCode;
+			return true;
 		} else {
+            if($user->status == 0) {
+                // User has been disabled
+                $this->errorCode = self::ERROR_DISABLED;
+                return false;
+            }
 			$isMD5 = (strlen($user->password) == 32);
 			if($isMD5)
 				$isValid = ($user->password == md5($this->password));	// if 32 characters, it's an MD5 hash
@@ -67,26 +82,29 @@ class UserIdentity extends CUserIdentity {
 			if($isValid) {
 				$this->errorCode = self::ERROR_NONE;
 				$this->_id = $user->id;
-				//$this->setState('lastLoginTime', $user->lastLoginTime); //not yet set up
-				
-				if(version_compare(PHP_VERSION,'5.3') >= 0) {	// regenerate a more secure hash and nonce
-					$nonce = '';
-					for($i = 0; $i<16; $i++)	// generate a random 16 character nonce with the Mersenne Twister
-						$nonce .= substr('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789./', mt_rand(0, 63), 1); 
-
-					$user->password = substr(crypt($this->password,'$5$rounds=32678$'.$nonce),16);
-					$user->update(array('password'));
-				}
-				
-			} else {
+				$nonce = '';
+                for($i = 0; $i < 16; $i++) // generate a random 16 character nonce with the Mersenne Twister
+                    $nonce .= substr('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789./', mt_rand(0, 63), 1);
+                
+                $user->password = substr(crypt($this->password, '$5$rounds=32678$'.$nonce), 16);
+                $user->update(array('password'));
+            } else {
 				$this->errorCode = self::ERROR_PASSWORD_INVALID;
 			}
 		}
 
-		return !$this->errorCode;
+		return $this->errorCode===self::ERROR_NONE;
 	}
 	
 	public function getId() {
 		return $this->_id;
 	}
+
+    public function getUserModel() {
+        if(!isset($this->_userModel)) {
+            $this->_userModel = User::model()->findByAlias($this->username);
+        }
+        return $this->_userModel;
+    }
+
 }

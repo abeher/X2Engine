@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -85,12 +85,12 @@ $this->widget('zii.widgets.grid.CGridView', array(
 
 	<div class="row">
             <?php echo $form->labelEx($model,'modelType'); ?>
-            <?php echo $form->dropDownList($model,'modelType',array('Actions'=>'Actions','Contacts'=>'Contacts','Opportunity'=>'Opportunities','Accounts'=>'Accounts','Quote'=>'Quotes', 'Services'=>'Services'),
+            <?php echo $form->dropDownList($model,'modelType',Fields::getDisplayedModelNamesList(),
                 array(
-                'empty'=>'Select a model',
+                'empty'=>Yii::t('admin','Select a model'),
                 'ajax' => array(
                 'type'=>'POST', //request type
-                'url'=>$this->createUrl('admin/getAttributes?criteria=1'), //url to call.
+                'url'=>$this->createUrl('/admin/getAttributes',array('criteria'=>1)), //url to call.
                 //Style: CController::createUrl('currentController/methodToCall')
                 'update'=>'#'.CHtml::activeId($model,'modelField'), //selector to update
                 //'data'=>'js:"modelType="+$("'.CHtml::activeId($model,'modelType').'").val()'
@@ -101,13 +101,13 @@ $this->widget('zii.widgets.grid.CGridView', array(
 
         <div class="row">
             <?php echo $form->labelEx($model,'modelField'); ?>
-            <?php echo $form->dropDownList($model,'modelField',array(),array('empty'=>'Select a model first')); ?>
+            <?php echo $form->dropDownList($model,'modelField',array(),array('empty'=>Yii::t('admin','Select a model first'))); ?>
             <?php echo $form->error($model,'modelField'); ?>
         </div>
 
         <div class="row">
             <?php echo $form->labelEx($model,'comparisonOperator'); ?>
-            <?php echo $form->dropDownList($model,'comparisonOperator',array('='=>'=','<'=>'<','>'=>'>','change'=>'On Change'),array('empty'=>'Select a comparison operator.')); ?>
+            <?php echo $form->dropDownList($model,'comparisonOperator',array('='=>'=','<'=>'<','>'=>'>','change'=>'On Change'),array('empty'=>Yii::t('admin','Select a comparison operator.'))); ?>
             <?php echo $form->error($model,'comparisonOperator'); ?>
         </div>
 
@@ -125,7 +125,7 @@ $this->widget('zii.widgets.grid.CGridView', array(
 
         <div class="row">
             <?php echo $form->labelEx($model,'type'); ?>
-            <?php echo $form->dropDownList($model,'type',array('notification'=>'Notification','action'=>'Action','assignment'=>'Assignment Change')); ?>
+            <?php echo $form->dropDownList($model,'type',array('notification'=>Yii::t('admin','Notification'),'action'=>Yii::t('admin','Action'),'assignment'=>Yii::t('admin','Assignment Change'))); ?>
             <?php echo $form->error($model,'type'); ?>
         </div>
 

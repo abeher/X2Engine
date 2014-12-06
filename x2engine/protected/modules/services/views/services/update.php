@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -33,15 +33,13 @@
  * technical reasons, the Appropriate Legal Notices must display the words
  * "Powered by X2Engine".
  *****************************************************************************************/
-$authParams['assignedTo']=$model->assignedTo;
-$this->actionMenu = $this->formatMenu(array(
-	array('label'=>Yii::t('services','All Cases'), 'url'=>array('index')),
-	array('label'=>Yii::t('services','Create Case'), 'url'=>array('create')),
-	array('label'=>Yii::t('services','View'), 'url'=>array('view','id'=>$model->id)),
-	array('label'=>Yii::t('services','Edit Case')),
-	array('label'=>Yii::t('services','Delete Case'), 'url'=>'#', 'linkOptions'=>array('submit'=>array('delete','id'=>$model->id),'confirm'=>'Are you sure you want to delete this item?')),
-	array('label'=>Yii::t('services','Create Web Form'), 'url'=>array('createWebForm')),
-),$authParams);
+
+$authParams['X2Model'] = $model;
+$menuOptions = array(
+    'index', 'create', 'view', 'edit', 'delete', 'createWebForm',
+);
+$this->insertMenu($menuOptions, $model, $authParams);
+
 ?>
 <?php //echo CHtml::link('['.Yii::t('contacts','Show All').']','javascript:void(0)',array('id'=>'showAll','class'=>'right hide','style'=>'text-decoration:none;')); ?>
 <?php //echo CHtml::link('['.Yii::t('contacts','Hide All').']','javascript:void(0)',array('id'=>'hideAll','class'=>'right','style'=>'text-decoration:none;')); ?>
@@ -52,8 +50,10 @@ $this->actionMenu = $this->formatMenu(array(
 <?php echo $this->renderPartial('application.components.views._form', array('model'=>$model, 'users'=>$users, 'modelName'=>'services')); ?>
 
 <?php
-$createContactUrl = $this->createUrl('/contacts/create');
-$contactTooltip = json_encode(Yii::t('contacts', 'Create a new Contact'));
+$createContactUrl = $this->createUrl('/contacts/contacts/create');
+$contactTooltip = json_encode(Yii::t('contacts', 'Create a new {contact}', array(
+    '{contact}' => Modules::displayName(false, "Contacts")
+)));
 
 Yii::app()->clientScript->registerScript('create-model', "
 	$(function() {

@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -38,12 +38,12 @@ return array (
 // // Charts Translation File
 
 // // Button Text
-'Go'=>'идти',
+'Go'=>'=>',
 
 // // Labels
 'Start Date'=>'Дата начала',
 'End Date'=>'Дата окончания',
-'Date Range'=>'Диапазон дат',
+'Date Range'=>'Диапазон',
 'Data Summary'=>'Сводные данные',
 'Total Records'=>'Всего записей',
 'Total Value'=>'Общая стоимость',
@@ -53,7 +53,7 @@ return array (
 'Lead Performance'=>'Ведущий производительности',
 'Saved Reports'=>'Сохраненные отчеты',
 'Deal Report'=>'Сделка отчет',
-'User Activity'=>'активность пользователя',
+'User Activity'=>'Активность пользователя',
 'Row Field'=>'поля строки',
 'Column Field'=>'поле столбца',
 'Total'=>'общий',
@@ -64,8 +64,8 @@ return array (
 'Average'=>'средний',
 'Cell Data Field'=>'Поле Данные ячейки',
 '(none)'=>'(нет)',
-'pie'=>'пирог',
-'bar'=>'бар',
+'pie'=>'круговая',
+'bar'=>'столбцы',
 'Export to CSV'=>'Экспорт в CSV',
 'Save Report'=>'Сохранить отчет',
 'Print Report'=>'Печать отчета',
@@ -81,13 +81,13 @@ return array (
 'Records Updated'=>'записи Обновлено',
 'Actions Completed'=>'Действия Завершен',
 'Actions Due'=>'Действия связи',
-'Lead Volume'=>'Ведущий том',
+'Lead Volume'=>'Объем работ',
 'Marketing'=>'маркетинг',
 'Pipeline'=>'трубопровод',
-'Opportunities'=>'возможности',
+'Opportunities'=>'Продажи',
 
 // // Data Options
-'Custom'=>'обычай',
+'Custom'=>'Пользвательский',
 'This Week'=>'На этой неделе',
 'This Month'=>'В этом месяце',
 'Last Week'=>'Последняя неделя',
@@ -101,8 +101,35 @@ return array (
 'Model'=>'модель',
 'Columns'=>'Колонны',
 'Rows'=>'Строки',
-'Ignore Zeros?'=>'Игнорировать нулях?',
+'Ignore Zeros?'=>'Игнорировать нули?',
 'Data Type'=>'Тип данных',
 'Create Date'=>'Дата создания',
 'Created By'=>'Создано',
+'Last Quarter'=>'Последняя четверть',
+'Lead Activity'=>'Ведущий активность',
+'Lead Sources'=>'Ведущий источники',
+'Select leads received in the last'=>'Выбор провода, полученные за последние',
+'Lead Distribution and Status'=>'Распределения свинца и статус',
+'Lead Conversion'=>'Вести преобразования',
+'Lead Received'=>'Ведущий поступила',
+'Opportunities Dashboard'=>'Возможности панели',
+'Select deals with status'=>'Выберите занимается статуса',
+'Select deals assigned to'=>'Выберите предложения назначены',
+'Date Closing'=>'Датой закрытия',
+'Pipeline Dashboard'=>'Трубопровод Dashboard',
+'Select deals closing in'=>'Выберите предложения закрытия в',
+'Limit to confidence is'=>'Ограничить доверия',
+'Growing'=>'Растущий',
+'Forecast'=>'Прогноз',
+'Committed'=>'Совершенные',
+'In The Bag'=>'Дело в шляпе',
+'Limit selected deals to'=>'Предельные выбранных сделок',
+'Smallest'=>'Маленький',
+'Largest'=>'Крупнейший',
+'Others'=>'Другие',
+'Deals'=>'Предложения',
+'Days To Close'=>'Days To Закрыть',
+'Unknown'=>'Неизвестный',
+'Limit To'=>'Предел',
+'Widget Dashboard'=>'Виджет Dashboard',
 );

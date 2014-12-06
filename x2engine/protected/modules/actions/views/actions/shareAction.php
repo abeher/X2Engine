@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -33,14 +33,12 @@
  * technical reasons, the Appropriate Legal Notices must display the words
  * "Powered by X2Engine".
  *****************************************************************************************/
-$authParams['assignedTo']=$model->assignedTo;
-$this->actionMenu = $this->formatMenu(array(
-	array('label'=>Yii::t('actions','Action List'),'url'=>array('index')),
-	array('label'=>Yii::t('actions','Create Action'),'url'=>array('create')), 
-	array('label'=>Yii::t('actions','Edit Action'),'url'=>array('update', 'id'=>$model->id)),
-	array('label'=>Yii::t('contacts','Share Action')),
-	array('label'=>Yii::t('actions','Delete Action'), 'url'=>'#', 'linkOptions'=>array('submit'=>array('delete','id'=>$model->id),'confirm'=>'Are you sure you want to delete this item?')),
-),$authParams);
+
+$authParams['X2Model'] = $model;
+$menuOptions = array(
+    'list', 'create', 'edit', 'share', 'delete',
+);
+$this->insertMenu($menuOptions, $model, $authParams);
 
 Yii::app()->clientScript->registerScriptFile(Yii::app()->getBaseUrl().'/js/ckeditor/ckeditor.js');
 Yii::app()->clientScript->registerScriptFile(Yii::app()->getBaseUrl().'/js/ckeditor/adapters/jquery.js');
@@ -48,7 +46,11 @@ Yii::app()->clientScript->registerScriptFile(Yii::app()->getBaseUrl().'/js/email
 
 Yii::app()->clientScript->registerScript('editorSetup','createCKEditor("input");',CClientScript::POS_READY);
 ?>
-<div class="page-title icon actions"><h2><?php echo Yii::t('actions','Share Action');?></h2></div>
+<div class="page-title icon actions"><h2>
+    <?php echo Yii::t('actions','Share {module}', array(
+        '{module}' => Modules::displayName(false),
+    )); ?>
+</h2></div>
 <?php
 if(!empty($status)) {
 	$index = array_search('200',$status);
@@ -70,7 +72,14 @@ if(!empty($status)) {
 	<input type="submit" class="x2-button" value="<?php echo Yii::t('app','Share');?>" />
 </form>
 </div>
-<h2><?php echo Yii::t('actions','Action:'); ?> <b><?php echo $model->associationName; ?></b></h2>
+
+<h2>
+    <?php echo Yii::t('actions','{module}:', array(
+        '{module}' => Modules::displayName(false),
+    )); ?>
+    <b><?php echo $model->associationName; ?>
+</b></h2>
 <?php
 $this->renderPartial('_detailView',array('model'=>$model)); 
 ?>
+

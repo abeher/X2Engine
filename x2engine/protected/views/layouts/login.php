@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -38,7 +38,7 @@ mb_internal_encoding('UTF-8');
 mb_regex_encoding('UTF-8');
 
 
-Yii::app()->params->profile = ProfileChild::model()->findByPk(1);	// use the admin's profile since the user hasn't logged in
+Yii::app()->params->profile = Profile::model()->findByPk(1);	// use the admin's profile since the user hasn't logged in
 $jsVersion = '?'.Yii::app()->params->buildDate;
 
 // blueprint CSS framework
@@ -49,6 +49,9 @@ Yii::app()->clientScript->registerCssFile($themeURL.'/css/main.css'.$jsVersion,'
 Yii::app()->clientScript->registerCssFile($themeURL.'/css/form.css'.$jsVersion,'screen, projection');
 Yii::app()->clientScript->registerCssFile($themeURL.'/css/ui-elements.css'.$jsVersion,'screen, projection');
 
+if (AuxLib::getIEVer() < 9) {
+	Yii::app()->clientScript->registerScriptFile(Yii::app()->baseUrl.'/js/lib/aight/aight.js');
+}
 
 $backgroundImg = '';
 $defaultOpacity = 1;
@@ -65,7 +68,7 @@ foreach($checkFiles as $key=>$value) {
 }
 $theme2Css = '';
 if($checkResult)
-	$theme2Css = 'html * {background:url('.CHtml::normalizeUrl(array('site/warning')).') !important;} #bg{display:none !important;}';
+	$theme2Css = 'html * {background:url('.CHtml::normalizeUrl(array('/site/warning')).') !important;} #bg{display:none !important;}';
 
 // check for background image, use it if one is set
 if(empty(Yii::app()->params->profile->backgroundImg))
@@ -79,7 +82,8 @@ if(!empty(Yii::app()->params->profile->backgroundColor)) {
 	if(!empty($backgroundImg)) {
 		$shadowRgb = 'rgb(0,0,0,0.5)';	// use a black shadow if there is an image
 	} else {
-		$shadowColor = X2Color::hex2rgb(Yii::app()->params->profile->backgroundColor);	// if there is no BG image, calculate a darker tone for the shadow
+        // if there is no BG image, calculate a darker tone for the shadow
+		$shadowColor = X2Color::hex2rgb(Yii::app()->params->profile->backgroundColor);	
 
 		foreach($shadowColor as &$value) {
 			$value = floor(0.5*$value);
@@ -87,10 +91,10 @@ if(!empty(Yii::app()->params->profile->backgroundColor)) {
 		$shadowRgb = 'rgb('.implode(',',$shadowColor).')';
 	}
 	$themeCss .= "#page {
--moz-box-shadow: 0 0 30px $shadowRgb;
--webkit-box-shadow: 0 0 30px $shadowRgb;
-box-shadow: 0 0 30px $shadowRgb;
-}\n";
+        -moz-box-shadow: 0 0 30px $shadowRgb;
+        -webkit-box-shadow: 0 0 30px $shadowRgb;
+        box-shadow: 0 0 30px $shadowRgb;
+    }\n";
 }
 if(!empty(Yii::app()->params->profile->menuBgColor))
 	$themeCss .= '#main-menu-bar {background:#'.Yii::app()->params->profile->menuBgColor.";}\n";
@@ -99,8 +103,13 @@ if(!empty(Yii::app()->params->profile->menuTextColor))
 	$themeCss .= '#main-menu-bar ul a, #main-menu-bar ul span {color:#'.Yii::app()->params->profile->menuTextColor.";}\n";
 
 
-Yii::app()->clientScript->registerCss('applyTheme',$themeCss,'screen',CClientScript::POS_HEAD);
-Yii::app()->clientScript->registerCss('applyTheme2',$theme2Css,'screen',CClientScript::POS_HEAD);
+Yii::app()->clientScript
+        ->registerCss('applyTheme',$themeCss,'screen',CClientScript::POS_HEAD)
+        ->registerCss('applyTheme2',$theme2Css,'screen',CClientScript::POS_HEAD)
+        ->registerCssFile(Yii::app()->theme->getBaseUrl().'/css/login.css')
+        ->registerCssFile(Yii::app()->theme->getBaseUrl().'/css/fontAwesome/css/font-awesome.css')
+        ->registerScriptFile(Yii::app()->getBaseUrl().'/js/auxlib.js')
+        ->registerScriptFile(Yii::app()->getBaseUrl().'/js/X2Forms.js');
 
 
 ?><!DOCTYPE html>
@@ -110,22 +119,32 @@ Yii::app()->clientScript->registerCss('applyTheme2',$theme2Css,'screen',CClientS
 <meta name="language" content="<?php echo Yii::app()->language; ?>" />
 
 <meta name="description" content="X2Engine - Open Source Customer Relationship Management (CRM) and Sales Force Application">
-<meta name="keywords" content="open source,CRM,customer relationship management,contact management,sales force,php,x2engine,x2crm">
+<meta name="keywords" content="open source,CRM,customer relationship management,contact management,sales force,php,x2engine,X2Engine">
 
+<link rel="icon" href="<?php echo Yii::app()->getFavIconUrl (); ?>" type="image/x-icon">
+<link rel="shortcut-icon" href="<?php echo Yii::app()->getFavIconUrl (); ?>" type="image/x-icon">
+<link rel="icon" href="<?php echo Yii::app()->getFavIconUrl (); ?>" type="image/x-icon">
+<link rel="shortcut-icon" href="<?php echo Yii::app()->getFavIconUrl (); ?>" type="image/x-icon">
 
-<link rel="icon" href="<?php echo Yii::app()->getBaseUrl(); ?>/images/favicon.ico" type="image/x-icon0" />
-<link rel="shortcut-icon" href="<?php echo Yii::app()->getBaseUrl(); ?>/images/favicon.ico" type="image/x-icon" />
 <!--[if lt IE 8]>
 <link rel="stylesheet" type="text/css" href="<?php echo $themeURL; ?>/css/ie.css" media="screen, projection" />
 <![endif]-->
 <title><?php echo CHtml::encode($this->pageTitle); ?></title>
 </head>
 <body id="body-tag"  class="login">
+<meta name="viewport" content="width=device-width, initial-scale=0.8, user-scalable=no">
 <!--<div class="ie-shadow" style="display:none;"></div>-->
-<div class="container" id="login-page">
-	<?php echo $content; ?>
-	<span id="login-version"><?php echo Yii::app()->params->edition=='pro'? 'PROFESSIONAL EDITION' : 'OPEN SOURCE EDITION'; ?></span>
-	<br><a href="http://www.x2engine.com" id="login-x2engine">X2Engine, Inc.</a>
+<?php echo $content; 
+?>
+<div class='background'>
+	<div class='stripe-container'>
+		<div class='stripe small' style="float:left"></div>
+		<div class='stripe' style="float:left"></div>
+		<div class='stripe small' style="float:right"></div>
+		<div class='stripe' style="float:right"></div>
+	</div>
 </div>
+
+<?php LoginThemeHelper::render() ?>
 </body>
 </html>

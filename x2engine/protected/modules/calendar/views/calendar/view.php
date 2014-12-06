@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -36,7 +36,7 @@
 ?>
 
 <?php
-if(Yii::app()->params->admin->googleIntegration) { // menu if google integration is enables has additional options
+/* if(Yii::app()->settings->googleIntegration) { // menu if google integration is enables has additional options
 	$menuItems = array(
 		array('label'=>Yii::t('calendar','Calendar')),
 		array('label'=>Yii::t('calendar', 'My Calendar Permissions'), 'url'=>array('myCalendarPermissions')),
@@ -57,11 +57,45 @@ if(Yii::app()->params->admin->googleIntegration) { // menu if google integration
 		array('label'=>Yii::t('calendar','Update'), 'url'=>array('update', 'id'=>$model->id)),
 		array('label'=>Yii::t('calendar','Delete'), 'url'=>'#', 'linkOptions'=>array('submit'=>array('delete','id'=>$model->id),'confirm'=>'Are you sure you want to delete this item?')),
 	);
+} */
+
+$modTitle = Modules::displayName();
+$menuItems = array(
+    array('label'=>Yii::t('calendar','{module}', array('{module}' => $modTitle))),
+    array(
+        'label'=>Yii::t('calendar', 'My {module} Permissions', array(
+            '{module}' => $modTitle,
+        )),
+        'url'=>array('myCalendarPermissions')
+    ),
+    array('label'=>Yii::t('calendar', 'List'),'url'=>array('list')),
+    array('label'=>Yii::t('calendar','Create'), 'url'=>array('create')),
+    array('label'=>Yii::t('calendar','View')),
+    array(
+        'label'=>Yii::t('calendar','Update'),
+        'url'=>array('update', 'id'=>$model->id)
+    ),
+    array(
+        'label'=>Yii::t('calendar','Delete'),
+        'url'=>'#',
+        'linkOptions'=>array(
+            'submit'=>array('delete','id'=>$model->id),
+            'confirm'=>'Are you sure you want to delete this item?'
+    )),
+);
+if (Yii::app()->settings->googleIntegration) {
+    $menuItems[] = array(
+        'label'=>Yii::t('calendar', 'Sync My Actions To Google Calendar', array(
+            '{actions}' => Modules::displayName(true, "Actions"),
+        )),
+        'url'=>array('syncActionsToGoogleCalendar')
+    );
 }
+
 $this->actionMenu = $this->formatMenu($menuItems);
 ?>
 
-<h2><?php echo Yii::t('calendar','Shared Calendar:'); ?> <b><?php echo $model->name; ?></b> <a class="x2-button" href="<?php echo $this->createUrl('update', array('id'=>$model->id));?>">Edit</a></h2>
+<h2><?php echo Yii::t('calendar','Shared {module}:', array('{module}'=>$modTitle)); ?> <b><?php echo $model->name; ?></b> <a class="x2-button" href="<?php echo $this->createUrl('update', array('id'=>$model->id));?>">Edit</a></h2>
 
 <?php
 $form = $this->beginWidget('CActiveForm', array(
@@ -75,7 +109,7 @@ $this->renderPartial('application.components.views._detailView',array('model'=>$
 <?php $this->endWidget(); ?>
 
 <?php /*
-<a class="x2-button" href="#" onClick="toggleForm('#attachment-form',200);return false;"><span><?php echo Yii::t('app','Attach A File/Photo'); ?></span></a>
+<a class="x2-button" href="#" onClick="x2.forms.toggleForm('#attachment-form',200);return false;"><span><?php echo Yii::t('app','Attach A File/Photo'); ?></span></a>
 <br /><br />
 
 <div id="attachment-form" style="display:none;">

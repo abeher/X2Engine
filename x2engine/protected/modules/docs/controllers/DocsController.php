@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -35,7 +35,7 @@
  *****************************************************************************************/
 
 /**
- * @package X2CRM.modules.docs.controllers 
+ * @package application.modules.docs.controllers
  */
 class DocsController extends x2base {
 
@@ -58,10 +58,10 @@ class DocsController extends x2base {
 	public function accessRules() {
 		return array(
 			array('allow',
-				'users'=>array('*'), 
+				'users'=>array('*'),
 			),
 			array('allow', // allow authenticated user to perform 'create' and 'update' actions
-				'actions'=>array('index','view','create','createEmail','update','exportToHtml','changePermissions', 'delete', 'getItems', 'getItem'),
+				'actions'=>array('index','view','create','createEmail','update','exportToHtml','changePermissions', 'delete', 'getItems', 'getItem', 'ajaxCheckEditPermission'),
 				'users'=>array('@'),
 			),
 			array('allow', // allow admin user to perform 'admin' and 'delete' actions
@@ -85,7 +85,7 @@ class DocsController extends x2base {
 
 	public function actionGetItem($id) {
         $model = $this->loadModel($id);
-        if((($model->visibility==1 || ($model->visibility==0 && $model->createdBy==Yii::app()->user->getName())) || Yii::app()->params->isAdmin)){ 
+        if((($model->visibility==1 || ($model->visibility==0 && $model->createdBy==Yii::app()->user->getName())) || Yii::app()->params->isAdmin)){
             echo $model->text;
         }
 	}
@@ -104,12 +104,15 @@ class DocsController extends x2base {
 				$editFlag=false;
 		}
 		//echo $model->visibility;exit;
-		if (!isset($model) || 
-			   !(($model->visibility==1 || 
-				($model->visibility==0 && $model->createdBy==Yii::app()->user->getName())) || 
+		if (!isset($model) ||
+			   !(($model->visibility==1 ||
+				($model->visibility==0 && $model->createdBy==Yii::app()->user->getName())) ||
 				Yii::app()->params->isAdmin|| $editFlag))
-			$this->redirect(array('docs/index'));
+			$this->redirect(array('/docs/docs/index'));
 
+        // add doc to user's recent item list
+        User::addRecentItem('d', $id, Yii::app()->user->getId());
+        X2Flow::trigger('RecordViewTrigger',array('model'=>$model));
 		$this->render('view', array(
 			'model' => $model,
 		));
@@ -119,11 +122,22 @@ class DocsController extends x2base {
 	 * Displays a particular model.
 	 * @param integer $id the ID of the model to be displayed
 	 */
-	public function actionFullView($id) {
-	
+	public function actionFullView($id,$json=0,$replace=0) {
 		$model = $this->loadModel($id);
-	
-		echo $model->text;
+        $response = array(
+            'body' => $model->text,
+            'subject' => $model->subject,
+            'to' => $model->emailTo
+        );
+        if($replace)
+            foreach(array_keys($response) as $key)
+                $response[$key] = str_replace('{signature}', Yii::app()->params->profile->signature, $response[$key]);
+        if($json){
+            header('Content-type: application/json');
+            echo json_encode($response);
+        }else{
+            echo $response['body'];
+        }
 	}
 
 	/**
@@ -158,7 +172,7 @@ class DocsController extends x2base {
 			$arr = $model->editPermissions;
 			if(isset($arr))
 				if(is_array($arr))
-					$model->editPermissions = Accounts::parseUsers($arr);
+					$model->editPermissions = Fields::parseUsers($arr);
 
 			$model->createdBy = Yii::app()->user->getName();
 			$model->createDate = time();
@@ -173,7 +187,7 @@ class DocsController extends x2base {
 			'users'=>$users,
 		));
 	}
-	
+
 	/**
 	 * Creates an email template.
 	 * If creation is successful, the browser will be redirected to the 'view' page.
@@ -185,7 +199,8 @@ class DocsController extends x2base {
 		unset($users[Yii::app()->user->getName()]);
 		$model = new Docs;
 		$model->type = 'email';
-		
+		$model->associationType = 'Contacts';
+
 		// Uncomment the following line if AJAX validation is needed
 		// $this->performAjaxValidation($model);
 
@@ -196,7 +211,7 @@ class DocsController extends x2base {
 			$model->editPermissions = '';
 			// $arr=$model->editPermissions;
 			// if(isset($arr))
-				// $model->editPermissions=Accounts::parseUsers($arr);
+				// $model->editPermissions=Fields::parseUsers($arr);
 
 			$model->createdBy = Yii::app()->user->getName();
 			$model->createDate = time();
@@ -211,7 +226,7 @@ class DocsController extends x2base {
 			'users'=>null,
 		));
 	}
-	
+
 	public function actionCreateQuote() {
 		$users = User::getNames();
 		unset($users['Anyone']);
@@ -219,7 +234,7 @@ class DocsController extends x2base {
 		unset($users[Yii::app()->user->getName()]);
 		$model = new Docs;
 		$model->type = 'quote';
-		
+
 		// Uncomment the following line if AJAX validation is needed
 		// $this->performAjaxValidation($model);
 
@@ -230,7 +245,7 @@ class DocsController extends x2base {
 			$model->editPermissions = '';
 			// $arr=$model->editPermissions;
 			// if(isset($arr))
-				// $model->editPermissions=Accounts::parseUsers($arr);
+				// $model->editPermissions=Fields::parseUsers($arr);
 
 			$model->createdBy = Yii::app()->user->getName();
 			$model->createDate = time();
@@ -245,7 +260,7 @@ class DocsController extends x2base {
 			'users'=>null,
 		));
 	}
-	
+
 	public function actionChangePermissions($id){
 		$model = $this->loadModel($id);
 		if(Yii::app()->params->isAdmin || Yii::app()->user->getName()==$model->createdBy) {
@@ -255,17 +270,17 @@ class DocsController extends x2base {
 			$str = $model->editPermissions;
 			$pieces = explode(", ",$str);
 			$model->editPermissions=$pieces;
-			
+
 			if(isset($_POST['Docs'])) {
 				$model->attributes = $_POST['Docs'];
 				$arr=$model->editPermissions;
-				
-				$model->editPermissions = Accounts::parseUsers($arr);
+
+				$model->editPermissions = Fields::parseUsers($arr);
 				if($model->save()) {
 					$this->redirect(array('view','id'=>$id));
 				}
 			}
-			
+
 			$this->render('editPermissions',array(
 				'model'=>$model,
 				'users'=>$users,
@@ -274,10 +289,10 @@ class DocsController extends x2base {
 			$this->redirect(array('view','id'=>$id));
 		}
 	}
-		
+
 	public function actionExportToHtml($id){
 		$model = $this->loadModel($id);
-		$file = 'doc.html';
+		$file = $this->safePath(($uid = uniqid()).'-doc.html');
 		$fp = fopen($file,'w+');
 		$data="<style>
 				#wrap{
@@ -293,38 +308,70 @@ class DocsController extends x2base {
 			".$model->text."</div>";
 		fwrite($fp, $data);
 		fclose($fp);
-		$link = CHtml::link(Yii::t('app','Download').'!',Yii::app()->request->baseUrl."/doc.html");
+		$link = CHtml::link(Yii::t('app','Download').'!',array('downloadExport','uid'=>$uid,'id'=>$id));
 		$this->render('export',array(
 			'model'=>$model,
 			'link'=>$link,
 		));
 	}
 
-	/**
+    /**
+     * Download an exported doc file.
+     * @param type $uid Unique ID associated with the file
+     * @param type $id ID of the doc exported
+     */
+    public function actionDownloadExport($uid,$id) {
+        if(file_exists($this->safePath($filename = $uid.'-doc.html'))) {
+            $this->sendFile($filename,false);
+        } else {
+            $this->redirect(array('exportToHtml','id'=>$id));
+        }
+    }
+
+    public function titleUpdate($old_title, $new_title) {
+        if ((sizeof(Modules::model()->findAllByAttributes(array('name' => $new_title))) == 0) && ($old_title != $new_title)) {
+            Yii::app()->db->createCommand()->update('x2_modules',
+                    array('title' => $new_title,),
+                    'title=:old_title', array(':old_title' => $old_title));
+        }
+    }
+
+    /**
 	 * Updates a particular model.
 	 * If update is successful, the browser will be redirected to the 'view' page.
 	 * @param integer $id the ID of the model to be updated
 	 */
 	public function actionUpdate($id) {
-		$model = $this->loadModel($id);
-		$perm = $model->editPermissions;
-		$pieces = explode(', ',$perm);
-		if(Yii::app()->user->checkAccess('DocsAdmin') || Yii::app()->user->getName()==$model->createdBy || array_search(Yii::app()->user->getName(),$pieces)!==false || Yii::app()->user->getName()==$perm) {  
-			if(isset($_POST['Docs'])) {
-				$model->attributes = $_POST['Docs'];
+        $model = $this->loadModel($id);
+       if($model->type == null)
+        {
+            $model->scenario = 'menu';
+        }
+        $old_title= $model->name;
+        $new_title = $old_title;
+
+        if (isset($_POST['Docs']))
+        {
+            $new_title = $_POST['Docs']['name'];
+        }
+        $perm = $model->editPermissions;
+        $pieces = explode(', ', $perm);
+        if (Yii::app()->user->checkAccess('DocsAdmin') || Yii::app()->user->getName() == $model->createdBy || array_search(Yii::app()->user->getName(), $pieces) !== false || Yii::app()->user->getName() == $perm) {
+            if (isset($_POST['Docs'])) {
+                $model->attributes = $_POST['Docs'];
                 $model->visibility = $_POST['Docs']['visibility'];
-				// $model=$this->updateChangeLog($model,'Edited');
-				if($model->save()) {
-					$event = new Events;
-					$event->associationType='Docs';
-					$event->associationId=$model->id;
-					$event->type='doc_update';
-					$event->user=Yii::app()->user->getName();
-					$event->visibility=$model->visibility;
-					$event->save();
-					$this->redirect(array('update','id'=>$model->id,'saved'=>true, 'time'=>time()));
+                if ($model->save()) {
+                    $this->titleUpdate($old_title, $new_title);
+                    $event = new Events;
+                    $event->associationType = 'Docs';
+                    $event->associationId = $model->id;
+                    $event->type = 'doc_update';
+                    $event->user = Yii::app()->user->getName();
+                    $event->visibility = $model->visibility;
+                    $event->save();
+                    $this->redirect(array('update', 'id' => $model->id, 'saved' => true, 'time' => time()));
                 }
-			}
+            }
 
 			$this->render('update',array(
 				'model'=>$model,
@@ -357,13 +404,13 @@ class DocsController extends x2base {
 	 */
 	public function actionIndex() {
 		$model = new Docs('search');
-		
+
 		$attachments=new CActiveDataProvider('Media',array(
 			'criteria'=>array(
 			'order'=>'createDate DESC',
 			'condition'=>'associationType="docs"'
 		)));
-				
+
 		$this->render('index',array(
 			'model'=>$model,
 			'attachments'=>$attachments,
@@ -380,15 +427,161 @@ class DocsController extends x2base {
 			Yii::app()->end();
 		}
 	}
-	
+
 	public function actionAutosave($id) {
 		$model = $this->loadModel($id);
+
+        $old_title= $model->name;
+        $new_title = $old_title;
+       if (isset($_POST['Docs']))
+        {
+            $new_title = $_POST['Docs']['name'];
+        }
+
 		if(isset($_POST['Docs'])) {
 			$model->attributes = $_POST['Docs'];
 			// $model = $this->updateChangeLog($model,'Edited');
-			if($model->save()) {
-				echo Yii::t('Docs', 'Saved at') . ' ' . Yii::app()->dateFormatter->format(Yii::app()->locale->getTimeFormat('medium'), time());
+
+            if($model->save()) {
+                   if ($old_title != $new_title) {
+                      $this->titleUpdate($old_title, $new_title);
+                 }
+               echo Yii::t('docs', 'Saved at') . ' ' . Yii::app()->dateFormatter->format(Yii::app()->locale->getTimeFormat('medium'), time());
 			};
 		}
-	}
+    }
+
+    /**
+     * Echoes 'true' if User has permission, 'false' otherwise
+     * @param int id id of doc model  
+     */
+    public function actionAjaxCheckEditPermission ($id) {
+        if (!isset ($id)) {
+            echo 'failure';
+            return;
+        }
+        $doc = Docs::model ()->findByPk ($id);
+        if (isset ($doc)) {
+            $canEdit = $doc->checkEditPermission () ? 'true' : 'false';
+        } else {
+            $canEdit = 'false';
+        }
+        echo $canEdit;
+        return;
+    }
+
+    public function behaviors() {
+        return array_merge(parent::behaviors(),array(
+            'ImportExportBehavior' => array('class' => 'ImportExportBehavior'),
+        ));
+    }
+
+    /**
+     * Create a menu for Docs
+     * @param array Menu options to remove
+     * @param X2Model Model object passed to the view
+     * @param array Additional menu parameters
+     */
+    public function insertMenu($selectOptions = array(), $model = null, $menuParams = null) {
+        $Docs = Modules::displayName();
+        $Doc = Modules::displayName(false);
+        $user = Yii::app()->user->name;
+        $modelId = isset($model) ? $model->id : 0;
+
+        /**
+         * To show all options:
+         * $menuOptions = array(
+         *     'index', 'create', 'createEmail', 'createQuote', 'view', 'edit', 'delete',
+         *     'permissions', 'exportToHtml', 'import', 'export',
+         * );
+         */
+
+        $menuItems = array(
+            array(
+                'name'=>'index',
+                'label'=>Yii::t('docs','List {module}', array(
+                    '{module}'=>$Docs,
+                )),
+                'url'=>array('index')
+            ),
+            array(
+                'name'=>'create',
+                'label'=>Yii::t('docs','Create {module}', array(
+                    '{module}' => $Doc,
+                )),
+                'url'=>array('create')
+            ),
+            array(
+                'name'=>'createEmail',
+                'label'=>Yii::t('docs','Create Email'),
+                'url'=>array('createEmail')
+            ),
+            array(
+                'name'=>'createQuote',
+                'label'=>Yii::t('docs','Create {quote}', array(
+                    '{quote}' => Modules::displayName(false, "Quotes"),
+                )),
+                'url'=>array('createQuote')
+            ),
+            array(
+                'name'=>'view',
+                'label'=>Yii::t('docs','View'),
+                'url'=>array('view','id'=>$modelId)
+            ),
+            array(
+                'name'=>'edit',
+                'label' => Yii::t('docs', 'Edit {doc}', array(
+                    '{doc}' => $Doc,
+                )),
+                'url' => array('update', 'id' => $modelId)
+            ),
+            array(
+                'name'=>'delete',
+                'label' => Yii::t('docs', 'Delete {doc}', array(
+                    '{doc}' => $Doc,
+                )),
+                'url' => 'javascript:void(0);',
+                'linkOptions' => array(
+                    'submit' => array('delete', 'id' => $modelId),
+                    'confirm' => Yii::t('docs', 'Are you sure you want to delete this item?')
+                ),
+            ),
+            array(
+                'name'=>'permissions',
+                'label' => Yii::t('docs', 'Edit {doc} Permissions', array(
+                    '{doc}' => $Doc,
+                )),
+                'url' => array('changePermissions', 'id' => $modelId),
+                'visible' => isset($model) && (Yii::app()->params->isAdmin ||
+                            $user == $model->createdBy ||
+                            array_search($user, explode(", ",$model->editPermissions)) ||
+                            $user == $model->editPermissions)
+            ),
+            array(
+                'name'=>'exportToHtml',
+                'label' => Yii::t('docs', 'Export {doc}', array(
+                    '{doc}' => $Doc,
+                )),
+                'url' => array('exportToHtml', 'id' => $modelId)
+            ),
+            array(
+                'name'=>'import',
+                'label'=>Yii::t('docs', 'Import {module}', array(
+                    '{module}' => $Docs,
+                )),
+                'url'=>array('admin/importModels', 'model'=>'Docs'),
+            ),
+            array(
+                'name'=>'export',
+                'label'=>Yii::t('docs', 'Export {module}', array(
+                    '{module}' => $Docs,
+                )),
+                'url'=>array('admin/exportModels', 'model'=>'Docs'),
+            ),
+        );
+
+        $this->prepareMenu($menuItems, $selectOptions);
+        $this->actionMenu = $this->formatMenu($menuItems, $menuParams);
+    }
+
 }

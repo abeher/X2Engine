@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -37,7 +37,7 @@
 /**
  * This is the model class for table "x2_urls".
  *
- * @package X2CRM.models
+ * @package application.models
  * @property integer $id(auto-incremented)
  * @property string $title
  * @property string $url
@@ -45,6 +45,9 @@
  * @property integer timestamp
  */
 class URL extends CActiveRecord{
+
+    const DEFAULT_PROTO = 'http';
+
 	/**
 	 * Returns the static model of the specified AR class.
 	 * @return Roles the static model class
@@ -54,7 +57,17 @@ class URL extends CActiveRecord{
 		return parent::model($className);
 	}
 
-	/**
+    /**
+     * Prepends the default protocol to a URL that is just a bare domain, i.e.
+     * "google.com"
+     * 
+     * @param type $url
+     */
+    public static function prependProto($url){
+        return !preg_match('%^https?://%', $url) ? self::DEFAULT_PROTO.'://'.$url : $url;
+    }
+
+    /**
 	 * @return string the associated database table name
 	 */
 	public function tableName()

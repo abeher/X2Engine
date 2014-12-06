@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -103,16 +103,16 @@ class Changelog extends CActiveRecord {
 	 */
 	public function attributeLabels() {
 		return array(
-			'id' => 'ID',
-			'type' => 'Type',
-			'itemId' => 'Item',
-			'changedBy' => 'Changed By',
-			'changed' => 'Changed',
-			'fieldName' => 'Field Name',
-			'oldValue' => 'Old Value',
-			'newValue' => 'New Value',
-			'diff' => 'Diff',
-			'timestamp' => 'Timestamp',
+			'id' => Yii::t('admin','ID'),
+			'type' => Yii::t('admin','Type'),
+			'itemId' => Yii::t('admin','Item'),
+			'changedBy' => Yii::t('admin','Changed By'),
+			'changed' => Yii::t('admin','Changed'),
+			'fieldName' => Yii::t('admin','Field Name'),
+			'oldValue' => Yii::t('admin','Old Value'),
+			'newValue' => Yii::t('admin','New Value'),
+			'diff' => Yii::t('admin','Diff'),
+			'timestamp' => Yii::t('admin','Timestamp'),
 		);
 	}
 
@@ -125,10 +125,10 @@ class Changelog extends CActiveRecord {
 		// should not be searched.
 
 		$criteria=new CDbCriteria;
-		
-		$parameters = array('limit'=>ceil(ProfileChild::getResultsPerPage()));
+
+		$parameters = array('limit'=>ceil(Profile::getResultsPerPage()));
 		$criteria->scopes = array('findAll'=>array($parameters));
-		
+
 		$criteria->compare('id',$this->id);
 		$criteria->compare('type',$this->type,true);
 		$criteria->compare('itemId',$this->itemId);
@@ -140,12 +140,12 @@ class Changelog extends CActiveRecord {
 		$criteria->compare('diff',$this->diff,true);
 		$criteria->compare('timestamp',$this->timestamp);
 
-		return new SmartDataProvider(get_class($this), array(
+		return new SmartActiveDataProvider(get_class($this), array(
 			'sort'=>array(
 				'defaultOrder'=>'timestamp DESC',
 			),
 			'pagination'=>array(
-				'pageSize'=>ProfileChild::getResultsPerPage(),
+				'pageSize'=>Profile::getResultsPerPage(),
 			),
 			'criteria'=>$criteria,
 		));

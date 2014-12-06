@@ -1,6 +1,6 @@
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -35,6 +35,17 @@
 
 $(function() {
 	function updateTzClock() {
+
+		if(setting === 'analog'){
+			$('#tzClockDigital').hide();
+			$('#tzClock').show();			
+			$('#tzClock2').show();			
+		}
+		else{
+			$('#tzClockDigital').show();
+			$('#tzClock').hide();
+			$('#tzClock2').hide();
+		}
 				
 		var tzClock = new Date();
 		var tzUtcOffset = "";
@@ -47,15 +58,23 @@ $(function() {
 		var m = tzClock.getMinutes();
 		var s = tzClock.getSeconds() + tzClock.getMilliseconds()/1000;
 		
-		var ampm = "am";
+		var ampm = "AM";
 		
 		if(h>11)			// 0-11 -> am, 12-23 -> pm
-			ampm = "pm";
-		if(h>12)			// 13-23 -> 1->11
+			ampm = "PM";
+		if(h>12 && (setting === 'digital'))			// 13-23 -> 1->11
 			h -= 12;
-		if(h==0)
+		if(h==0 && (setting === 'digital'))
 			h = 12;
-		
+
+		if(setting === 'digital24')
+			ampm = "";
+
+		if (setting === 'digital24' || setting ==='digital') {
+			$("#tzClockDigital").html(h+":"+fixWidth(m)+'<font id="clock-ampm">'+ampm+"</font>"+tzUtcOffset);
+			return;
+		}
+
 		if(Modernizr.csstransforms) {
 			var sAngle = Math.round(s * 6);
 			var sCssAngle = "rotate(" + sAngle + "deg)";
@@ -68,7 +87,7 @@ $(function() {
 			
 			var browsers = ["-moz-transform","-webkit-transform","-o-transform","-ms-transform"];
 			
-			for(i in browsers) {
+			for(var i in browsers) {
 				$("#tzClock .sec").css(browsers[i],sCssAngle);
 				$("#tzClock .min").css(browsers[i],mCssAngle);
 				$("#tzClock .hour").css(browsers[i],hCssAngle);
@@ -85,7 +104,10 @@ $(function() {
 	function fixWidth(x) {
 		return (x<10)? "0"+x : x;
 	}
-	
+
+	$("<span id=\"tzClockDigital\"></span>").appendTo("#widget_TimeZone .portlet-content");
+
+
 	if(Modernizr.csstransforms) {
 		$("<ul id=\"tzClock\">\
 			<li class=\"hour\"><div></div></li>\
@@ -97,5 +119,7 @@ $(function() {
 		$("<div id=\"tzClock2\"></div>").appendTo("#widget_TimeZone .portlet-content");
 		setInterval(updateTzClock, 1000);
 	}
+
+
 	updateTzClock();
 });

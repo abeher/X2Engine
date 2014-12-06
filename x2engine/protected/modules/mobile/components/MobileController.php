@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -35,7 +35,7 @@
  *****************************************************************************************/
 
 /**
- * @package X2CRM.modules.mobile.components 
+ * @package application.modules.mobile.components 
  */
 class MobileController extends Controller {
 
@@ -65,7 +65,7 @@ class MobileController extends Controller {
     public function filterAccessControl($filterChain){
         $user = Yii::app()->getUser();
         if ($user != null)
-            $user->loginUrl=$this->createUrl('site/login/');
+            $user->loginUrl=$this->createUrl('/site/login');
         parent::filterAccessControl($filterChain);
     }
     /**

@@ -1,8 +1,8 @@
 <?php
 
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -45,10 +45,10 @@ Yii::import('application.components.util.*');
  * @property string $relBaseDir (read-only) relative path to web root of the testing files area
  * @property array $relFileList (read-only) List of testing files relative to the base of the testing directory
  * @property string $testTime (read-only) Timestamp of the test currently being run (used to construct test paths)
- * @package X2CRM.tests
+ * @package application.tests
  * @author Demitri Morgan <demitri@x2engine.com>
  */
-abstract class FileOperTestCase extends CTestCase {
+abstract class FileOperTestCase extends X2TestCase {
 
 	/**
 	 * Testing data output directory
@@ -180,6 +180,24 @@ abstract class FileOperTestCase extends CTestCase {
 		$this->_testTime = null;
 	}
 
+    protected function tearDown() {
+        parent::tearDown();
+        $this->removeTestDirs();
+    }
+
+    /**
+     * FTP connection wrapper for tests
+     * @param String $test the test method to run
+     */
+    public function useFtp($test){
+        if (X2_FTP_FILEOPER) {
+            // Change to the tests directory so that relative paths work in testing.
+            FileUtil::ftpInit(X2_FTP_HOST, X2_FTP_USER, X2_FTP_PASS, Yii::app()->basePath.DIRECTORY_SEPARATOR.'tests', X2_FTP_CHROOT_DIR);
+            $this->$test();
+            FileUtil::ftpClose();
+        } else
+            $this->markTestSkipped('Skipping: X2_FTP_FILEOPER is disabled.');
+    }
 }
 
 ?>

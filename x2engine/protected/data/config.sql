@@ -1,6 +1,6 @@
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -50,7 +50,12 @@ INSERT INTO x2_dropdowns (`id`, `name`, `options`) VALUES
 (114,	'Invoice Status',	'{"Pending":"Pending","Issued":"Issued","Paid":"Paid","Open":"Open","Canceled":"Canceled","Other":"Other"}'),
 (115,	'Bug Status',       '{"Unconfirmed":"Unconfirmed","Confirmed":"Confirmed","In Progress":"In Progress","Closed (Resolved Internally)":"Closed (Resolved Internally)","Closed (Unable to Reproduce)":"Closed (Unable to Reproduce)","Closed (Duplicate)":"Closed (Duplicate)","Merged Into Base Code":"Merged Into Base Code"}'),
 (116,	'Bug Severity',     '{"5":"Blocker","4":"Critical","3":"Major","2":"Normal","1":"Minor","0":"Feature Request"}'),
-(117,	'Quick Note',       '{"Contacted":"Contacted","Not Contacted":"Not Contacted"}');
+(117,	'Quick Note',       '{"Contacted":"Contacted","Not Contacted":"Not Contacted"}'),
+(120,   'Action Timers',    '{\"Research\":\"Research\",\"Meeting\":\"Meeting\",\"Email\":\"Email\"}'),
+(121,   'Event Subtypes',    '{\"Meeting\":\"Meeting\",\"Appointment\":\"Appointment\",\"Call\":\"Call\"}'),
+(122,   'Event Statuses',    '{\"Confirmed\":\"Confirmed\",\"Cancelled\":\"Cancelled\"}'),
+(123,   'Event Colors',    '{"#008000":"Green","#3366CC":"Blue","#FF0000":"Red","#FFA500":"Orange","#000000":"Black"}'),
+(124,   'Priority',    '{"1":"Low","2":"Medium","3":"High"}');
 /*&*/
 INSERT INTO x2_dropdowns (`id`, `name`, `options`, `parent`, `parentVal`) VALUES
 (118,	'Contacted Quick Note','{"Not interested.":"Not interested.","Requested follow up call.":"Requested follow up call.","Contact made.":"Contact made."}', 117, 'Contacted'),
@@ -60,21 +65,24 @@ ALTER TABLE x2_profile CHANGE `language` language varchar(40) DEFAULT '{language
 /*&*/
 ALTER TABLE x2_admin CHANGE `emailFromAddr` emailFromAddr varchar(255) NOT NULL DEFAULT '{bulkEmail}';
 /*&*/
-INSERT INTO x2_users (firstName, lastName, username, password, emailAddress, status, lastLogin, userKey)
-        VALUES ('web','admin','admin','{adminPass}','{adminEmail}','1', '0', '{adminUserKey}');
+INSERT INTO x2_users (id, firstName, lastName, username, password, emailAddress, status, lastLogin, userKey)
+        VALUES (1,'web','admin','{adminUsername}','{adminPass}','{adminEmail}','1','0','{adminUserKey}');
 /*&*/
 INSERT INTO x2_users (firstName, lastName, username, password, emailAddress, status, lastLogin)
         VALUES ('API','User','api','{apiKey}','{adminEmail}' ,'0', '0');
 /*&*/
 INSERT INTO x2_profile (fullName, username, emailAddress, status)
-		VALUES ('Web Admin', 'admin', '{adminEmail}','1');
+		VALUES ('Web Admin', '{adminUsername}', '{adminEmail}','1');
 /*&*/
 INSERT INTO x2_profile (fullName, username, emailAddress, status)
 		VALUES ('API User', 'api', '{adminEmail}','0');
 /*&*/
+INSERT INTO x2_profile (id, fullName, username, emailAddress, status)
+		VALUES (-1, '', '__x2_guest_profile__', '', '0');
+/*&*/
 INSERT INTO x2_social (`type`, `data`) VALUES ('motd', 'Please enter a message of the day!');
 /*&*/
-INSERT INTO x2_admin (timeout,webLeadEmail,emailFromAddr,currency,installDate,updateDate,quoteStrictLock,unique_id,edition,serviceCaseFromEmailAddress,serviceCaseFromEmailName,serviceCaseEmailSubject,serviceCaseEmailMessage,eventDeletionTime,eventDeletionTypes) VALUES (
+INSERT INTO x2_admin (timeout,webLeadEmail,emailFromAddr,currency,installDate,updateDate,quoteStrictLock,unique_id,edition,serviceCaseFromEmailAddress,serviceCaseFromEmailName,serviceCaseEmailSubject,serviceCaseEmailMessage,eventDeletionTime,eventDeletionTypes,appName,appDescription) VALUES (
 	'3600',
 	'{adminEmail}',
 	'{bulkEmail}',
@@ -88,22 +96,25 @@ INSERT INTO x2_admin (timeout,webLeadEmail,emailFromAddr,currency,installDate,up
 	'Tech Support',
 	'Tech Support',
 	'Hello {first} {last},\n\nJust wanted to check in with you about the support case you created. It is number {case}. We will get back to you as soon as possible.',
-    7,
-    '["record_create","record_deleted","action_reminder","action_complete","calendar_event","case_escalated","email_opened","email_sent","notif","weblead_create","web_activity","workflow_complete","workflow_revert","workflow_start"]'
+    0,
+    '["record_create","record_deleted","action_reminder","action_complete","calendar_event","case_escalated","email_opened","email_sent","notif","weblead_create","web_activity","workflow_complete","workflow_revert","workflow_start"]',
+    '{app}',
+    'Your App Description'
 );
 /*&*/
-UPDATE x2_profile SET `widgets`='0:1:1:1:1:0:0:0:0:0:0:0:0',
-	`widgetOrder`='OnlineUsers:TimeZone:GoogleMaps:ChatBox:TagCloud:TwitterFeed:MessageBox:QuickContact:NoteBox:ActionMenu:MediaBox:DocViewer:TopSites';
+UPDATE x2_profile SET `widgets`='0:1:1:1:1:1:0:0:0:0:0:0:0:0',
+	`widgetOrder`='OnlineUsers:TimeZone:SmallCalendar:GoogleMaps:ChatBox:TagCloud:TwitterFeed:MessageBox:QuickContact:NoteBox:ActionMenu:MediaBox:DocViewer:TopSites';
 /*&*/
-UPDATE `x2_auth_item` SET `bizrule`="return Yii::app()->user->name === '{adminUsername}';" WHERE `name`='admin';
-/*&*/
-UPDATE `x2_users` SET `username`='{adminUsername}' WHERE `username`='admin';
-/*&*/
-UPDATE `x2_profile` SET `username`='{adminUsername}' WHERE `username`='admin';
+INSERT INTO `x2_modules`
+(`name`, title, visible, menuPosition, searchable, editable, adminOnly, custom, toggleable, pseudoModule)
+VALUES
+('x2Activity', 'Activity', 1, 0, 0, 0, 0, 0, 0, 1);
 /*&*/
 UPDATE `x2_modules` SET `visible`=0;
 /*&*/
 UPDATE `x2_modules` SET `visible`=1 WHERE `name` IN {visibleModules};
+/*&*/
+UPDATE `x2_modules` SET `itemName`= "Bug Report" WHERE `name` = "bugReports";
 /*&*/
 INSERT INTO `x2_tips` (`tip`, `edition`, `admin`, `module`) VALUES
 ("You can click on the icon with 4 outward arrows in the top right to hide the widget sidebar.",'opensource',0,'Layout'),

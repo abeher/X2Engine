@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -36,87 +36,109 @@
 
 /**
  * X2FlowAction that creates a notification
- * 
- * @package X2CRM.components.x2flow.actions
+ *
+ * @package application.components.x2flow.actions
  */
 class X2FlowWait extends X2FlowAction {
 	public $title = 'Wait';
+    public $requiresCron = true;
 	public $info = 'Delay execution of the remaining steps until the specified time.';
-	
+
 	public $flowId = null;
 	public $flowPath = null;
-	
+
+    public function getFormattedUnit ($unit) {
+        switch ($unit) {
+            case 'mins':
+                return Yii::t('studio', 'minute');
+            case 'hours':
+                return Yii::t('studio', 'hour');
+            case 'days':
+                return Yii::t('studio', 'day');
+            case 'months':
+                return Yii::t('studio', 'month');
+            case 'secs':
+                return Yii::t('studio', 'second');
+            default:
+                return '';
+        }
+    }
+
 	public function paramRules() {
-		
+
 		$units = array(
 			'mins'=>Yii::t('studio','minutes'),
 			'hours'=>Yii::t('studio','hours'),
 			'days'=>Yii::t('studio','days'),
 			'months'=>Yii::t('studio','months'),
+            'secs'=>Yii::t('studio','seconds (recommended for formulas only)'),
 		);
 		return array(
 			'title' => Yii::t('studio',$this->title),
 			'info' => Yii::t('studio',$this->info),
+            'requiresCron' => $this->requiresCron,
 			'options' => array(
 				// array('name'=>'user','label'=>'User','type'=>'assignment','options'=>$assignmentOptions),	// just users, no groups or 'anyone'
 				// array('name'=>'type','label'=>'Type','type'=>'dropdown','options'=>$notifTypes),
-				array('name'=>'delay','label'=>'For'),
-				array('name'=>'unit','label'=>'Type','type'=>'dropdown','options'=>$units),
+				array('name'=>'delay','label'=>Yii::t('studio','For')),
+				array('name'=>'unit','label'=>Yii::t('studio','Type'),'type'=>'dropdown','options'=>$units),
 				// array('name'=>'timeOfDay','type'=>'time','label'=>'Time of Day','optional'=>1),
 			));
 	}
 
-	public function execute(&$params) {
+	public function execute(&$params, $triggerLogId=null) {
 		$options = &$this->config['options'];
-		
+        $options['delay']['value']=$this->parseOption('delay',$params);
 		if(!is_array($this->flowPath) || !is_numeric($options['delay']['value']))
-			return false;
-		
-		$time = X2FlowItem::calculateTimeOffset((int)$options['delay']['value'],$options['unit']['value']);
-		
-		if($time === false)
-			return false;
-		$time += time();
-			
-		$this->flowPath[count($this->flowPath)-1]++;	// add 1 to the branch position in the flow path, to skip this action
-			
+			return array (false, "");
+
+		$time = X2FlowItem::calculateTimeOffset(
+            (int)$options['delay']['value'],$options['unit']['value']);
+
+		if($time === false) {
+			return array (false, "");
+        }
+        $timeOffset = $time + time ();
+
+        // add 1 to the branch position in the flow path, to skip this action
+		$this->flowPath[count($this->flowPath)-1]++;	
+
 		$cron = new CronEvent;
 		$cron->type = 'x2flow';
 		$cron->createDate = time();
 		$cronData = array(
 			'flowId'=>$this->flowId,
-			'flowPath'=>$this->flowPath
+			'flowPath'=>$this->flowPath,
+            'triggerLogId'=>$triggerLogId
 		);
-		$cron->time = $time;
-		
+		$cron->time = $timeOffset;
+
 		if(isset($params['model'])) {
 			$cronData['modelId'] = $params['model']->id;
 			$cronData['modelClass'] = get_class($params['model']);
 		}
 		foreach(array_keys($params) as $param) {
-			if(is_object($params[$param]) && $params[$param] instanceof CActiveRecord)	// remove any models so the JSON doesn't get crazy long
-				unset($params['model']);
+
+            // remove any models so the JSON doesn't get crazy long
+			if(is_object($params[$param]) && $params[$param] instanceof CActiveRecord){	
+				$tmpModel = $params[$param];
+                unset($params[$param]);
+            }
 		}
-		
+
 		$cronData['params'] = $params;
-		
+
 		$cron->data = CJSON::encode($cronData);
 		// $cron->validate();
-		// die(var_dump($cron->getErrors()));
-		
-		return $cron->save();
-		// $notif->user = $this->parseOption('user',$params);
-		
+        if(isset($tmpModel)){
+            $params['model']=$tmpModel;
+        }
+		if ($cron->save()) {
+			return array (
+                true, "Waiting for " . $options['delay']['value'] . ' ' . 
+                $this->getFormattedUnit ($options['unit']['value']) . '(s)');
+        } else {
+			return array (false, "");
+        }
 	}
 }
-
-
-
-
-
-
-
-
-
-
-

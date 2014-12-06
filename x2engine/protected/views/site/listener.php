@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -35,7 +35,7 @@
  *****************************************************************************************/
 mb_internal_encoding('UTF-8');
 mb_regex_encoding('UTF-8');
-Yii::app()->params->profile = ProfileChild::model()->findByPk(1);
+Yii::app()->params->profile = Profile::model()->findByPk(1);
 if (empty($type)) $type = 'weblead';
 ?>
 

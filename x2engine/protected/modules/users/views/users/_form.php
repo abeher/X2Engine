@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -39,10 +39,20 @@
 <?php $form=$this->beginWidget('CActiveForm', array(
 	'id'=>'users-form',
 	'enableAjaxValidation'=>false,
-)); 
+));
 Yii::app()->clientScript->registerScriptFile(Yii::app()->getBaseUrl().'/js/multiselect/js/ui.multiselect.js');
 Yii::app()->clientScript->registerCssFile(Yii::app()->getBaseUrl().'/js/multiselect/css/ui.multiselect.css','screen, projection');
-Yii::app()->clientScript->registerCss('multiselectCss',"
+Yii::app()->clientScript->registerCss('createUserCss',"
+
+.input-warning {
+    display: inline-block;
+    color: red;
+    margin-bottom: 8px;
+}
+.input-warning + input {
+    float: left;
+}
+
 .multiselect {
 	width: 460px;
 	height: 200px;
@@ -77,11 +87,12 @@ $(document).ready(function() {
 	</div>
 
 	<div class="row">
-		<?php echo $form->labelEx($model,'username'); ?>
-		<?php echo $model->username=='admin'?
-				$form->textField($model,'username',array('size'=>20,'maxlength'=>20,'disabled'=>'disabled')):
-				$form->textField($model,'username',array('size'=>20,'maxlength'=>20)); ?>
-		<?php echo $form->error($model,'username'); ?>
+		<?php
+        $unameAttr = $update?'userAlias':'username';
+        echo $form->labelEx($model,$unameAttr);
+		echo $form->textField($model,$unameAttr,array('size'=>20,'maxlength'=>20));
+		echo $form->error($model,$unameAttr);
+        ?>
 	</div>
 
 	<div class="row">
@@ -89,7 +100,7 @@ $(document).ready(function() {
 		<?php echo $form->passwordField($model,'password',array('size'=>20,'maxlength'=>100)); ?>
 		<?php echo $form->error($model,'password'); ?>
 	</div>
-	
+
 	<div class="row">
 		<?php echo $form->labelEx($model,'userKey'); ?>
 		<?php echo $form->textField($model,'userKey',array('size'=>20,'maxlength'=>30)); ?>
@@ -107,7 +118,7 @@ $(document).ready(function() {
 	<?php if((isset($flag) && !$flag) || !isset($flag)){ ?>
 	<div class="row">
 		<?php echo $form->labelEx($model,'department'); ?>
-		<?php echo $form->textField($model,'department',array('size'=>40,'maxlength'=>40)); ?>
+		<?php echo $form->textField($model,'department',array('class'=>'x2-wide-input')); ?>
 		<?php echo $form->error($model,'department'); ?>
 	</div>
 	<?php } ?>
@@ -139,11 +150,11 @@ $(document).ready(function() {
 	<?php if((isset($flag) && !$flag) || !isset($flag)){ ?>
 	<div class="row">
 		<?php echo $form->labelEx($model,'backgroundInfo'); ?>
-		<?php echo $form->textArea($model,'backgroundInfo',array('rows'=>6, 'cols'=>50)); ?>
+		<?php echo $form->textArea($model,'backgroundInfo',array('class'=>'x2-wide-input')); ?>
 		<?php echo $form->error($model,'backgroundInfo'); ?>
 	</div>
 	<?php } ?>
-	
+
 	<div class="row">
 		<?php echo $form->labelEx($model,'emailAddress'); ?>
 		<?php echo $form->textField($model,'emailAddress',array('size'=>20,'maxlength'=>100,'disabled'=>isset($flag)&&$flag?'disabled':'')); ?>
@@ -157,20 +168,20 @@ $(document).ready(function() {
 		<?php echo $form->error($model,'status'); ?>
 	</div>
        <?php if((isset($flag) && !$flag) || !isset($flag)){?>
-            <label>Roles</label>
+            <label><?php echo Yii::t('users','Roles');?></label>
             <br />
             <?php
             echo CHtml::dropDownList('roles[]',$selectedRoles,$roles,array('class'=>'multiselect','multiple'=>'multiple', 'size'=>6));
             ?>
             <br />
-            <label>Groups</label>
+            <label><?php echo Yii::t('app','{groups}', array('{groups}'=>Modules::displayName(true, "Groups")));?></label>
             <br />
             <?php
             echo CHtml::dropDownList('groups[]',$selectedGroups,$groups,array('class'=>'multiselect','multiple'=>'multiple', 'size'=>6));
             ?>
             <br />
 			<?php } ?>
-        
+
 	<div class="row buttons">
 		<?php echo CHtml::submitButton($model->isNewRecord ? Yii::t('app','Create'):Yii::t('app','Save'),array('class'=>'x2-button')); ?>
 	</div>

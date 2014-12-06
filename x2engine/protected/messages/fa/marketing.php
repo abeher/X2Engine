@@ -1,68 +1,17 @@
 <?php
-/*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
- * 
- * This program is free software; you can redistribute it and/or modify it under
- * the terms of the GNU Affero General Public License version 3 as published by the
- * Free Software Foundation with the addition of the following permission added
- * to Section 15 as permitted in Section 7(a): FOR ANY PART OF THE COVERED WORK
- * IN WHICH THE COPYRIGHT IS OWNED BY X2ENGINE, X2ENGINE DISCLAIMS THE WARRANTY
- * OF NON INFRINGEMENT OF THIRD PARTY RIGHTS.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU Affero General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU Affero General Public License along with
- * this program; if not, see http://www.gnu.org/licenses or write to the Free
- * Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
- * 02110-1301 USA.
- * 
- * You can contact X2Engine, Inc. P.O. Box 66752, Scotts Valley,
- * California 95067, USA. or at email address contact@x2engine.com.
- * 
- * The interactive user interfaces in modified source and object code versions
- * of this program must display Appropriate Legal Notices, as required under
- * Section 5 of the GNU Affero General Public License version 3.
- * 
- * In accordance with Section 7(b) of the GNU Affero General Public License version 3,
- * these Appropriate Legal Notices must retain the display of the "Powered by
- * X2Engine" logo. If the display of the logo is not reasonably feasible for
- * technical reasons, the Appropriate Legal Notices must display the words
- * "Powered by X2Engine".
- *****************************************************************************************/
-
 return array (
 // Campaign model
-'Campaign'=>'کمپین بین المللی حقوق بشر',
 'Campaigns'=>'مبارزات',
-'ID'=>'شناسایی',
 'Master Campaign ID'=>'شناسه کمپین اصلی',
-'Name'=>'نام',
-'Assigned To'=>'مرتبط با',
 'Contact List'=>'فهرست تماس',
-'Active'=>'فعال',
-'Description'=>'شرح',
-'Type'=>'نوع',
 'Cost'=>'ارزش',
-'Subject'=>'موضوع',
 'Content'=>'محتوی',
-'Complete'=>'تکمیل',
-'Visibility'=>'دید',
-'Create Date'=>'تاریخ ایجاد',
 'Launch Date'=>'تاریخ آغاز ',
-'Last Updated'=>'آخرین بروزرسانی',
-'Updated By'=>'بروزرسانی توسط',
-'None'=>'هیچ',
 'Basic Info'=>'اطلاعات پایه',
-'Email'=>'ایمیل',
 'Call List'=>'تماس لیست',
 'Physical Mail'=>'ایمیل فیزیکی',
 'Email Template'=>'قالب ایمیل',
 'Update Campaign'=>'بروز کمپین بین المللی حقوق بشر',
-'Last Activity'=>'تاریخ و زمان آخرین فعالیت درسایت',
 'Template'=>'قالب',
 
 // Menu
@@ -70,8 +19,8 @@ return array (
 'Create Campaign'=>'ایجاد کمپین بین المللی حقوق بشر',
 'Newsletters'=>'خبرنامه ها',
 'Create Newsletter'=>'ایجاد خبرنامه',
-'Create Web Form'=>'ایجاد فرم وب',
 'Web Tracker'=>'وب سایت ردیاب',
+'Email List'=>'لیست پست الکترونیک',
 
 // Launching
 'The campaign has already been launched.'=>'.کمپین آغاز شده است',
@@ -89,7 +38,6 @@ return array (
 'Opened'=>'افتتاح شد',
 'Clicked'=>'کلیک',
 'Unsubscribed'=>'لغو اشتراک در',
-'Status'=>'وضعیت',
 
 // Mailing
 'The email sending limit has been reached.'=>'.ارسال ای-نامه به حد خود رسیده است',
@@ -122,11 +70,9 @@ return array (
 'Contact has clicked a link'=>'تماس کلیک یک لینک',
 'has clicked a link'=>'یک لینک کلیک کرده است',
 'To stop receiving these messages, click here'=>'برای جلوگیری از دریافت این پیام، اینجا را کلیک کنید',
+'Send As'=>'ارسال به عنوان',
 
 // WebForm model
-'Model Name'=>'نام مدل',
-'Fields'=>'زمینه',
-'Parameters'=>'پارامترهای',
 'CSS'=>'CSS',
 
 // Web Lead Form creator
@@ -138,25 +84,92 @@ return array (
 'Copy and paste this code into your website to include the web lead form.'=>'کپی و چسباندن این کد را در وب سایت خود را وب فرم منجر به.',
 'Choose an existing form as a starting point.'=>'را انتخاب کنید فرم موجود به عنوان یک نقطه شروع است.',
 'Text Color'=>'رنگ متن',
-'Background Color'=>'رنگ پس زمینه',
 'Font'=>'فونت',
 'Border'=>'مرز',
 'Size'=>'اندازه',
 'pixels'=>'پیکسل',
-'Color'=>'رنگ',
-'Tags'=>'برچسب ها',
-'Default'=>'پیش فرض',
 'black'=>'سیاه',
 'transparent'=>'شفاف',
 'none'=>'هیچ یک',
-'Example'=>'مثال',
 'These tags will be applied to any contact created by the form.'=>'این برچسب ها را به هر مخاطب ایجاد شده توسط فرم استفاده شود.',
-'Save'=>'ذخیره',
 'Enter a name and save this form to edit later.'=>'را وارد کنید نام و صرفه جویی در این فرم را ویرایش و بعد از آن.',
 'Form Saved'=>'فرم ذخیره شده',
 'Reset Form'=>'تنظیم مجدد فرم',
 'Embed Code'=>'کد با تنظیمات دلخواه شما',
 'Saved Forms'=>'ذخیره شده فرم',
-'Settings'=>'تنظیمات',
-'Preview'=>'پیش دید',
+'Enter custom css for the web form.'=>'CSS سفارشی برای فرم وب را وارد کنید.',
+'Custom &lt;HEAD&gt;'=>'&lt;HEAD&gt; سفارشی',
+'Enter any HTML you would like inserted into the &lt;HEAD&gt; tag.'=>'هر HTML شما می خواهم داخل تگ &lt;HEAD&gt; را وارد کنید.',
+'Select email templates to send to the new weblead and the user assigned to the weblead.'=>'انتخاب قالب ایمیل برای ارسال به weblead جدید و کاربر اختصاص یافته به weblead.',
+'NOTE: The weblead form must be saved for these emails to be sent.'=>'نکته: فرم weblead باید برای این ایمیل فرستاده می شود نجات داد.',
+'User Email'=>'ایمیل کاربر',
+'Weblead Email'=>'Weblead ایمیل',
+'Drag and Drop fields from Fields List to Form.'=>'کشیدن و رها کردن زمینه های از فهرست زمینه به فرم.',
+'Live web form preview.'=>'زندگی می کنند وب فرم پیش نمایش.',
+'Label:'=>'برچسب:',
+'Position:'=>'درجه کاربری:',
+
+// Web Tracker
+'Web Tracker Code'=>'وب سایت ردیاب کد',
+'This HTML tag will allow you to track contacts who visit your website.'=>'این تگ HTML اجازه خواهد داد که شما را برای ردیابی تماس های که به وب سایت شما.',
+'Paste this code into the body section of every page of your website.'=>'این کد را در بخش بدنه هر صفحه از وب سایت خود را جایگذاری کنید.',
+'<b>Note:</b> Contacts can be tracked only if they filled out the web lead capture form, or clicked on a tracking link in an email campaign.'=>'<b>توجه:</b> اطلاعات تماس را می توان ردیابی تنها در صورتی که پر کردن وب فرم جذب سرب، و یا کلیک بر روی لینک ردیابی در یک کمپین ایمیل.',
+'Web Tracker Settings'=>'وب سایت ردیاب تنظیمات',
+'You can enable or disable the web tracker. The tracker will ignore repeat hits from a given contact during the cooldown period.'=>'شما می تواند ردگیر وب را فعال یا غیر فعال. ردگیر تکرار بازدید از یک تماس داده شده در طول دوره استراحت را نادیده گرفت.',
+'If a contact visits several pages in a short time, you will only get one notification.'=>'اگر بازدیدکننده داشته است تماس صفحات متعدد در یک زمان کوتاه، شما فقط یک اطلاع رسانی.',
+'Turn it down all the way to receive notifications about every page hit.'=>'روشن کردن آن را تمام راه را به دریافت اطلاعیه در مورد هر ضربه صفحه.',
+'Contact has opened the email sent on '=>'تماس با ایمیل فرستاده شده در تاریخ باز کرده است',
+'Email sent'=>'ایمیل فرستاده شد',
+'Header Code'=>'کد سربرگ',
+'Batch completed, sending again in '=>'دسته تکمیل، ارسال دوباره در',
+'A new web lead has been assigned to you: '=>'وب جدید منجر شده است به شما اختصاص داده شده است:',
+'Marketing Automation'=>'اتوماسیون بازاریابی',
+'Contacts for Account Report ('=>'مخابرات برای گزارش حساب (',
+'Mailing for Account Report ('=>'پستی برای گزارش حساب (',
+'Create a public form to receive new services cases. When the form is submitted, a new '=>'ایجاد یک فرم عمومی برای دریافت موارد خدمات جدید. هنگامی که فرم ارسال می شود، جدید',
+'This HTML tag will allow you to track contacts who visit your '=>'این تگ HTML اجازه خواهد داد که شما را برای ردیابی تماس های که بازدید شما',
+'Paste this code into the body section of every page of your '=>'کد خمیر را به بخش های بدن هر صفحه از شما',
+'You can enable or disable the web tracker. The tracker will '=>'شما می توانید فعال یا غیر فعال ردیاب وب. این نسخه خواهد شد',
+'If a contact visits several pages in a short time, you '=>'اگر یک تماس دیدار چند صفحه در یک زمان کوتاه، شما',
+'Turn it down all the way to receive notifications about '=>'روشن کردن آن را تمام راه را به دریافت اطلاعیه ها در مورد',
+'The contact you enter here will be used for variable replacement, i.e. for "John Doe" the token {firstName} will get replaced with "John"'=>'تماس با شما در اینجا وارد می کنید برای جایگزینی متغیر، یعنی برای &quot;John Doe در&quot; این نشانه رمز استفاده می شود {firstName} خواهد با &quot;جان&quot; به جای',
+'If you want to keep your current HTML forms but still get web leads into X2, please see the wiki article located here: {link}'=>'اگر شما می خواهید برای حفظ فرم های HTML فعلی خود را، اما هنوز هم وب منجر به X2، مراجعه کنید به مقاله ویکی در اینجا قرار دارد: {link}',
+'Web Lead API'=>'وب سرب API',
+'Custom HTML could not be removed.'=>'سفارشی HTML نمی تواند حذف شود.',
+'Custom HTML could not be saved.'=>'سفارشی HTML نمی تواند ذخیره شود.',
+'Select email templates to send to the new weblead and the user '=>'قالب ایمیل را انتخاب کنید تا ارسال به weblead جدید و کاربر',
+'Type:'=>'نوع:',
+'Value:'=>'ارزش:',
+'The web form must be saved for custom fields to get '=>'فرم وب باید برای زمینه های سفارشی را نجات داد برای به دست آوردن',
+'The web form must be saved for your custom fields or custom HTML to '=>'فرم وب باید برای زمینه های دلخواه خود و یا HTML سفارشی را نجات داد',
+'Anonymous Contacts'=>'ناشناس اطلاعات تماس',
+'Fingerprints'=>'اثر انگشت',
+'Anonymous Contact {email}'=>'Anonymous تماس با {email}',
+'Anonymous Contact'=>'Anonymous تماس با',
+'X2Identity Settings'=>'تنظیمات X2Identity',
+'X2Identity uses browser fingerprinting as an alternative '=>'X2Identity با استفاده از انگشت نگاری مرورگر به عنوان یک جایگزین',
+'If browser fingerprinting is enabled, the tracker will '=>'اگر انگشت مرورگر فعال باشد، این نسخه خواهد شد',
+'You can set the threshold for the minimum number of attributes that '=>'شما می توانید آستانه برای حداقل تعداد ویژگی های مجموعه ای که',
+'Disable Slider'=>'غیر فعال کردن کشویی',
+'Import Campaigns'=>'مبارزات واردات',
+'Export Campaigns'=>'مبارزات صادرات',
+'Email Delivery Progress'=>'پست الکترونیک پیشرفت تحویل',
+'Click to refresh displays of campaign data on this page.'=>'به روز کردن صفحه نمایش داده مبارزات انتخاباتی در این صفحه کلیک کنید.',
+'Errors that occurred when attempting to send email:'=>'خطاهای که هنگام تلاش برای ارسال ایمیل رخ داده است:',
+'You have unsent mail in this campaign. Are you sure you want to forcibly mark this campaign as complete?'=>'Tiene correo no enviado en esta campaña. ¿Seguro que quieres marcar la fuerza de esta campaña tan completa?',
+'Please try again in {t} {units}.'=>'Por favor, inténtelo de nuevo en {t} {units} .',
+'Skipping {email}; another concurrent send operation is handling delivery to this address.'=>'Saltarse {email} ; otra operación de envío concurrente es el manejo de la entrega a esta dirección.',
+'Skipping delivery for recipient {id}; email address has been set to blank.'=>'Saltarse la entrega para el destinatario {id} ; dirección de correo electrónico se ha establecido en blanco.',
+'Skipping {email}; the contact has unsubscribed.'=>'Saltarse {email} ; el contacto ha dado de baja.',
+'Email has already been sent to {address}'=>'Correo electrónico ya ha sido enviada a {address}',
+'Email sent successfully to {address}.'=>'Correo enviado satisfactoriamente a {address} .',
+'Email could not be sent to {address}. The message given was: {message}'=>'El correo electrónico no podría ser enviado a {address} . El mensaje que se dio fue: {message}',
+'All emails sent.'=>'Todos los correos electrónicos enviados.',
+'Batch timeout limit reached.'=>'Tiempo límite de espera de lote alcanza.',
+'Failed to save temporary list.'=>'Error al guardar la lista provisional.',
+'Specified campaign does not exist.'=>'Campaña especificado no existe.',
+'Delete Form'=>'Eliminar Form',
+'Select email templates to send to the new web lead and the user '=>'Seleccione plantillas de correo electrónico para enviar a la nueva pista web y el usuario',
+'NOTE: The web lead form must be saved for these emails to be sent.'=>'NOTA: La forma de plomo web debe ser guardado para este tipo de mensajes que se envían.',
+'NOTE: The web lead form must be saved for these tags to be applied.'=>'NOTA: La forma de plomo web debe ser guardado para las siguientes etiquetas que han de aplicarse.',
 );

@@ -1,8 +1,8 @@
 <?php
 
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -36,11 +36,21 @@
  *****************************************************************************************/
 
 /**
- * @package X2CRM.modules.media.controllers
+ * @package application.modules.media.controllers
  */
 class MediaController extends x2base {
 
     public $modelClass = "Media";
+
+    public function behaviors(){
+        return array_merge(parent::behaviors(), array(
+            /*
+            uncomment when media module supports custom forms
+            'QuickCreateRelationshipBehavior' => array(
+                'class' => 'QuickCreateRelationshipBehavior',
+            ),*/
+        ));
+    }
 
     /**
      * @var string the default layout for the views. Defaults to '//layouts/column2', meaning
@@ -52,6 +62,10 @@ class MediaController extends x2base {
      * @param integer $id the ID of the model to be displayed
      */
     public function actionView($id){
+
+        // add media object to user's recent item list
+        User::addRecentItem('m', $id, Yii::app()->user->getId()); 
+
         $this->render('view', array(
             'model' => $this->loadModel($id),
         ));
@@ -62,11 +76,54 @@ class MediaController extends x2base {
      */
     public function actionDownload($id){
         $model = $this->loadModel($id);
-        $file = Yii::app()->file->set($model->getPath());
+        $filePath = $model->getPath();
+        if ($filePath != null)
+            $file = Yii::app()->file->set($filePath);
+        else
+            throw new CHttpException(404);
         if($file->exists)
             $file->send();
         //Yii::app()->getRequest()->sendFile($model->fileName,@file_get_contents($fileName));
         $this->redirect(array('view', 'id' => $id));
+    }
+
+    /**
+     * Alias for actionUpload
+     */
+    public function actionCreate () {
+        $this->actionUpload ();
+    }
+
+    private function createAttachmentAction ($model) {
+        if(!empty($model->associationType) && !empty($model->associationId) && 
+            is_numeric($model->associationId)){
+
+            $note = new Actions;
+            $note->createDate = time();
+            $note->dueDate = time();
+            $note->completeDate = time();
+            $note->complete = 'Yes';
+            $note->visibility = '1';
+            $note->completedBy = Yii::app()->user->getName();
+            if($model->private){
+                $note->assignedTo = Yii::app()->user->getName();
+                $note->visibility = '0';
+            }else{
+                $note->assignedTo = 'Anyone';
+            }
+            $note->type = 'attachment';
+            $note->associationId = $model->associationId;
+            $note->associationType = $model->associationType;
+            if($modelName = X2Model::getModelName($model->associationType)){
+                $association = X2Model::model($modelName)->findByPk($model->associationId);
+                if($association != null){
+                    $note->associationName = $association->name;
+                }
+            }
+            $note->actionDescription = $model->fileName.':'.$model->id;
+            return $note->save();
+        }
+        return false;
     }
 
     /**
@@ -102,43 +159,36 @@ class MediaController extends x2base {
             $model->associationId = $_POST['Media']['associationId'];
             $model->private = $_POST['Media']['private'];
             $model->path; // File type setter is embedded in the magic getter for path
+            $model->name = $_POST['Media']['name'];
+            if (empty($model->name))
+                $model->name = $model->fileName;
             if($_POST['Media']['description'])
                 $model->description = $_POST['Media']['description'];
 
-            if($model->save()){
-                if(!empty($model->associationType) && !empty($model->associationId) && is_numeric($model->associationId)){
-                    $note = new Actions;
-                    $note->createDate = time();
-                    $note->dueDate = time();
-                    $note->completeDate = time();
-                    $note->complete = 'Yes';
-                    $note->visibility = '1';
-                    $note->completedBy = Yii::app()->user->getName();
-                    if($model->private){
-                        $note->assignedTo = Yii::app()->user->getName();
-                        $note->visibility = '0';
-                    }else{
-                        $note->assignedTo = 'Anyone';
-                    }
-                    $note->type = 'attachment';
-                    $note->associationId = $model->associationId;
-                    $note->associationType = $model->associationType;
-                    if($modelName = X2Model::getModelName($model->associationType)){
-                        $association = X2Model::model($modelName)->findByPk($model->associationId);
-                        if($association != null){
-                            $note->associationName = $association->name;
-                        }
-                    }
-                    $note->actionDescription = $model->fileName.':'.$model->id;
-                    $note->save();
+            /*     
+            uncomment when media module supports custom forms
+            if(isset($_POST['x2ajax'])){
+                $ajaxErrors = $this->quickCreate ($model);
+                if (!$ajaxErrors) {
+                    $this->createAttachmentAction ($model);
                 }
-                $this->redirect(array('view', 'id' => $model->id));
-            }
+            }else{*/
+                if($model->save()){
+                    $this->createAttachmentAction ($model);
+                    $this->redirect(array('view', 'id' => $model->id));
+                }
+            //}
         }
 
-        $this->render('upload', array(
-            'model' => $model,
-        ));
+        /*
+        uncomment when media module supports custom forms
+        if(isset($_POST['x2ajax'])){
+            $this->renderInlineCreateForm ($model, isset ($ajaxErrors) ? $ajaxErrors : false);
+        } else {*/
+            $this->render('upload', array(
+                'model' => $model,
+            ));
+        //}
     }
 
     public function actionQtip($id){
@@ -205,12 +255,12 @@ class MediaController extends x2base {
             $fileUrl = $model->getFullUrl();
         }catch(Exception $e){
             echo '<html><body><script type="text/javascript">',
-            'window.parent.CKEDITOR.tools.callFunction(', $_GET['CKEditorFuncNum'], ',"","', $e->getMessage(), '");',
+            'window.parent.CKEDITOR.tools.callFunction(', json_encode($_GET['CKEditorFuncNum']), ',"","', $e->getMessage(), '");',
             '</script></body></html>';
             return;
         }
         echo '<html><body><script type="text/javascript">',
-        'window.parent.CKEDITOR.tools.callFunction(', $_GET['CKEditorFuncNum'], ',"', $fileUrl, '","");',
+        'window.parent.CKEDITOR.tools.callFunction(', json_encode($_GET['CKEditorFuncNum']), ',"', json_encode($fileUrl), '","");',
         '</script></body></html>';
     }
 
@@ -230,6 +280,12 @@ class MediaController extends x2base {
             $model->private = $_POST['Media']['private'];
             if($_POST['Media']['description'])
                 $model->description = $_POST['Media']['description'];
+            if (! $model->drive) {
+                // Handle setting the name if the Media isn't stored on Drive
+                $model->name = $_POST['Media']['name'];
+                if (empty($model->name))
+                    $model->name = $model->fileName;
+            }
             if($model->save())
                 $this->redirect(array('view', 'id' => $model->id));
         }
@@ -248,10 +304,6 @@ class MediaController extends x2base {
         if(Yii::app()->request->isPostRequest){
             // we only allow deletion via POST request
             $model = $this->loadModel($id);
-            if(file_exists("uploads/{$model->uploadedBy}/{$model->fileName}"))
-                unlink("uploads/{$model->uploadedBy}/{$model->fileName}");
-            else if(file_exists("uploads/{$model->fileName}"))
-                unlink("uploads/{$model->fileName}");
             $model->delete();
 
             // if AJAX request (triggered by deletion via admin grid view), we should not redirect the browser
@@ -279,7 +331,7 @@ class MediaController extends x2base {
     }
 
 //    public function actionTestDrive(){
-//        $admin = Yii::app()->params->admin;
+//        $admin = Yii::app()->settings;
 //        if(isset($_REQUEST['logout'])){
 //            unset($_SESSION['access_token']);
 //        }
@@ -292,7 +344,7 @@ class MediaController extends x2base {
 //        if(isset($service, $_SESSION['access_token'], $_FILES['upload'])){
 //            $file = new Google_DriveFile();
 //            $file->setTitle($_FILES['upload']['name']);
-//            $file->setDescription('Uploaded by X2CRM');
+//            $file->setDescription('Uploaded by X2Engine');
 //            $file->setMimeType($_FILES['upload']['type']);
 //
 //            $data = file_get_contents($_FILES['upload']['tmp_name']);
@@ -304,7 +356,7 @@ class MediaController extends x2base {
 //                if(is_array($createdFile)){
 //                    $media = new Media;
 //                    $media->fileName = $createdFile['id'];
-//                    $media->title = $createdFile['title'];
+//                    $media->name = $createdFile['title'];
 //                    $media->associationType = 'Contacts';
 //                    $media->associationId = 955;
 //                    $media->uploadedBy = Yii::app()->user->getName();
@@ -368,7 +420,15 @@ class MediaController extends x2base {
                 return false;
             }
         }catch(Google_AuthException $e){
-            unset($_SESSION['access_token']);
+            if(isset($_SESSION['access_token']) || isset($_SESSION['token'])){ // If these are set it's possible the token expired and there is a refresh token available
+                $auth->flushCredentials(false); // Only flush the recently received information
+                return $this->printFolder($folderId); // Try again, it will use a refresh token if available this time, otherwise it will fail.
+            }else{
+                $auth->flushCredentials();
+                $auth->setErrors($e->getMessage());
+                return false;
+            }
+        }catch(Google_ServiceException $e){
             $auth->setErrors($e->getMessage());
             return false;
         }
@@ -416,6 +476,78 @@ class MediaController extends x2base {
         Yii::app()->params->profile->update();
 
         echo $ret;
+    }
+
+    public function actionGetItems(){
+        $model = X2Model::model ($this->modelClass);
+        if (isset ($model)) {
+            $tableName = $model->tableName ();
+            $sql = 
+                'SELECT id, fileName as value
+                 FROM '.$tableName.' 
+                 WHERE associationType!="theme" and fileName LIKE :qterm 
+                 ORDER BY fileName ASC';
+            $command = Yii::app()->db->createCommand($sql);
+            $qterm = $_GET['term'].'%';
+            $command->bindParam(":qterm", $qterm, PDO::PARAM_STR);
+            $result = $command->queryAll();
+            echo CJSON::encode($result);
+        }
+        Yii::app()->end();
+    }
+
+    /**
+     * Create a menu for Media
+     * @param array Menu options to remove
+     * @param X2Model Model object passed to the view
+     * @param array Additional menu parameters
+     */
+    public function insertMenu($selectOptions = array(), $model = null, $menuParams = null) {
+        $Media = Modules::displayName();
+        $modelId = isset($model) ? $model->id : 0;
+
+        /**
+         * To show all options:
+         * $menuOptions = array(
+         *     'index', 'upload', 'view', 'edit', 'delete',
+         * );
+         */
+
+        $menuItems = array(
+            array(
+                'name'=>'index',
+                'label'=>Yii::t('media', 'All {media}', array(
+                    '{media}' => $Media,
+                )),
+                'url'=>array('index')
+            ),
+            array(
+                'name'=>'upload',
+                'label'=>Yii::t('media', 'Upload'),
+                'url'=>array('upload')
+            ),
+            array(
+                'name'=>'view',
+                'label'=>Yii::t('media', 'View'),
+                'url'=>array('view', 'id'=>$modelId)
+            ),
+            array(
+                'name'=>'edit',
+                'label'=>Yii::t('media', 'Update'),
+                'url'=>array('update', 'id'=>$modelId)
+            ),
+            array(
+                'name'=>'delete',
+                'label'=>Yii::t('media', 'Delete'),
+                'url'=>'#',
+                'linkOptions'=>array(
+                    'submit'=>array('delete','id'=>$modelId),
+                    'confirm'=>Yii::t('media','Are you sure you want to delete this item?'))
+            ),
+        );
+
+        $this->prepareMenu($menuItems, $selectOptions);
+        $this->actionMenu = $this->formatMenu($menuItems, $menuParams);
     }
 
 }

@@ -1,61 +1,12 @@
 <?php
-/*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
- * 
- * This program is free software; you can redistribute it and/or modify it under
- * the terms of the GNU Affero General Public License version 3 as published by the
- * Free Software Foundation with the addition of the following permission added
- * to Section 15 as permitted in Section 7(a): FOR ANY PART OF THE COVERED WORK
- * IN WHICH THE COPYRIGHT IS OWNED BY X2ENGINE, X2ENGINE DISCLAIMS THE WARRANTY
- * OF NON INFRINGEMENT OF THIRD PARTY RIGHTS.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU Affero General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU Affero General Public License along with
- * this program; if not, see http://www.gnu.org/licenses or write to the Free
- * Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
- * 02110-1301 USA.
- * 
- * You can contact X2Engine, Inc. P.O. Box 66752, Scotts Valley,
- * California 95067, USA. or at email address contact@x2engine.com.
- * 
- * The interactive user interfaces in modified source and object code versions
- * of this program must display Appropriate Legal Notices, as required under
- * Section 5 of the GNU Affero General Public License version 3.
- * 
- * In accordance with Section 7(b) of the GNU Affero General Public License version 3,
- * these Appropriate Legal Notices must retain the display of the "Powered by
- * X2Engine" logo. If the display of the logo is not reasonably feasible for
- * technical reasons, the Appropriate Legal Notices must display the words
- * "Powered by X2Engine".
- *****************************************************************************************/
-
 return array (
 // Profile Attributes
-'ID'=>'ID',
-'Full Name'=>'Nome Completo',
-'Username'=>'Nome de Usuário',
 'Tag Line'=>'Tagline',
-'Office Phone'=>'Telefone Escritório',
-'Cell Phone'=>'Telefone Celular',
-'Email Address'=>'Endereço de Email',
-'Notes'=>'Notas',
-'Status'=>'Estado',
-'Description'=>'Descrição',
-'Last Updated'=>'Última Atualização',
-'Updated By'=>'Atualizado Por',
 'Allow users to post on your profile?'=>'Permita que os usuários para postar em seu perfil?',
 'Language'=>'Linguagem',
-'Time Zone'=>'Fuso Horário',
 'Enable group chat?'=>'Ativar bate-papo em grupo?',
 'Widgets'=>'Widgets',
-'Background Color'=>'Cor de Fundo',
 'Menu Color'=>'Cor do Menu',
-'Menu Text Color'=>'Cor do Texto do Menu',
 'Background Image'=>'Imagem de Fundo',
 'Start Page'=>'Página Inicial',
 'Results Per Page'=>'Resultados Por Página',
@@ -74,7 +25,6 @@ return array (
 'Enable Full Width Layout'=>'Ativar layout largura total',
 'Google ID'=>'Google ID',
 'Signature'=>'Assinatura',
-'Address'=>'Endereço',
 'Use my signature'=>'Use a minha assinatura',
 'Use default'=>'Usar padrão',
 'Old Password'=>'Senha Antiga',
@@ -85,11 +35,11 @@ return array (
 'View Profile'=>'Ver Perfil',
 'Update Profile'=>'Atualizar Perfil',
 'Change Settings'=>'Alterar Configurações',
-'Social Feed'=>'Alimentação Sociais',
 'People'=>'Pessoas',
 'Change Personal Settings'=>'Alterar Configurações Pessoais',
 'Change Password'=>'Alterar Senha',
 'Reset Widgets'=>'Redefinir Widgets',
+'Manage Apps'=>'Gerenciar Aplicativos',
 
 // Profile Titles
 'Profile:'=>'Perfil:',
@@ -99,11 +49,70 @@ return array (
 
 // Social
 'Feed'=>'Feed de Notícias',
-'Social'=>'Social',
 'Reply'=>'Responder',
 'A larger Chat Box'=>'Uma caixa maior bate-papo',
 'A blog-like discussion forum'=>'Um fórum de discussão como o blog-como',
 
 // Misc
 'This user does not allow posting on their feed.'=>'Este usuário não permite postagem de sua alimentação.',
+'Save your current theme settings as a predefined theme.'=>'Salve suas configurações de tema atual como um tema pré-definido.',
+'Update the settings of the currently selected predefined theme.'=>'Atualize as configurações do tema predefinido selecionado.',
+'Create Theme'=>'Criar Tema',
+'Save Theme'=>'Salvar Tema',
+'Upload Background Image'=>'Envie imagem de fundo',
+'Login Sound'=>'Entrar Som',
+'Upload a Login Sound'=>'Carregar um login Som',
+'Upload Login Sound'=>'Envie Entrar Som',
+'Notification Sound'=>'Notificação Sonora',
+'Upload Notification Sound'=>'Envie Notificação Sonora',
+'Upload a Notification Sound'=>'Carregar um som de notificação',
+'Create a Theme'=>'Criar um tema',
+'Upload a Background Image'=>'Carregar uma Imagem de Fundo',
+'Export Theme'=>'Exportar Tema',
+'Upload Theme'=>'Carregar Tema',
+'Manage Passwords for Third-Party Applications'=>'Gerenciar senhas para aplicativos de terceiros',
+'Send E-Mail'=>'Enviar E-Mail',
+'Choose Picture'=>'Escolha Imagem',
+'Theme saved successfully.'=>'Tema salvas com sucesso.',
+'Theme name already exists or is invalid.'=>'Nome do tema já existe ou é inválido.',
+'Theme created successfully.'=>'Tema criado com sucesso.',
+'Page Header Color'=>'Página Cor Header',
+'Edit Profile'=>'Editar Perfil',
+'Disable phone field links?'=>'Desative as ligações telefônicas de campo?',
+'Disable notifications pop-up?'=>'Desabilite as notificações pop-up?',
+'Upload a theme that has been exported with the theme import tool.'=>'Carregar um tema que tem sido exportadas com a ferramenta de importação tema.',
+'Maximize'=>'Maximizar',
+'Add Profile Widget'=>'Adicionar Widget Perfil',
+'Active User'=>'Atividade do usuário',
+'Inactive User'=>'Inativo Usuário',
+'Import Theme'=>'Importação Tema',
+'Comment on this post'=>'Comente sobre este post',
+'View comments'=>'Ver comentários',
+'Make unimportant'=>'Faça sem importância',
+'Broadcase Event'=>'Broadcase Evento',
+'Create Activity Feed Report Email'=>'Criar Relatório de Atividades de alimentação e-mail',
+'This form will allow you to create a periodic email with information about events in the Activity Feed.'=>'Este formulário permite que você crie um e-mail periódico com informações sobre eventos no feed de atividade.',
+'The filters you had checked on the previous page will be used to determine which content to give you information about.'=>'Os filtros que você tinha verificado na página anterior será utilizado para determinar qual conteúdo para lhe dar informações sobre.',
+'Please note that this report will not function if you do not have the Cron service turned on, please check with your administrator if you are unsure.'=>'Por favor, note que este relatório não vai funcionar se você não tiver o serviço Cron ligado, por favor, verifique com o administrador se não tiver certeza.',
+'Report Settings'=>'Configurações do Relatório',
+'Select a Document'=>'Selecione um documento',
+'Enter the name of a Doc:'=>'Digite o nome de um Doc:',
+'Select a Doc'=>'Selecione um Doc',
+'Please select an existing Doc'=>'Por favor seleccione um Doc existente',
+'Theme imported successfully'=>'Tema importado com sucesso',
+'You will no longer receive this activity feed report.'=>'Você deixará de receber este relatório feed de atividade.',
+'You do not have permission to delete this activity feed report.'=>'Você não tem permissão para excluir este relatório feed de atividade.',
+'Invalid template'=>'Template inválido',
+'Profile not found'=>'Perfil não encontrado',
+'Extension'=>'Extensão',
+'Disable automatic record tagging?'=>'Desativar marcação registro automático?',
+'Disable timer display in page title?'=>'Desativar exibição do temporizador no título da página?',
+'Activity Feed Report'=>'Relatório de atividades de alimentação',
+'Here\'s your {range} update on what\'s been going on in X2Engine!'=>'Aqui \ &#39;s sua {range} atualização sobre o que \ &#39;s vem acontecendo em X2Engine!',
+'Top Activity'=>'Top Atividade',
+'Top Users'=>'Ranking dos usuários',
+'events from'=>'eventos de',
+'Here\'s the 10 most recent items on the Activity Feed.'=>'Aqui \ &#39;s os 10 itens mais recentes no feed de atividade.',
+'To stop receiving this report, '=>'Para parar de receber este relatório,',
+'click here'=>'clique aqui',
 );

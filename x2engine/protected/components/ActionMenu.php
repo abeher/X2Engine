@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -39,7 +39,7 @@
  * 
  * Renders the actions widget with action statistics, i.e. how many actions total,
  * how many actions complete, how many incomplete, titled "My Actions"
- * @package X2CRM.components 
+ * @package application.components 
  */
 class ActionMenu extends X2Widget {
 
@@ -52,18 +52,37 @@ class ActionMenu extends X2Widget {
 	 * Creates the widget. 
 	 */
 	public function run() {
-		$total = Actions::model()->countByAttributes(array('assignedTo' => Yii::app()->user->getName()),'type="" OR type IS NULL');
+        list ($assignedToCondition, $params) = Actions::model()->getAssignedToCondition (); 
+        $total = Yii::app()->db->createCommand ("
+            select count(*)
+            from x2_actions
+            where $assignedToCondition and (type='' or type is null)
+        ")->queryScalar ($params);
+        $incomplete = Yii::app()->db->createCommand ("
+            select count(*)
+            from x2_actions
+            where $assignedToCondition and (type='' or type is null) and complete='No'
+        ")->queryScalar ($params);
 
-		$unfinished = Actions::model()->countByAttributes(array('assignedTo' => Yii::app()->user->getName(), 'complete' => 'No'),'type="" OR type IS NULL');
+		$overdue = Actions::model()->countByAttributes(
+            array(
+                'assignedTo' => Yii::app()->user->getName(),
+                'complete' => 'No'
+            ),
+            'dueDate < '.time().' AND (type="" OR type IS NULL)');
 
-		$overdue = Actions::model()->countByAttributes(array('assignedTo' => Yii::app()->user->getName(), 'complete' => 'No'),'dueDate < '.time().' AND type="" OR type IS NULL');
-
-		$complete = Actions::model()->countByAttributes(array('completedBy' => Yii::app()->user->getName(), 'complete' => 'Yes'),'type="" OR type IS NULL');
+		$complete = Actions::model()->countByAttributes(
+            array(
+                'completedBy' => Yii::app()->user->getName(),
+                'complete' => 'Yes'
+            ),
+            'type="" OR type IS NULL'
+        );
 
 
 		$this->render('actionMenu', array(
 			'total' => $total,
-			'unfinished' => $unfinished,
+			'unfinished' => $incomplete,
 			'overdue' => $overdue,
 			'complete' => $complete,
 		));

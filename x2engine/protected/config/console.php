@@ -1,8 +1,8 @@
 <?php
 
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -43,8 +43,12 @@
 $config = require("main.php");
 
 unset($config['theme']);
-$config['components']['fixture'] = array(
+/*$config['components']['fixture'] = array(
 	'class' => 'system.test.CDbFixtureManager',
+);*/
+$config['components']['fixture'] = array(
+	'class' => 'application.components.X2FixtureManager',
+	'initScriptSuffix' => '.init.php'
 );
 
 unset($config['components']['urlManager']);
@@ -58,7 +62,7 @@ $config['components']['log']['routes'] = array(
 	)
 );
 
-$custom = dirname(__FILE__).'/../../custom/protected/config/console.php';
+$custom = dirname(__FILE__).'/../../custom/protected/config/'.(YII_UNIT_TESTING?'test':'console').'.php';
 if($custom = realpath($custom)) {
 	include($custom);
 }

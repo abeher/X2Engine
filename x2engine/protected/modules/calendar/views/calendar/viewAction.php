@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -67,7 +67,8 @@ $form=$this->beginWidget('CActiveForm', array(
 
 <div class="row">
 	<div class="cell dialog-cell">
-		<?php echo $form->label($model,($isEvent?'startDate':'dueDate'), array('class'=>'dialog-label'));
+		<?php 
+        echo $form->label($model,($isEvent?'startDate':'dueDate'), array('class'=>'dialog-label'));
 		echo Formatter::formatDateTime($model->dueDate);	//format date from DATETIME
 
 		if($isEvent) {
@@ -75,42 +76,42 @@ $form=$this->beginWidget('CActiveForm', array(
 			echo Formatter::formatDateTime($model->completeDate);	//format date from DATETIME
 		}
 
-		?>
-
-
-		<?php echo $form->label($model, 'allDay', array('class'=>'dialog-label')); ?>
-		<?php echo $form->checkBox($model, 'allDay', array('onChange'=>'giveSaveButtonFocus();', 'disabled'=>'disabled')); ?>
+		echo $form->label($model, 'allDay', array('class'=>'dialog-label')); 
+		echo $form->checkBox(
+            $model, 'allDay', array('onChange'=>'giveSaveButtonFocus();', 'disabled'=>'disabled')); 
+        ?>
 	</div>
 
 	<div class="cell dialog-cell">
-		<?php echo $form->label($model,'priority', array('class'=>'dialog-label')); ?>
-		<?php
-		$priorityArray = array(
-				'1'=>Yii::t('actions','Low'),
-				'2'=>Yii::t('actions','Medium'),
-				'3'=>Yii::t('actions','High')
-			);
-		echo $priorityArray[$model->priority]; ?>
-		<?php /*
-		<?php echo $form->dropDownList($model,'priority',
-			array(
-				'Low'=>Yii::t('actions','Low'),
-				'Medium'=>Yii::t('actions','Medium'),
-				'High'=>Yii::t('actions','High')
-			),
-			array('onChange'=>'giveSaveButtonFocus();')); */
-		?>
+		<?php 
+        echo $form->label($model,'priority', array('class'=>'dialog-label')); 
+		$priorityArray = Actions::getPriorityLabels();
+		echo isset($priorityArray[$model->priority])?$priorityArray[$model->priority]:""; 
+        ?>
 	</div>
 	<div class="cell dialog-cell">
 		<?php
-		if($model->assignedTo == null && is_numeric($model->calendarId)) { // assigned to calendar instead of user?
+        // assigned to calendar instead of user?
+		if($model->assignedTo == null && is_numeric($model->calendarId)) { 
 		    $model->assignedTo = $model->calendarId;
 		}
-		?>
-		<?php echo $form->label($model,'assignedTo', array('class'=>'dialog-label')); ?>
-		<?php
-		$assignedToArray = $users;
-		echo $assignedToArray[$model->assignedTo];
+		echo $form->label($model,'assignedTo', array('class'=>'dialog-label')); 
+        echo $model->renderAttribute (
+            'assignedTo');
+        ?>
+    </div>
+	<div class="cell dialog-cell">
+        <?php
+        if ($model->type === 'event') {
+            if (!empty ($model->eventSubtype)) {
+                echo $form->label ($model, 'eventSubtype', array ('class' => 'dialog-label'));
+                echo $model->renderAttribute ('eventSubtype');
+            }
+            if (!empty ($model->eventStatus)) {
+                echo $form->label ($model, 'eventStatus', array ('class' => 'dialog-label'));
+                echo $model->renderAttribute ('eventStatus');
+            }
+        }
 		?>
 </div>
 

@@ -1,8 +1,8 @@
 <?php
 
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -44,10 +44,12 @@ Yii::import('application.models.X2Model');
  * @property Contacts $contact First contact associated with this quote.
  * @property array $lineItems All line items for the quote.
  * @property array $productLines (read-only) Line items that are products/services.
- * @package X2CRM.modules.quotes.models
+ * @package application.modules.quotes.models
  * @author David Visbal, Demitri Morgan <demitri@x2engine.com>
  */
 class Quote extends X2Model {
+
+    public $supportsWorkflow = false;
 
 	/**
 	 * Holds the set of line items
@@ -118,26 +120,6 @@ class Quote extends X2Model {
 	}
 
 	/**
-	 * Magic getter for {@link contact}
-	 *
-	 * In earlier versions, there was a function that enabled associating more than
-	 * one contact with a quote (that didn't work) by storing contact IDs in a
-	 * space delineated list, {@link associatedContacts}. In case there are any
-	 * records that reflect this, this method fetches the first; the way it
-	 * retrieves the contact is meant to be backwards-compatible.
-	 */
-	public function getContact(){
-		if(!isset($this->_contact)){
-			$this->_contact = null;
-			$contactIds = explode(' ', $this->associatedContacts);
-			$contact = null;
-			if(!empty($contactIds[0]))
-				$this->_contact = Contacts::model()->findByPk($contactIds[0]);
-		}
-		return $this->_contact;
-	}
-
-	/**
 	 * Magic getter for {@link productLines}
 	 */
 	public function getProductLines(){
@@ -155,15 +137,16 @@ class Quote extends X2Model {
 	}
 
 	/**
-	 * @return array relational rules.
-	 */
-	public function relations() {
-		// NOTE: you may need to adjust the relation name and the related
-		// class name for the relations automatically generated below.
-		return array_merge(parent::relations(), array(
-					'products' => array(self::HAS_MANY, 'QuoteProduct', 'quoteId', 'order' => 'lineNumber ASC'),
-				));
-	}
+     * @return array relational rules.
+     */
+    public function relations(){
+        // NOTE: you may need to adjust the relation name and the related
+        // class name for the relations automatically generated below.
+        return array_merge(parent::relations(), array(
+                    'products' => array(self::HAS_MANY, 'QuoteProduct', 'quoteId', 'order' => 'lineNumber ASC'),
+                    'contact' => array(self::BELONGS_TO, 'Contacts', array('associatedContacts' => 'nameId'))
+                ));
+    }
 
 	/**
 	 * @return string the associated database table name
@@ -191,7 +174,8 @@ class Quote extends X2Model {
 	 *
 	 * Note: line numbers should be computed client-side and thus shouldn't need to be recalculated.
 	 *
-	 * @param array $items Each entry is an associative array of QuoteProduct [attribute]=>[value] pairs
+	 * @param array $items Each entry is an associative array of QuoteProduct [attribute]=>[value] 
+     *  pairs
 	 * @param integer $quoteId ID of quote for which to update items
 	 * @param bool $save Whether or not to save changes in the database after finishing
 	 * @return array Array of QuoteProduct instances representing the item set after changes.
@@ -205,7 +189,8 @@ class Quote extends X2Model {
 		}
 
 		// Check for valid input:
-		$typeErrMsg = 'The setter of Quote.lineItems requires an array of QuoteProduct objects or [attribute]=>[value] arrays.';
+		$typeErrMsg = 'The setter of Quote.lineItems requires an array of QuoteProduct objects or '.
+            '[attribute]=>[value] arrays.';
 		$firstElt = reset($items);
 		$type = gettype($firstElt);
 		if ($type != 'object' && $type != 'array') // Must be one or the other
@@ -265,22 +250,33 @@ class Quote extends X2Model {
 		// Put all the items together into the same arrays
 		$this->_lineItems = array_merge($newItems, array_values($itemSet));
 		usort($this->_lineItems,'self::lineItemOrder');
-		$this->_deleteLineItems = array_map(function($id) use($existingItems) {return $existingItems[$id];}, $deleteItemIds);
+		$this->_deleteLineItems = array_map(
+            function($id) use($existingItems) {return $existingItems[$id];}, $deleteItemIds);
 
 		// Remove symbols from numerical input values and convert to numeric.
 		// Behavior:
 		// - Use the quote's currency if it isn't empty.
 		// - Use the app's currency otherwise.
-		$defaultCurrency = empty($this->currency)?Yii::app()->params->admin->currency:$this->currency;
+		$defaultCurrency = empty($this->currency)?
+            Yii::app()->settings->currency:$this->currency;
+
 		$curSym = Yii::app()->locale->getCurrencySymbol($defaultCurrency);
+        if (is_null($curSym))
+            $curSym = $defaultCurrency;
+
 		foreach($this->_lineItems as $lineItem) {
 			$lineItem->quoteId = $this->id;
-			if(empty($lineItem->currency))
+                        $product = X2Model::model('Products')->findByAttributes(array('name'=>$lineItem->name));
+                        if (isset($product))
+                            $lineItem->productId = $product->id;
+            if(empty($lineItem->currency))
 				$lineItem->currency = $defaultCurrency;
 			if($lineItem->isPercentAdjustment) {
-				$lineItem->adjustment = Fields::strToNumeric($lineItem->adjustment,'percentage');
+				$lineItem->adjustment = Fields::strToNumeric(
+                    $lineItem->adjustment,'percentage');
 			} else {
-				$lineItem->adjustment = Fields::strToNumeric($lineItem->adjustment,'currency',$curSym);
+				$lineItem->adjustment = Fields::strToNumeric(
+                    $lineItem->adjustment,'currency',$curSym);
 			}
 			$lineItem->price = Fields::strToNumeric($lineItem->price,'currency',$curSym);
 			$lineItem->total = Fields::strToNumeric($lineItem->total,'currency',$curSym);
@@ -317,6 +313,9 @@ class Quote extends X2Model {
 		if(isset($this->_lineItems)){
 			foreach($this->_lineItems as $item){
 				$item->quoteId = $this->id;
+                                $product = X2Model::model('Products')->findByAttributes(array('name'=>$item->name));
+                                if (isset($product))
+                                    $item->productId = $product->id;
 				$item->save();
 			}
 		}
@@ -329,18 +328,52 @@ class Quote extends X2Model {
 	}
 
 	/**
+	 * Creates an action history event record in the contact/account
+	 */
+	public function createActionRecord() {
+		$now = time();
+		$actionAttributes = array(
+			'type' => 'quotes',
+			'actionDescription' => $this->id,
+			'completeDate' => $now,
+			'dueDate' => $now,
+			'createDate' => $now,
+			'lastUpdated' => $now,
+			'complete' => 'Yes',
+			'completedBy' => $this->createdBy,
+			'updatedBy' => $this->updatedBy
+		);
+		$ids = explode(',',$this->associatedContacts);
+		if(!empty($ids)) {
+			$cid = trim($ids[0]);
+			$action = new Actions();
+			$action->attributes = $actionAttributes;
+			$action->associationType = 'contacts';
+			$action->associationId = $cid;
+			$action->save();
+		}
+		if(!empty($this->accountName)) {
+			$action = new Actions();
+			$action->attributes = $actionAttributes;
+			$action->associationType = 'accounts';
+			$action->associationId = $this->accountName;
+			$action->save();
+		}
+	}
+
+	/**
 	 * Creates an event record for the creation of the model.
 	 */
 	public function createEventRecord() {
-		$event = new Events();
-		$event->type = 'record_create';
-		$event->subtype = 'quote';
-		$event->associationId = $this->id;
-		$event->associationType = 'Quote';
-		$event->timestamp = time();
-		$event->lastUpdated = $event->timestamp;
-		$event->user = $this->createdBy;
-		$event->save();
+//		$event = new Events();
+//		$event->type = 'record_create';
+//		$event->subtype = 'quote';
+//		$event->associationId = $this->id;
+//		$event->associationType = 'Quote';
+//		$event->timestamp = time();
+//		$event->lastUpdated = $event->timestamp;
+//		$event->user = $this->createdBy;
+//		$event->save();
 	}
 
 	public static function getStatusList() {
@@ -507,7 +540,7 @@ class Quote extends X2Model {
 
 		$links = array();
 		foreach ($quotesList as $model) {
-			$links[] = CHtml::link($model->name, array('quotes/view', 'id' => $model->id));
+			$links[] = CHtml::link($model->name, array('/quotes/quotes/view', 'id' => $model->id));
 		}
 		return implode(', ', $links);
 	}
@@ -573,18 +606,19 @@ class Quote extends X2Model {
 		return $temp;
 	}
 
-	public function search() {
+	public function search($pageSize=null, $uniqueId=null) {
+	    $pageSize = $pageSize === null ? Profile::getResultsPerPage() : $pageSize;
 		$criteria = new CDbCriteria;
-		$parameters = array('limit' => ceil(ProfileChild::getResultsPerPage()));
+		$parameters = array('limit' => ceil($pageSize));
 		$criteria->scopes = array('findAll' => array($parameters));
-		$criteria->addCondition("t.type!='invoice' OR t.type IS NULL");
+		$criteria->addCondition("(t.type!='invoice' and type!='dummyQuote') OR t.type IS NULL");
 
-		return $this->searchBase($criteria);
+		return $this->searchBase($criteria, $pageSize);
 	}
 
 	public function searchInvoice() {
 		$criteria = new CDbCriteria;
-		$parameters = array('limit' => ceil(ProfileChild::getResultsPerPage()));
+		$parameters = array('limit' => ceil(Profile::getResultsPerPage()));
 		$criteria->scopes = array('findAll' => array($parameters));
 		$criteria->addCondition("t.type='invoice'");
 
@@ -597,26 +631,21 @@ class Quote extends X2Model {
 		return $this->searchBase($criteria);
 	}
 
-	public function searchBase($criteria) {
+	public function searchBase($criteria, $pageSize=null) {
 
-		$dateRange = Yii::app()->controller->partialDateRange($this->expectedCloseDate);
+		$dateRange = X2DateUtil::partialDateRange($this->expectedCloseDate);
 		if ($dateRange !== false)
 			$criteria->addCondition('expectedCloseDate BETWEEN ' . $dateRange[0] . ' AND ' . $dateRange[1]);
 
-		$dateRange = Yii::app()->controller->partialDateRange($this->createDate);
+		$dateRange = X2DateUtil::partialDateRange($this->createDate);
 		if ($dateRange !== false)
 			$criteria->addCondition('createDate BETWEEN ' . $dateRange[0] . ' AND ' . $dateRange[1]);
 
-		$dateRange = Yii::app()->controller->partialDateRange($this->lastUpdated);
+		$dateRange = X2DateUtil::partialDateRange($this->lastUpdated);
 		if ($dateRange !== false)
 			$criteria->addCondition('lastUpdated BETWEEN ' . $dateRange[0] . ' AND ' . $dateRange[1]);
 
-		if ($criteria === null)
-			$criteria = $this->getAccessCriteria();
-		else
-			$criteria->mergeWith($this->getAccessCriteria());
-
-		return parent::searchBase($criteria);
+		return parent::searchBase($criteria, $pageSize);
 	}
 
 	/**
@@ -702,14 +731,14 @@ class Quote extends X2Model {
 		QuoteProduct::model()->deleteAllByAttributes(array('quoteId'=>$this->id));
 		Relationships::model()->deleteAllByAttributes(array('firstType' => 'quotes', 'firstId' => $this->id));// delete associated actions
 		Actions::model()->deleteAllByAttributes(array('associationId'=>$this->id, 'associationType'=>'quotes'));
-		$event = new Events;
-		$event->type = 'record_deleted';
-		$event->subtype = 'quote';
-		$event->associationType = $this->myModelName;
-		$event->associationId = $this->id;
-		$event->text = $this->name;
-		$event->user = $this->assignedTo;
-		$event->save();
+//		$event = new Events;
+//		$event->type = 'record_deleted';
+//		$event->subtype = 'quote';
+//		$event->associationType = $this->myModelName;
+//		$event->associationId = $this->id;
+//		$event->text = $this->name;
+//		$event->user = $this->assignedTo;
+//		$event->save();
 		$name = $this->name;
 		// generate action record, for history
 		$contact = $this->contact;
@@ -719,8 +748,8 @@ class Quote extends X2Model {
 			$action->type = 'quotes';
 			$action->associationId = $contact->id;
 			$action->associationName = $contact->name;
-			$action->assignedTo = $this->suModel->username; //  Yii::app()->user->getName();
-			$action->completedBy = $this->suModel->username; // Yii::app()->user->getName();
+			$action->assignedTo = Yii::app()->getSuModel()->username; //  Yii::app()->user->getName();
+			$action->completedBy = Yii::app()->getSuModel()->username; // Yii::app()->user->getName();
 			$action->createDate = time();
 			$action->dueDate = time();
 			$action->completeDate = time();

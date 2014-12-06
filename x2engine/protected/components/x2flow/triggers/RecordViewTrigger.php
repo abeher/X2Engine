@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -37,7 +37,7 @@
 /**
  * X2FlowTrigger 
  * 
- * @package X2CRM.components.x2flow.actions
+ * @package application.components.x2flow.actions
  */
 class RecordViewTrigger extends X2FlowTrigger {
 	public $title = 'Record Viewed';
@@ -47,7 +47,7 @@ class RecordViewTrigger extends X2FlowTrigger {
 			'title' => Yii::t('studio',$this->title),
 			'modelClass' => 'modelClass',
 			'options' => array(
-				array('name'=>'modelClass','label'=>Yii::t('studio','Record Type'),'type'=>'dropdown','options'=>X2Model::getModelTypes(true)),
+				array('name'=>'modelClass','label'=>Yii::t('studio','Record Type'),'type'=>'dropdown','options'=>X2Flow::getModelTypes(true)),
 			));
 	}
 }

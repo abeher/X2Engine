@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -37,7 +37,7 @@
 /**
  * This is the model class for table "x2_web_forms".
  *
- * @package X2CRM.modules.marketing.models
+ * @package application.modules.marketing.models
  */
 class WebForm extends CActiveRecord {
 	public static function model($className=__CLASS__) {
@@ -54,6 +54,7 @@ class WebForm extends CActiveRecord {
 			array('description, modelName, fields', 'safe'),
 			array('id, visibility, createDate, lastUpdated', 'numerical', 'integerOnly'=>true),
 			array('name, type, modelName', 'length', 'max'=>100),
+            array('generateLead', 'boolean'),
 			array('description', 'length', 'max'=>255),
 			array('assignedTo, createdBy, updatedBy', 'length', 'max'=>20),
 			// The following rule is used by search().
@@ -95,5 +96,10 @@ class WebForm extends CActiveRecord {
 		}
 		parent::afterFind();
 	}
+
+    public function getDisplayName ($plural=true) {
+        return Yii::t('marketing', 'Web Form');
+    }
+
 }
 ?>

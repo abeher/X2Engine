@@ -1,77 +1,26 @@
 <?php
-/*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
- * 
- * This program is free software; you can redistribute it and/or modify it under
- * the terms of the GNU Affero General Public License version 3 as published by the
- * Free Software Foundation with the addition of the following permission added
- * to Section 15 as permitted in Section 7(a): FOR ANY PART OF THE COVERED WORK
- * IN WHICH THE COPYRIGHT IS OWNED BY X2ENGINE, X2ENGINE DISCLAIMS THE WARRANTY
- * OF NON INFRINGEMENT OF THIRD PARTY RIGHTS.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU Affero General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU Affero General Public License along with
- * this program; if not, see http://www.gnu.org/licenses or write to the Free
- * Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
- * 02110-1301 USA.
- * 
- * You can contact X2Engine, Inc. P.O. Box 66752, Scotts Valley,
- * California 95067, USA. or at email address contact@x2engine.com.
- * 
- * The interactive user interfaces in modified source and object code versions
- * of this program must display Appropriate Legal Notices, as required under
- * Section 5 of the GNU Affero General Public License version 3.
- * 
- * In accordance with Section 7(b) of the GNU Affero General Public License version 3,
- * these Appropriate Legal Notices must retain the display of the "Powered by
- * X2Engine" logo. If the display of the logo is not reasonably feasible for
- * technical reasons, the Appropriate Legal Notices must display the words
- * "Powered by X2Engine".
- *****************************************************************************************/
-
 return array (
 // Campaign model
-'Campaign'=>'',
-'Campaigns'=>'',
-'ID'=>'ID',
+'Campaigns'=>'Campagnes',
 'Master Campaign ID'=>'Hoofd Campagne ID',
-'Name'=>'Naam',
-'Assigned To'=>'Toegewezen Aan',
 'Contact List'=>'Contacten Lijst',
-'Active'=>'Actief',
-'Description'=>'Omschrijving',
-'Type'=>'Soort',
 'Cost'=>'Kosten',
-'Subject'=>'Onderwerp',
 'Content'=>'Inhoud',
-'Complete'=>'Afgerond',
-'Visibility'=>'Zichtbaarheid',
-'Create Date'=>'Aanmaak Datum',
 'Launch Date'=>'lanceerdatum',
-'Last Updated'=>'Laatst Bijgewerkt',
-'Updated By'=>'Bijgewerkt Door',
-'None'=>'Geen',
-'Basic Info'=>'',
-'Email'=>'',
-'Call List'=>'',
-'Physical Mail'=>'',
-'Email Template'=>'',
-'Update Campaign'=>'',
-'Last Activity'=>'Laatste Activiteit',
+'Basic Info'=>'Basic Info',
+'Call List'=>'Call List',
+'Physical Mail'=>'Fysieke Post',
+'Email Template'=>'Email Template',
+'Update Campaign'=>'Campagne updaten',
 'Template'=>'Sjabloon',
 
 // Menu
-'All Campaigns'=>'',
-'Create Campaign'=>'',
-'Newsletters'=>'',
-'Create Newsletter'=>'',
-'Create Web Form'=>'',
+'All Campaigns'=>'Alle campagnes',
+'Create Campaign'=>'Campagne maken',
+'Newsletters'=>'Nieuwsbrieven',
+'Create Newsletter'=>'Maak Nieuwsbrief',
 'Web Tracker'=>'Web Tracker',
+'Email List'=>'E-mail List',
 
 // Launching
 'The campaign has already been launched.'=>'De Campagne is al gelanceerd',
@@ -85,11 +34,10 @@ return array (
 'Campaign launched'=>'Campagne gelanceerd',
 'Campaign paused'=>'Campagne gepausseerd',
 'Campaign resumed'=>'Campagne Hervat',
-'Sent'=>'',
-'Opened'=>'',
-'Clicked'=>'',
-'Unsubscribed'=>'',
-'Status'=>'',
+'Sent'=>'Verzonden',
+'Opened'=>'Geopend',
+'Clicked'=>'Geklikt',
+'Unsubscribed'=>'Afgemeld',
 
 // Mailing
 'The email sending limit has been reached.'=>'Email verzend limiet is bereikt.',
@@ -102,7 +50,7 @@ return array (
 'Attempting to send email'=>'Poging om email te verzenden',
 'Unsendable email'=>'Onverzendbare email',
 'Blank email addresses'=>'Lege email adressen',
-'Duplicate Email Address'=>'',
+'Duplicate Email Address'=>'Dupliceren e-mailadres',
 '\'Do Not Email\' contacts'=>'\'niet mailen\' contacten',
 'Data errors'=>'Data Fouten',
 'Batch completed, sending again in'=>'Batch afgerond, opnieuw verzenden over',
@@ -113,50 +61,115 @@ return array (
 'Contacts for tag'=>'Contacten voor tag',
 'Mailing for tag'=>'Mailing voor tag',
 'Could not create mailing'=>'Kon mailing niet aanmaken',
-'You have been unsubscribed'=>'',
-'Contact has unsubscribed'=>'',
-'\'Do Not Email\' has been set'=>'',
-'has unsubscribed'=>'',
-'Contact has opened the email'=>'',
-'has opened the email'=>'',
-'Contact has clicked a link'=>'',
-'has clicked a link'=>'',
-'To stop receiving these messages, click here'=>'',
+'You have been unsubscribed'=>'Je abonnement',
+'Contact has unsubscribed'=>'Contact heeft uitgeschreven',
+'\'Do Not Email\' has been set'=>' &#39;Niet Email \&#39; is ingesteld',
+'has unsubscribed'=>'heeft uitgeschreven',
+'Contact has opened the email'=>'Contact heeft de e-mail geopend',
+'has opened the email'=>'heeft de email geopend',
+'Contact has clicked a link'=>'Contact heeft een link geklikt',
+'has clicked a link'=>'heeft een link geklikt',
+'To stop receiving these messages, click here'=>'Om te stoppen met het ontvangen van deze berichten, klik hier',
+'Send As'=>'Verzenden als',
 
 // WebForm model
-'Model Name'=>'Model Naam',
-'Fields'=>'Velden',
-'Parameters'=>'Parameters',
 'CSS'=>'CSS',
 
 // Web Lead Form creator
 'Name cannot be blank.'=>'Naam kan niet leeg zijn',
-'Name cannot be'=>'',
+'Name cannot be'=>'Naam kan niet worden',
 'Web Lead Form'=>'Web Lead Formulier',
 'Create a public form to receive new contacts.'=>'Maak een publiek formulier om nieuw contacten te ontvangen',
 'If no lead routing has been configured, all new contacts will be assigned to "Anyone".'=>'Als er geen hoofd routing is ingesteld, zullen alle nieuwe contact toegewezen worden aan "anyone"',
 'Copy and paste this code into your website to include the web lead form.'=>'Kopier en plak deze code in je website voor het web lead formulier',
 'Choose an existing form as a starting point.'=>'Kies een bestaand formulier als startpunt',
 'Text Color'=>'Tekst kleur',
-'Background Color'=>'Achtergrond kleur',
 'Font'=>'Font',
 'Border'=>'Border',
 'Size'=>'Maat',
 'pixels'=>'Pixels',
-'Color'=>'Kleur',
-'Tags'=>'Tags',
-'Default'=>'Standaard',
 'black'=>'Zwart',
 'transparent'=>'Doorzichtig',
 'none'=>'Geen',
-'Example'=>'Voorbeeld',
 'These tags will be applied to any contact created by the form.'=>'Deze tags zullen toegepast worden op alle contact aangemaakt door het formulier',
-'Save'=>'Opslaan',
 'Enter a name and save this form to edit later.'=>'Voer een naam in en sla dit formulier op om later te bewerken',
 'Form Saved'=>'Formulier opgeslagen',
 'Reset Form'=>'Reset Formulier',
 'Embed Code'=>'Embed Code',
 'Saved Forms'=>'Opgeslagen formulieren',
-'Settings'=>'Instellingen',
-'Preview'=>'Preview',
+'Enter custom css for the web form.'=>'Voer aangepaste css voor het webformulier.',
+'Custom &lt;HEAD&gt;'=>'Custom &lt;HEAD&gt;',
+'Enter any HTML you would like inserted into the &lt;HEAD&gt; tag.'=>'Voer een HTML u wilt ingevoegd in de &lt;HEAD&gt; tag.',
+'Select email templates to send to the new weblead and the user assigned to the weblead.'=>'Selecteer e-mail templates om naar de nieuwe weblead en de gebruiker is toegewezen aan de weblead sturen.',
+'NOTE: The weblead form must be saved for these emails to be sent.'=>'OPMERKING: De weblead formulier moet worden opgeslagen voor deze e-mails worden verzonden.',
+'User Email'=>'Gebruiker E-mail',
+'Weblead Email'=>'Weblead Email',
+'Drag and Drop fields from Fields List to Form.'=>'Drag and Drop velden van Fields List naar Vorm.',
+'Live web form preview.'=>'Wonen webformulier voorvertoning.',
+'Label:'=>'Label:',
+'Position:'=>'Positie:',
+
+// Web Tracker
+'Web Tracker Code'=>'Web Tracker Code',
+'This HTML tag will allow you to track contacts who visit your website.'=>'Deze HTML-tag zal u toelaten om contacten die uw website bezoeken bijhouden.',
+'Paste this code into the body section of every page of your website.'=>'Plak deze code in de body sectie van elke pagina van uw website.',
+'<b>Note:</b> Contacts can be tracked only if they filled out the web lead capture form, or clicked on a tracking link in an email campaign.'=>'<b>Opmerking:</b> Contactpersonen kunnen worden gevolgd als zij vulden het web voorsprong vast te leggen vorm, of geklikt op een tracking koppeling in een e-mailcampagne.',
+'Web Tracker Settings'=>'Web Tracker Instellingen',
+'You can enable or disable the web tracker. The tracker will ignore repeat hits from a given contact during the cooldown period.'=>'U kunt inschakelen de web tracker of uit te schakelen. De tracker zal herhalen treffers negeren van een bepaalde contactpersoon tijdens de afkoelperiode.',
+'If a contact visits several pages in a short time, you will only get one notification.'=>'Als een contactpersoon bezoekt meerdere pagina&#39;s in een korte tijd, krijg je alleen een melding.',
+'Turn it down all the way to receive notifications about every page hit.'=>'Draai hem helemaal naar beneden om meldingen over elke pagina treffer ontvangen.',
+'Contact has opened the email sent on '=>'Contact heeft de e-mail verzonden op geopende',
+'Email sent'=>'E-mail verzonden',
+'Header Code'=>'Header Code',
+'Batch completed, sending again in '=>'Batch afgerond, opnieuw te verzenden in',
+'A new web lead has been assigned to you: '=>'Een nieuwe web lead is toegewezen aan u:',
+'Marketing Automation'=>'Marketing Automation',
+'Contacts for Account Report ('=>'Contacten voor Account Report (',
+'Mailing for Account Report ('=>'Mailing voor Account Report (',
+'Create a public form to receive new services cases. When the form is submitted, a new '=>'Maak een publieke vorm van nieuwe diensten gevallen ontvangen. Wanneer het formulier wordt ingediend, een nieuw',
+'This HTML tag will allow you to track contacts who visit your '=>'Deze HTML-tag kunt u contactpersonen die uw bezoek volgen',
+'Paste this code into the body section of every page of your '=>'Plak deze code in het lichaam gedeelte van elke pagina van uw',
+'You can enable or disable the web tracker. The tracker will '=>'U kunt in-of uitschakelen van de web tracker. De tracker zal',
+'If a contact visits several pages in a short time, you '=>'Als een contactpersoon bezoekt meerdere pagina&#39;s in een korte tijd, je',
+'Turn it down all the way to receive notifications about '=>'Draai hem helemaal naar beneden om meldingen over ontvangen',
+'The contact you enter here will be used for variable replacement, i.e. for "John Doe" the token {firstName} will get replaced with "John"'=>'De contactpersoon die u hier invoert, wordt gebruikt voor variabele vervanging, namelijk voor &quot;John Doe&quot; de token {firstName} krijgt vervangen door &quot;John&quot;',
+'If you want to keep your current HTML forms but still get web leads into X2, please see the wiki article located here: {link}'=>'Als u wilt uw huidige HTML-formulieren te houden, maar krijg nog steeds web leidt naar X2, zie de wiki-artikel hier gevestigd: {link}',
+'Web Lead API'=>'Web Lead API',
+'Custom HTML could not be removed.'=>'Aangepaste HTML kon niet worden verwijderd.',
+'Custom HTML could not be saved.'=>'Aangepaste HTML kan niet worden opgeslagen.',
+'Select email templates to send to the new weblead and the user '=>'Selecteer e-mail templates te sturen naar de nieuwe weblead en de gebruiker',
+'Type:'=>'Type:',
+'Value:'=>'Waarde:',
+'The web form must be saved for custom fields to get '=>'Het webformulier moet worden opgeslagen voor aangepaste velden te krijgen',
+'The web form must be saved for your custom fields or custom HTML to '=>'Het webformulier moet worden opgeslagen voor uw aangepaste velden of aangepaste HTML',
+'Anonymous Contacts'=>'Anoniem Contacten',
+'Fingerprints'=>'Vingerafdrukken',
+'Anonymous Contact {email}'=>'Anoniem Contact {email}',
+'Anonymous Contact'=>'Anoniem Contact',
+'X2Identity Settings'=>'X2Identity Instellingen',
+'X2Identity uses browser fingerprinting as an alternative '=>'X2Identity gebruikt browser fingerprinting als alternatief',
+'If browser fingerprinting is enabled, the tracker will '=>'Als browser fingerprinting is ingeschakeld, zal de tracker',
+'You can set the threshold for the minimum number of attributes that '=>'U kunt de drempel voor het minimum aantal attributen die',
+'Disable Slider'=>'Uitschakelen Slider',
+'Import Campaigns'=>'Campagnes import',
+'Export Campaigns'=>'Export Campagnes',
+'Email Delivery Progress'=>'E-mail Delivery Vooruitgang',
+'Click to refresh displays of campaign data on this page.'=>'Klik om displays van de campagne gegevens op deze pagina te refreshen.',
+'Errors that occurred when attempting to send email:'=>'Fouten die zijn opgetreden bij een poging om e-mail te sturen:',
+'You have unsent mail in this campaign. Are you sure you want to forcibly mark this campaign as complete?'=>'Je hebt niet verzonden mail in deze campagne. Weet u zeker dat u met geweld markeren deze campagne zo compleet?',
+'Please try again in {t} {units}.'=>'Probeer het over {t} {units} .',
+'Skipping {email}; another concurrent send operation is handling delivery to this address.'=>'Het overslaan van {email} ; een ander concurrerend verzendbewerking behandelt levering naar dit adres.',
+'Skipping delivery for recipient {id}; email address has been set to blank.'=>'Het overslaan van levering voor geadresseerde {id} ; adres is ingesteld blanco.',
+'Skipping {email}; the contact has unsubscribed.'=>'Het overslaan van {email} ; het contact heeft afgemeld.',
+'Email has already been sent to {address}'=>'E-mail is al gestuurd naar {address}',
+'Email sent successfully to {address}.'=>'E-mail verzonden naar {address} .',
+'Email could not be sent to {address}. The message given was: {message}'=>'E-mail kon niet worden verzonden naar {address} . De boodschap gegeven was: {message}',
+'All emails sent.'=>'Alle e-mails verzonden.',
+'Batch timeout limit reached.'=>'Batch timeout limiet bereikt.',
+'Failed to save temporary list.'=>'Geen tijdelijk op te slaan.',
+'Specified campaign does not exist.'=>'Gespecificeerd campagne bestaat niet.',
+'Delete Form'=>'Delete Form',
+'Select email templates to send to the new web lead and the user '=>'Selecteer e-mail templates te sturen naar de nieuwe web-lood en de gebruiker',
+'NOTE: The web lead form must be saved for these emails to be sent.'=>'OPMERKING: Het web lead formulier moet worden opgeslagen voor deze e-mails worden verzonden.',
+'NOTE: The web lead form must be saved for these tags to be applied.'=>'OPMERKING: Het web lead formulier moet worden opgeslagen voor deze tags worden toegepast.',
 );

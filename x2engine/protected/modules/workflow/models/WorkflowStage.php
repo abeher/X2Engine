@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -37,7 +37,7 @@
 /**
  * This is the model class for table "x2_workflow_stages".
  *
- * @package X2CRM.modules.workflow.models
+ * @package application.modules.workflow.models
  * @property integer $id
  * @property integer $workflowId
  * @property integer $stageNumber
@@ -49,6 +49,11 @@
  * @property integer $requireComment
  */
 class WorkflowStage extends CActiveRecord {
+
+    /**
+     * Value of $requirePrevious which indicates that all previous stages are required
+     */
+    const REQUIRE_ALL = 1; 
 
 	public $_roles = array();
 	/**
@@ -96,7 +101,11 @@ class WorkflowStage extends CActiveRecord {
 
 	public function getRoles() {
 		if(empty($this->_roles) && !empty($this->id))
-			$this->_roles = Yii::app()->db->createCommand()->select('roleId')->from('x2_role_to_workflow')->where('stageId='.$this->id)->queryColumn();
+			$this->_roles = Yii::app()->db->createCommand()
+                ->select('roleId')
+                ->from('x2_role_to_workflow')
+                ->where('stageId='.$this->id)
+                ->queryColumn();
 		return $this->_roles;
 	}
 	
@@ -119,23 +128,26 @@ class WorkflowStage extends CActiveRecord {
 			'value' => Yii::t('workflow','Value'),
 			'roles' => Yii::t('workflow','Roles'),
 			'requirePrevious' => Yii::t('workflow','Required Stages'),
-			'requireComment' => Yii::t('workflow','Comment'),
+			'requireComment' => Yii::t('workflow','Require Comment?'),
 		);
 	}
 
 	/**
 	 * Retrieves a list of models based on the current search/filter conditions.
-	 * @return CActiveDataProvider the data provider that can return the models based on the search/filter conditions.
+	 * @return CActiveDataProvider the data provider that can return the models based on the 
+     *  search/filter conditions.
 	 */
 	public function search($id) {
 
-		$criteria = new CDbCriteria(array('condition'=>'workflowId='.$id,'order'=>'stageNumber ASC'));
+		$criteria = new CDbCriteria(
+            array('condition'=>'workflowId='.$id,'order'=>'stageNumber ASC'));
 
 		return new CActiveDataProvider(get_class($this), array(
 			'criteria'=>$criteria,
 			'pagination'=>array(
-				'pageSize'=>ceil(ProfileChild::getResultsPerPage())
+				'pageSize'=>ceil(Profile::getResultsPerPage())
 			),
 		));
 	}
+
 }

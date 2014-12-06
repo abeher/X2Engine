@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -34,12 +34,18 @@
  * "Powered by X2Engine".
  *****************************************************************************************/
 
-$profile = ProfileChild::model()->findByPk(Yii::app()->user->id);
-$this->showActions = $profile->showActions;
-if(!$this->showActions) // if user hasn't saved a type of action to show, show uncomple actions by default
-    $this->showActions = 'uncomplete';
+if (isset ($showActions)) {
+    $this->showActions = $showActions;
+    Yii::app()->params->profile->showActions = $this->showActions;
+    Yii::app()->params->profile->save ();
+} else {
+    $this->showActions = Yii::app()->params->profile->showActions;
+}
 
-if($this->showActions == 'uncomplete')
+// if user hasn't saved a type of action to show, show uncomple actions by default
+if(!$this->showActions) 
+    $this->showActions = 'uncomplete';
+if($this->showActions == 'uncomplete' || $this->showActions == 'overdue')
 	$model->complete = 'No';
 else if ($this->showActions == 'complete')
 	$model->complete = 'Yes';
@@ -47,104 +53,43 @@ else
 	$model->complete = '';
 
 
-
-$menuItems = array(
-	array('label'=>Yii::t('actions','Today\'s Actions'),'url'=>array('index')),
-	array('label'=>Yii::t('actions','All My Actions'),'url'=>array('viewAll')),
-	array('label'=>Yii::t('actions','Everyone\'s Actions'),'url'=>array('viewGroup')),
-	array('label'=>Yii::t('actions','Create'),'url'=>array('create')),
+$menuOptions = array(
+    'todays', 'my', 'everyones', 'create', 'import', 'export',
 );
-
-if($this->route=='actions/actions/index') {
-	$heading = Yii::t('actions','Today\'s Actions');
+if($this->route === 'actions/actions/index') {
+	$heading = Yii::t('actions','Today\'s {module}', array('{module}'=>Modules::displayName()));
 	$dataProvider=$model->searchIndex();
-	$dataProvider2=$model->searchComplete();
-
-	unset($menuItems[0]['url']);
-
-} elseif($this->route=='actions/actions/viewAll') {
-	$heading = Yii::t('actions','All My Actions');
+} elseif($this->route === 'actions/actions/viewAll') {
+	$heading = Yii::t('actions','All My {module}', array('{module}'=>Modules::displayName()));
 	$dataProvider=$model->searchAll();
-	$dataProvider2=$model->searchComplete();
-
-	unset($menuItems[1]['url']);
 } else {
-	$heading = Yii::t('actions','Everyone\'s Actions');
+	$heading = Yii::t('actions','Everyone\'s {module}', array('{module}'=>Modules::displayName()));
 	$dataProvider=$model->searchAllGroup();
-	$dataProvider2=$model->searchAllComplete();
-
-	unset($menuItems[2]['url']);
 }
+$this->insertMenu($menuOptions);
 
-$this->actionMenu = $this->formatMenu($menuItems);
-
-Yii::app()->clientScript->registerScript('search', "
-$('.search-button').click(function(){
-	$('.search-form').toggle();
-	return false;
-});
-$('.search-form form').submit(function(){
-	$.fn.yiiGridView.update('contacts-grid', {
-		data: $(this).serialize()
-	});
-	return false;
-});
-");
 
 // functions for completeing/uncompleting multiple selected actions
-Yii::app()->clientScript->registerScript('completeUncompleteSelected', "
-function completeSelected() {
-	var checked = $.fn.yiiGridView.getChecked('actions-grid', 'C_gvCheckbox');
-	$.post('completeSelected', {'actionIds': checked}, function() {jQuery.fn.yiiGridView.update('actions-grid')});
-}
-function uncompleteSelected() {
-	var checked = $.fn.yiiGridView.getChecked('actions-grid', 'C_gvCheckbox');
-	$.post('uncompleteSelected', {'actionIds': checked}, function() {jQuery.fn.yiiGridView.update('actions-grid')});
-}
-
+Yii::app()->clientScript->registerScript('oldActionsIndexScript', "
+x2.actionFrames.afterActionUpdate = (function () {
+    var fn = x2.actionFrames.afterActionUpdate;
+    return function () {
+        fn ();
+        $('#actions-grid').yiiGridView ('update');
+    };
+}) ();
 function toggleShowActions() {
-	var show = $('#dropdown-show-actions').val(); // value of dropdown (which actions to show)
-	$.post('actions/saveShowActions', {ShowActions: show}, function() {
-		$.fn.yiiGridView.update('actions-grid', {data: $.param($('#actions-grid input[name=\"Actions[complete]\"]'))});
-	});
+    var show = $('#dropdown-show-actions').val(); // value of dropdown (which actions to show)
+    $.post(
+        ".json_encode(Yii::app()->controller->createUrl('/actions/actions/saveShowActions')).",
+        {ShowActions: show}, function() {
+            $.fn.yiiGridView.update('actions-grid', {
+                data: $.param($('#actions-grid input[name=\"Actions[complete]\"]'))
+            });
+        }
+    );
 }
-",CClientScript::POS_HEAD);
-
-// init qtip for contact names
-Yii::app()->clientScript->registerScript('contact-qtip', '
-function refreshQtip() {
-	$(".contact-name").each(function (i) {
-		var contactId = $(this).attr("href").match(/\\d+$/);
-
-		if(typeof contactId != null && contactId.length) {
-			$(this).qtip({
-				content: {
-					text: "'.addslashes(Yii::t('app','loading...')).'",
-					ajax: {
-						url: yii.baseUrl+"/index.php/contacts/qtip",
-						data: { id: contactId[0] },
-						method: "get",
-					}
-				},
-				style: {
-				}
-			});
-		}
-	});
-}
-
-$(function() {
-	refreshQtip();
-});
-');
-
-
-function trimText($text) {
-	if(mb_strlen($text,'UTF-8')>150)
-		return mb_substr($text,0,147,'UTF-8').'...';
-	else
-		return $text;
-}
+",CClientScript::POS_END);
 
 ?>
 <div class="search-form" style="display:none">
@@ -153,15 +98,36 @@ function trimText($text) {
 )); ?>
 </div><!-- search-form -->
 <?php
-$this->widget('application.components.X2GridView', array(
+$this->widget('X2GridView', array(
 	'id'=>'actions-grid',
     'title'=>$heading,
-	'baseScriptUrl'=>Yii::app()->request->baseUrl.'/themes/'.Yii::app()->theme->name.'/css/gridview',
-    'buttons'=>array('advancedSearch','clearFilters','columnSelector'),
-	'template'=> '<div class="page-title icon actions">{title}{buttons}'
-		.CHtml::link(Yii::t('actions','Switch to List'),array('index','toggleView'=>1),array('class'=>'x2-button')).
-        '{filterHint}{summary}</div>{items}{pager}',
+	'baseScriptUrl'=>Yii::app()->request->baseUrl.'/themes/'.Yii::app()->theme->name.
+        '/css/gridview',
+    'enableQtips' => true,
+    'qtipManager' => array (
+        'X2GridViewQtipManager',
+        'loadingText'=> addslashes(Yii::t('app','loading...')),
+        'qtipSelector' => ".contact-name"
+    ),
+    'buttons'=>array('advancedSearch','clearFilters','columnSelector','autoResize'),
+    'template'=> 
+        '<div id="x2-gridview-top-bar-outer" class="x2-gridview-fixed-top-bar-outer">'.
+        '<div id="x2-gridview-top-bar-inner" class="x2-gridview-fixed-top-bar-inner">'.
+        '<div id="x2-gridview-page-title" '.
+         'class="page-title icon actions x2-gridview-fixed-title">'.
+        '{title}{buttons}'.
+        CHtml::link(
+            Yii::t('actions','Switch to List'),
+            array('index','toggleView'=>1),
+            array('class'=>'x2-button')
+        ).'{filterHint}'.'{summary}{topPager}'.
+        '{items}{pager}',
+    'fixedHeader' => true,
 	'dataProvider'=>$dataProvider,
+    'massActions' => array (
+        
+        'MassCompleteAction', 'MassUncompleteAction'
+    ),
 	// 'enableSorting'=>false,
 	// 'model'=>$model,
 	'filter'=>$model,
@@ -181,19 +147,35 @@ $this->widget('application.components.X2GridView', array(
 	),
 	'specialColumns'=>array(
 		'actionDescription'=>array(
+            'header'=>Yii::t('actions','{action} Description', array('{action}'=>Modules::displayName(false))),
 			'name'=>'actionDescription',
-			'value'=>'CHtml::link(($data->type=="attachment")? Media::attachmentActionText($data->actionDescription) : CHtml::encode(trimText($data->actionDescription)),array("view","id"=>$data->id))',
+			'value'=>
+                'CHtml::link(
+                    ($data->actionDescription === "" ? Yii::t("actions", "View {action}", array("{action}"=>Modules::displayName(false, "Actions"))) :
+                        (($data->type=="attachment") ? 
+                            Media::attachmentActionText($data->actionDescription) : 
+                            CHtml::encode(Formatter::trimText($data->actionDescription)))),
+                    array("view","id"=>$data->id))',
 			'type'=>'raw',
+            'filter' => false,
 		),
 		'associationName'=>array(
 			'name'=>'associationName',
 			'header'=>Yii::t('actions','Association Name'),
-			'value'=>'strcasecmp($data->associationName,"None")==0 ? Yii::t("app","None") : CHtml::link($data->associationName,array("/".$data->associationType."/".$data->associationId),array("class"=>($data->associationType=="contacts"? "contact-name" : null)))',
+			'value'=>
+                'strcasecmp($data->associationName,"None") == 0 ? 
+                    Yii::t("app","None") : 
+                    CHtml::link(
+                        $data->associationName,
+                        array("/".$data->associationType . (($data->associationType === "product") ? "s" : "") .
+                              "/".$data->associationType . (($data->associationType === "product") ? "s" : "") .
+                              "/".$data->associationId),
+                        array("class"=>($data->associationType=="contacts" ? 
+                            "contact-name" : null)))',
 			'type'=>'raw',
 		),
 	),
 	'enableControls'=>true,
 	'fullscreen'=>true,
+    'enableSelectAllOnAllPages' => false,
 ));
-echo CHtml::button(Yii::t('actions','Complete Selected'),array('class'=>'x2-button','style'=>'display:inline-block;','onclick'=>'completeSelected()'));
-echo CHtml::button(Yii::t('actions','Uncomplete Selected'),array('class'=>'x2-button','style'=>'display:inline-block;','onclick'=>'uncompleteSelected()'));

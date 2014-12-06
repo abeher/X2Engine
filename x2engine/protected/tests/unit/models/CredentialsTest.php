@@ -1,8 +1,8 @@
 <?php
 
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -42,103 +42,74 @@ Yii::import('application.models.embedded.*');
 
 /**
  * Test for Credentials model class.
- * @package X2CRM.tests.unit.models
+ * @package application.tests.unit.models
  * @author Demitri Morgan <demitri@x2engine.com>
  */
 class CredentialsTest extends X2DbTestCase {
 
-	public static $iv;
-	public static $key;
+    public static function referenceFixtures(){
+        return array(
+            'users' => 'User',
+        );
+    }
 
-	public static function referenceFixtures(){
-		return array(
-			'users' => 'User',
-		);
-	}
 
-	/**
-	 * Override that uses a specific key/iv for unit testing
-	 */
-	public static function setUpBeforeClass(){
-		parent::setUpBeforeClass();
-		foreach(array('iv','key') as $ext) {
-			$file = Yii::app()->basePath."/config/encryption.$ext";
-			$testFile = Yii::app()->basePath."/tests/data/encryption/encryption.$ext";
-			self::${$ext} = $file;
-			if(file_exists($file)){
-				rename($file,"$file.bak");
-				copy($testFile, $file);
-			}
-		}
-		EncryptedFieldsBehavior::setup(self::$key,self::$iv);
-	}
+    public $fixtures = array(
+        'credentials' => 'Credentials',
+        'defaultCreds' => ':x2_credentials_default',
+    );
 
-	/**
-	 * Override that copies the original key/iv back
-	 */
-	public static function tearDownAfterClass(){
-		parent::tearDownAfterClass();
-		foreach(array('iv','key') as $ext) {
-			rename(self::${$ext}.'.bak',self::${$ext});
-		}
-	}
+    public function testInstantiateNew() {
+        $cred = new Credentials();
+    }
 
-	public $fixtures = array(
-		'credentials' => 'Credentials',
-		'defaultCreds' => ':x2_credentials_default',
-	);
+    public function testGetters() {
+        $cred = $this->credentials('testUser');
+        $this->assertTrue($cred->auth instanceof EmailAccount, 'Was JSONEmbeddedModelFieldsBehavior.afterFind() really run? Because the model field isn\'t an embedded model.');
+        $this->assertEquals('Sales Rep',$cred->auth->senderName, "senderName not preserved");
+        $this->assertEquals('sales@rep.com',$cred->auth->email, "email not preserved");
+        $this->assertEquals(6669,$cred->auth->port, "port not preserved");
+        $this->assertEquals('tls',$cred->auth->security, "security not preserved");
+        $this->assertEquals('sales@rep.com',$cred->auth->user, "user not preserved"); // Same user as email address
+        $this->assertEquals('smtp.rep.com',$cred->auth->server, "server not preserved");
+        $this->assertEquals('12345luggage',$cred->auth->password, "password not preserved");
+        $default = Credentials::model()->findDefault($this->users('testUser')->id,'email');
+        $this->assertEquals(4,$default->id);
+        $this->assertEquals('Sales Rep\'s Backup Email Account',$default->name);
+        // As a bonus: test the magic getters. No assertions really necessary or
+        // practical to have here because we'd have to declare things in two
+        // separate places. We just call to see if an exception is thrown.
+        $cred->authModels;
+        $cred->authModelLabels;
+        $cred->serviceLabels;
+        $cred->defaultSubstitutes;
+    }
 
-	public function testInstantiateNew() {
-		$cred = new Credentials();
-	}
+    public function testMakeDefault() {
+        $cred = $this->credentials('testUser');
+        $cred->makeDefault($this->users('testUser')->id,'email');
+        $defaults = $cred->getDefaultCredentials(true);
+        $default = Credentials::model()->findDefault($this->users('testUser')->id,'email');
+        $this->assertEquals($cred->id,$default->id,'Failed asserting proper function of set-as-default method.');
+    }
 
-	public function testGetters() {
-		$cred = $this->credentials('testUser');
-		$this->assertTrue($cred->auth instanceof EmailAccount, 'Was JSONEmbeddedModelFieldsBehavior.afterFind() really run? Because the model field isn\'t an embedded model.');
-		$this->assertEquals('Sales Rep',$cred->auth->senderName, "senderName not preserved");
-		$this->assertEquals('sales@rep.com',$cred->auth->email, "email not preserved");
-		$this->assertEquals(6669,$cred->auth->port, "port not preserved");
-		$this->assertEquals('tls',$cred->auth->security, "security not preserved");
-		$this->assertEquals('sales@rep.com',$cred->auth->user, "user not preserved"); // Same user as email address
-		$this->assertEquals('smtp.rep.com',$cred->auth->server, "server not preserved");
-		$this->assertEquals('12345luggage',$cred->auth->password, "password not preserved");
-		$default = Credentials::model()->findDefault($this->users('testUser')->id,'email');
-		$this->assertEquals(2,$default->id);
-		$this->assertEquals('Sales Rep\'s 1st GMail Account',$default->name);
-		// As a bonus: test the magic getters. No assertions really necessary or
-		// practical to have here because we'd have to declare things in two
-		// separate places. We just call to see if an exception is thrown.
-		$cred->authModels;
-		$cred->authModelLabels;
-		$cred->serviceLabels;
-		$cred->defaultSubstitutes;
-	}
+    /**
+     * Tests transparent transition between encrypted and unencrypted
+     */
+    public function testUnsafe() {
+        $cred = $this->credentials('testUser');
+        $expectedAttributes = $cred->auth->attributes;
+        EncryptedFieldsBehavior::setupUnsafe();
+        $cred->save();
+        $unencryptedJSON = Yii::app()->db->createCommand()
+                ->select('auth')
+                ->from('x2_credentials')
+                ->where('id=:id',array(':id'=>$cred->id))
+                ->queryScalar();
+        $attributes = CJSON::decode($unencryptedJSON);
+        $this->assertEquals($expectedAttributes,$attributes);
 
-	public function testMakeDefault() {
-		$cred = $this->credentials('testUser');
-		$cred->makeDefault($this->users('testUser')->id,'email');
-		$defaults = $cred->getDefaultCredentials(true);
-		$default = Credentials::model()->findDefault($this->users('testUser')->id,'email');
-		$this->assertEquals($cred->id,$default->id,'Failed asserting proper function of set-as-default method.');
-	}
-
-	/**
-	 * Tests transparent transition between encrypted and unencrypted
-	 */
-	public function testUnsafe() {
-		$cred = $this->credentials('testUser');
-		$expectedAttributes = $cred->auth->attributes;
-		EncryptedFieldsBehavior::setupUnsafe();
-		$cred->save();
-		$unencryptedJSON = Yii::app()->db->createCommand()
-				->select('auth')
-				->from('x2_credentials')
-				->where('id=:id',array(':id'=>$cred->id))
-				->queryScalar();
-		$attributes = CJSON::decode($unencryptedJSON);
-		$this->assertEquals($expectedAttributes,$attributes);
-
-	}
+    }
 }
 
 ?>

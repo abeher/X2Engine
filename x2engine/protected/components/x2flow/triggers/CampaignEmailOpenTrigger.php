@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -37,7 +37,7 @@
 /**
  * X2FlowTrigger 
  * 
- * @package X2CRM.components.x2flow.actions
+ * @package application.components.x2flow.actions
  */
 class CampaignEmailOpenTrigger extends X2FlowTrigger {
 	public $title = 'Campaign Email Opened';
@@ -49,7 +49,7 @@ class CampaignEmailOpenTrigger extends X2FlowTrigger {
 			'info' => Yii::t('studio',$this->info),
 			'modelClass' => 'Contacts',
 			'options' => array(
-				array('name'=>'campaign','label'=>Yii::t('studio','Campaign'),'type'=>'link','linkType'=>'Campaign','optional'=>1,'linkSource'=>Yii::app()->controller->createUrl(
+				array('name'=>'campaign','label'=>Yii::t('studio','Campaign'),'type'=>'link','linkType'=>'Campaign','optional'=>1,'linkSource'=>Yii::app()->createUrl(
 					CActiveRecord::model('Campaign')->autoCompleteSource
 				)),
 			));

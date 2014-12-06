@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -33,16 +33,19 @@
  * technical reasons, the Appropriate Legal Notices must display the words
  * "Powered by X2Engine".
  *****************************************************************************************/
-$this->actionMenu = $this->formatMenu(array(
-	array('label'=>Yii::t('media', 'All Media'), 'url'=>array('index')),
-	array('label'=>Yii::t('media', 'Upload'), 'url'=>array('upload')),
-	array('label'=>Yii::t('media', 'View')),
-	array('label'=>Yii::t('media', 'Update'), 'url'=>array('update', 'id'=>$model->id)),
-	array('label'=>Yii::t('media', 'Delete'), 'url'=>'#', 'linkOptions'=>array('submit'=>array('delete','id'=>$model->id),'confirm'=>Yii::t('media','Are you sure you want to delete this item?'))),
-));
+
+$menuOptions = array(
+    'index', 'upload', 'view', 'edit', 'delete',
+);
+$this->insertMenu($menuOptions, $model);
 
 ?>
-<div class="page-title icon media"><h2><span class="no-bold"><?php echo Yii::t('media','File: '); ?></span> <?php echo $model->drive?$model->title:$model->fileName; ?></h2></div>
+<div class="page-title icon media"><h2><span class="no-bold"><?php echo Yii::t('media','File: '); ?></span> <?php echo $model->renderAttribute (($model->drive || !empty($model->name))? "name" : "fileName"); ?></h2>
+<?php
+echo X2Html::editRecordbutton($model);
+?>
+</div>
+
 <div id="main-column" class="half-width">
 <?php
 
@@ -82,7 +85,7 @@ if(file_exists("uploads/media/{$model->uploadedBy}/{$model->fileName}")) {
 			<div class="x2-layout form-view" style="margin-bottom: 0;">
 
 				<div class="formSection showSection">
-					<div class="tableWrapper">
+					<div class="tableWrapper noTitle">
 						<table>
 							<tbody>
 								<tr class="formSectionRow">
@@ -109,7 +112,7 @@ if(file_exists("uploads/media/{$model->uploadedBy}/{$model->fileName}")) {
 														if(!empty($model->associationId) && is_numeric($model->associationId) && $modelName=X2Model::getModelName($model->associationType)) {
 															$linkModel = X2Model::model($modelName)->findByPk($model->associationId);
 															if(isset($linkModel)){
-                                                                echo CHtml::link($linkModel->name, array('/'.$model->associationType.'/'.$model->associationId));
+                                                                echo CHtml::link(CHtml::encode($linkModel->name), array('/'.$model->associationType.'/'.$model->associationId));
                                                             }else
 																echo '';
 														} else {
@@ -176,7 +179,7 @@ if(file_exists("uploads/media/{$model->uploadedBy}/{$model->fileName}")) {
 										<div class="formItem leftLabel">
                                             <label><?php echo Yii::t('media', 'Description'); ?></label>
 											<div class="formInputBox" style="height: auto;">
-												<?php echo $model->description; ?>
+												<?php echo CHtml::encode($model->description); ?>
 											</div>
 										</div>
 
@@ -189,7 +192,7 @@ if(file_exists("uploads/media/{$model->uploadedBy}/{$model->fileName}")) {
 			</div>
 <?php
 if(!$model->drive && empty($fileView)){
-    echo CHtml::link(Yii::t('media', 'Download File'),array('download','id'=>$model->id),array('class'=>'x2-button', 'style'=>'margin-top: 5px;'));
+    echo CHtml::link(Yii::t('media', 'Download File'),array('download','id'=>$model->id),array('class'=>'x2-button', 'style'=>'margin-top: 5px; margin-left: 5px; margin-bottom: 10px'));
 }elseif(empty($fileView)){
     echo CHtml::link(Yii::t('media', 'View in Google Drive'),"https://drive.google.com/file/d/".$model->fileName,array('class'=>'x2-button', 'style'=>'margin-top: 5px;','target'=>'_blank'));
 }?>
@@ -207,7 +210,7 @@ if(!$model->drive && empty($fileView)){
 		'associationType'=>'media',
 		'associationId'=>$model->id,
 		'assignedTo'=>Yii::app()->user->getName(),
-		'halfWidth'=>true
+		'calendar' => false
 	)
 );
 $this->widget('History',array('associationType'=>'media','associationId'=>$model->id));

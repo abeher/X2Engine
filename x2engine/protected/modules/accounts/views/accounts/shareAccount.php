@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -33,16 +33,26 @@
  * technical reasons, the Appropriate Legal Notices must display the words
  * "Powered by X2Engine".
  *****************************************************************************************/
-$authParams['assignedTo']=$model->assignedTo;
+$authParams['X2Model'] = $model;
 $this->actionMenu = $this->formatMenu(array(
-	array('label'=>Yii::t('accounts','All Accounts'), 'url'=>array('index')),
-	array('label'=>Yii::t('accounts','Create Account'), 'url'=>array('create')),
+    array(
+        'label'=>Yii::t('accounts','All {module}', array('{module}'=>Modules::displayName())),
+        'url'=>array('index')),
+    array(
+        'label'=>Yii::t('accounts','Create {module}', array('{module}'=>Modules::displayName(false))),
+        'url'=>array('create')),
 	array('label'=>Yii::t('accounts','View'), 'url'=>array('view','id'=>$model->id)),
-	array('label'=>Yii::t('accounts','Edit Account'), 'url'=>array('update', 'id'=>$model->id)),
-	array('label'=>Yii::t('accounts','Share Account')),
-	array('label'=>Yii::t('accounts','Add a User'), 'url'=>array('addUser', 'id'=>$model->id)),
-	array('label'=>Yii::t('accounts','Remove a User'), 'url'=>array('removeUser', 'id'=>$model->id)),
-	array('label'=>Yii::t('accounts','Delete Account'), 'url'=>'#', 'linkOptions'=>array('submit'=>array('delete','id'=>$model->id),'confirm'=>'Are you sure you want to delete this item?')),
+    array(
+        'label'=>Yii::t('accounts','Edit {module}', array('{module}'=>Modules::displayName(false))),
+        'url'=>array('update', 'id'=>$model->id)),
+	array('label'=>Yii::t('accounts','Share {module}', array('{module}'=>Modules::displayName(false)))),
+    array(
+        'label'=>Yii::t('accounts','Delete {module}', array('{module}'=>Modules::displayName(false))),
+        'url'=>'#',
+        'linkOptions'=>array(
+            'submit'=>array('delete','id'=>$model->id),
+            'confirm'=>'Are you sure you want to delete this item?'
+        )),
 ),$authParams);
 
 Yii::app()->clientScript->registerScriptFile(Yii::app()->getBaseUrl().'/js/ckeditor/ckeditor.js');
@@ -52,7 +62,7 @@ Yii::app()->clientScript->registerScriptFile(Yii::app()->getBaseUrl().'/js/email
 Yii::app()->clientScript->registerScript('editorSetup','createCKEditor("input");',CClientScript::POS_READY);
 ?>
 <div class="page-title icon accounts">
-<h2><span class="no-bold"><?php echo Yii::t('app','Share:');?></span> <?php echo $model->name; ?></h2>
+<h2><span class="no-bold"><?php echo Yii::t('app','Share:');?></span> <?php echo CHtml::encode($model->name); ?></h2>
 </div>
 
 <?php
@@ -71,8 +81,12 @@ if(!empty($status)) {
 ?>
 <div class="form">
 <form method="POST" name="share-contact-form">
-	<b><span<?php if(in_array('email',$errors)) echo ' class="error"'; ?>><?php echo Yii::t('contacts','E-Mail');?></span></b><br /><input type="text" name="email" size="50"<?php if(in_array('email',$errors)) echo ' class="error"'; ?> value="<?php if(!empty($email)) echo $email; ?>"><br />
-	<b><span<?php if(in_array('body',$errors)) echo ' class="error"'; ?>><?php echo Yii::t('app','Message Body');?></span></b><br /><textarea name="body" id="input" style="height:200px;width:558px;"<?php if(in_array('body',$errors)) echo ' class="error"'; ?>><?php echo $body; ?></textarea><br />
+    <b><span<?php if(in_array('email',$errors)) echo ' class="error"'; ?>><?php echo Yii::t('contacts','E-Mail');?></span></b><br />
+    <input type="text" name="email" size="50"<?php if(in_array('email',$errors)) echo ' class="error"'; ?> value="<?php if(!empty($email)) echo $email; ?>"><br />
+
+    <b><span<?php if(in_array('body',$errors)) echo ' class="error"'; ?>><?php echo Yii::t('app','Message Body');?></span></b><br />
+    <textarea name="body" id="input" style="height:200px;width:558px;"<?php if(in_array('body',$errors)) echo ' class="error"'; ?>><?php echo $body; ?></textarea><br />
+
 	<input type="submit" class="x2-button" value="<?php echo Yii::t('app','Share');?>" />
 </form>
 </div>
@@ -83,8 +97,8 @@ $form = $this->beginWidget('CActiveForm', array(
 	'action'=>array('saveChanges','id'=>$model->id),
 ));
 ?>
-<div class="page-title">
-	<h2><span class="no-bold"><?php echo Yii::t('accounts','Account:'); ?></span> <?php echo $model->name; ?></h2>
+<div class="page-title icon accounts">
+	<h2><span class="no-bold"><?php echo Yii::t('accounts','{module}:', array('{module}'=>Modules::displayName(false))); ?></span> <?php echo CHtml::encode($model->name); ?></h2>
 </div>
 <?php
 $this->renderPartial('application.components.views._detailView',array('model'=>$model,'modelName'=>'accounts','form'=>$form)); 

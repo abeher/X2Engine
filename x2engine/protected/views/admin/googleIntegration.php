@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -49,8 +49,8 @@ $('#timeout').change(function() {
 ",CClientScript::POS_READY);
 ?>
 <div class="page-title"><h2><?php echo Yii::t('admin','Google Integration'); ?></h2></div>
+<div class="admin-form-container">
 <div class="form">
-<div style="width:500px;">
 <?php
 $form=$this->beginWidget('CActiveForm', array(
 		'id'=>'settings-form',
@@ -61,17 +61,17 @@ $form=$this->beginWidget('CActiveForm', array(
 		<?php echo $form->labelEx($model,'googleIntegration',array('style'=>'display:inline;')); ?>
 		<br><br>
 		<?php echo $form->labelEx($model,'googleClientId'); ?>
-		<?php echo $form->textField($model,'googleClientId', array('size'=>75)); ?>
+		<?php echo $form->textField($model,'googleClientId', array('class'=>'x2-xxwide-input')); ?>
 
 		<?php echo $form->labelEx($model,'googleClientSecret'); ?>
-		<?php echo $form->textField($model,'googleClientSecret', array('size'=>75)); ?>
+		<?php echo $form->textField($model,'googleClientSecret', array('class'=>'x2-xxwide-input')); ?>
 
 		<?php // echo $form->labelEx($model,'googleAPIKey'); ?>
 		<?php // echo $form->textField($model,'googleAPIKey', array('size'=>75)); ?>
 
 		<br><br>
 
-		<?php echo Yii::t('admin','Google integration allows users to link their calendars on x2crm with Google Calendars as well as log in with their Google IDs.'); ?>
+		<?php echo Yii::t('admin','Google integration allows users to link their calendars on X2Engine with Google Calendars as well as log in with their Google IDs.'); ?>
 		<br><br>
 
 		<?php echo Yii::t('admin', 'You will need to create a google app in order to use google integration.'); ?>
@@ -79,7 +79,7 @@ $form=$this->beginWidget('CActiveForm', array(
 		<?php echo CHtml::link(Yii::t('admin', 'google console'), 'http://code.google.com/apis/console'); ?>.
 		<?php echo Yii::t('admin', 'Also, the following links need to be added to your app\'s Authorized Redirect URIs:'); ?>
 		<br><br>
-<textarea style="padding:5px; height:60px;line-height:20px;width:600px;" disabled="disabled">
+<textarea class='x2-xxwide-input' style="padding:5px; height:60px;line-height:20px;" disabled="disabled">
 <?php echo (@$_SERVER['HTTPS'] == 'on' ? 'https://' : 'http://') . $_SERVER['HTTP_HOST'] . $this->createUrl('/calendar/calendar/syncActionsToGoogleCalendar'); ?>
 
 <?php echo (@$_SERVER['HTTPS'] == 'on' ? 'https://' : 'http://') . $_SERVER['HTTP_HOST'] . $this->createUrl('/site/googleLogin'); ?>
@@ -88,10 +88,21 @@ $form=$this->beginWidget('CActiveForm', array(
 </textarea>
         <?php echo Yii::t('admin', 'Additionally, the following link needs to be added to your app\'s Authorized Javascript Origins'); ?>
 		<br><br>
-<textarea style="padding:5px; height:20px;line-height:20px;width:600px;" disabled="disabled">
+<textarea class='x2-xxwide-input' style="padding:5px; height:20px;line-height:20px;" disabled="disabled">
 <?php echo (@$_SERVER['HTTPS'] == 'on' ? 'https://' : 'http://') . $_SERVER['HTTP_HOST'];?>
 </textarea>
 		<br><br>
+        <hr />
+        <span class="mock-x2-form-label"><?php echo Yii::t('admin','Google Analytics (optional)'); ?></span><br />
+            <?php
+        foreach(array('public', 'internal') as $type){
+            echo $form->labelEx($model, "gaTracking_$type");
+            echo $form->textField($model, "gaTracking_$type", array('id' => "gaTracking_$type"));
+        }
+        echo '<br />';
+        echo Yii::t('admin', 'Enter property IDs to enable Google Analytics tracking. The public ID will be used on publicly-accessible web lead and service case forms. The internal one will be used within X2Engine, for tracking the activity of authenticated users.');
+        ?>
+    <br /><br /><hr />
 	<?php echo CHtml::submitButton(Yii::t('app','Save'),array('class'=>'x2-button','id'=>'save-button'))."\n";?>
 	<?php //echo CHtml::resetButton(Yii::t('app','Cancel'),array('class'=>'x2-button'))."\n";?>
 <?php $this->endWidget();?>

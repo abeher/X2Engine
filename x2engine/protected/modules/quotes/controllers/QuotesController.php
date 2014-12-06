@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -44,32 +44,12 @@
  * it will return the list of quotes for the contact id passed in the ajax call.
  *
  * @property Quote $model Model class being dealt with.
- * @package X2CRM.modules.quotes.controllers
+ * @package application.modules.quotes.controllers
  * @author David Visbal, Demitri Morgan <demitri@x2engine.com>
  */
 class QuotesController extends x2base {
 
 	public $modelClass = 'Quote';
-
-	public function accessRules() {
-		return array(
-			array('allow',
-				'actions'=>array('getItems'),
-				'users'=>array('*'),
-			),
-			array('allow', // allow authenticated user to perform 'create' and 'update' actions
-				'actions'=>array('index', 'view','viewInline', 'create', 'quickCreate', 'update', 'quickUpdate', 'search', 'addUser', 'addContact', 'removeUser', 'removeContact', 'saveChanges', 'print', 'delete', 'quickDelete', 'addProduct', 'deleteProduct', 'shareQuote', 'convertToInvoice', 'indexInvoice'),
-				'users'=>array('@'),
-			),
-			array('allow', // allow admin user to perform 'admin' and 'delete' actions
-				'actions'=>array('admin','testScalability'),
-				'users'=>array('admin'),
-			),
-			array('deny',  // deny all users
-				'users'=>array('*'),
-			),
-		);
-	}
 
 	/**
 	 * Displays a particular model.
@@ -78,14 +58,13 @@ class QuotesController extends x2base {
 	public function actionView($id){
 		$type = 'quotes';
 		$model = $this->getModel($id);
-		// The following line is for compatibility with associatedContacts in
-		// the legacy format.
-		$model->contact;
-		// Now it's safe to turn it into links (the way it has always been done)
-		$contactId = $model->associatedContacts;
-		$model->associatedContacts = Contacts::getContactLinks($model->associatedContacts);
 		$quoteProducts = $model->lineItems;
 
+        // add quote to user's recent item list
+        User::addRecentItem('q', $id, Yii::app()->user->getId()); 
+
+        $contactNameId = Fields::nameAndId ($model->associatedContacts);
+        $contactId = $contactNameId[1];
 		parent::view($model, $type, array('orders' => $quoteProducts,
 			'contactId' => $contactId
 		));
@@ -165,8 +144,6 @@ class QuotesController extends x2base {
 			throw new CHttpException(400);
 
 		$currency = Yii::app()->params->currency;
-		$productNames = Product::productNames();
-		$productCurrency = Product::productCurrency();
 
 		// Uncomment the following line if AJAX validation is needed
 		// $this->performAjaxValidation($model);
@@ -185,11 +162,27 @@ class QuotesController extends x2base {
 			if(!$model->hasLineItemErrors){
 				if($model->save()){
 					$model->createEventRecord();
+					$model->createActionRecord();
 					$model->saveLineItems();
-					if(!$quick)
+					if(!$quick) {
 						$this->redirect(array('view', 'id' => $model->id));
-					else
+					} else {
+                        if (isset ($_GET['recordId']) && isset ($_GET['recordType'])) {
+                            $recordId = $_GET['recordId'];
+                            $recordType = $_GET['recordType'];
+                            $relatedModel = X2Model::model ($_GET['recordType'])->findByPk ($recordId);
+			   	            // tie record to quote
+                            if ($relatedModel) {
+                                $relate = new Relationships;
+                                $relate->firstId = $model->id;
+                                $relate->firstType = "Quote";
+                                $relate->secondId = $relatedModel->id;
+                                $relate->secondType = $recordType;
+                                $relate->save();
+                            }
+                        }
 						return;
+                    }
 				}
 			}
 		}
@@ -211,7 +204,7 @@ class QuotesController extends x2base {
 				// the response code manually:
 				header('HTTP/1.1 400 Validation Error');
 			}
-			$this->renderPartial('create', $viewData);
+			$this->renderPartial('create', $viewData,false,true);
 		}
 	}
 
@@ -224,11 +217,7 @@ class QuotesController extends x2base {
 		$model = $this->getModel($id);
 
 		if(isset($_POST['Quote'])){
-			$model->lastUpdated = time();
-			$model->updatedBy = Yii::app()->user->name;
 			$model->setX2Fields($_POST['Quote']);
-			$model->total = Fields::strToNumeric($_POST['Quote']['total'],'currency');
-			$temp = $model->attributes;
 			if(isset($_POST['lineitem']))
 				$model->lineItems = $_POST['lineitem'];
 			if(!$model->hasLineItemErrors) {
@@ -256,7 +245,7 @@ class QuotesController extends x2base {
 				// the response code manually:
 				header('HTTP/1.1 400 Validation Error');
 			}
-			$this->renderPartial('update', $viewData);
+			$this->renderPartial('update', $viewData,false,true);
 		}
 	}
 
@@ -277,19 +266,22 @@ class QuotesController extends x2base {
 	 * @return type
 	 */
 	public function getPrintQuote($id = null,$email = false) {
+        $this->throwOnNullModel = false;
 		$model = $this->getModel($id);
-		if (empty($model->template)) { // Legacy view (very, very plain!)
+		if($model == null)
+			return Yii::t('quotes','Quote {id} does not exist. It may have been deleted.',array('{id}'=>$id));
+		if (! ($model->templateModel instanceof Docs)) { // Legacy view (very, very plain!)
 			return $this->renderPartial('print', array(
 				'model' => $model,
 				'email' => $email
 			),true);
 		} else { // User-defined template
-			$template = Docs::model()->findByPk($model->template);
-			if(empty($template)) {
+			$template = $model->templateModel;
+			if(!($template instanceof Docs)) {
 				// Template not found (it was probably deleted).
 				// Use the default quotes view.
 				$model->template = null;
-				$model->save();
+				$model->update(array('template'));
 				return $this->getPrintQuote($model->id);
 			}
 			return Docs::replaceVariables($template->text,$model);
@@ -313,7 +305,7 @@ class QuotesController extends x2base {
 	 *  quote.
 	 */
 	public function actionIndexInvoice() {
-		$model=new Quote('searchInvoice');
+		$model=new Quote('search');
 		$this->render('indexInvoice', array('model'=>$model));
 	}
 
@@ -377,22 +369,26 @@ class QuotesController extends x2base {
 
 		$model->update();
 
-		if(isset($_GET['contactId'])) { // ajax request from a contact view, don't reload page, instead return a list of quotes for this contact
-			if(isset($_GET['contactId'])) {
-				$contact = X2Model::model('Contacts')->findByPk($_GET['contactId']);
-				if($contact) {
-					Yii::app()->clientScript->scriptMap['*.js'] = false;
-					$this->renderPartial('quoteFormWrapper', array('model'=>$contact), false, true);
-					return;
-				}
-			}
+		if(isset ($_GET['modelName']) && isset($_GET['recordId'])) { // ajax request from a contact view, don't reload page, instead return a list of quotes for this contact
+            //$contact = X2Model::model('Contacts')->findByPk($_GET['contactId']);
+
+            if($model) {
+                Yii::app()->clientScript->scriptMap['*.js'] = false;
+                $this->renderPartial(
+                    'quoteFormWrapper', 
+                    array(
+                        'modelId'=>$_GET['recordId'],
+                        'modelName'=>$_GET['modelName']
+                    ), false, true);
+                return;
+            }
 		}
 
 		$this->redirect(array('view','id'=>$model->id)); // view quote
 	}
 
 	// create a quote from a mini Create Quote Form
-	public function actionQuickCreate() {
+	/*public function actionQuickCreate() {
 
 		if(isset($_POST['Quote'])) {
 			$model = new Quote;
@@ -455,17 +451,16 @@ class QuotesController extends x2base {
 
 			    // $changes=$this->calculateChanges($oldAttributes, $model->attributes, $model);
 			    // $this->updateChangelog($model,$changes);
-
+                
 			   	// tie contacts to quote
-			   	/*
-			   	foreach($contacts as $contactid) {
-			   		$relate = new Relationships;
-			   		$relate->firstId = $model->id;
-			   		$relate->firstType = "quotes";
-			   		$relate->secondId = $contactid;
-			   		$relate->secondType = "contacts";
-			   		$relate->save();
-			   	} */
+//			   	foreach($contacts as $contactid) {
+//			   		$relate = new Relationships;
+//			   		$relate->firstId = $model->id;
+//			   		$relate->firstType = "quotes";
+//			   		$relate->secondId = $contactid;
+//			   		$relate->secondType = "contacts";
+//			   		$relate->save();
+//			   	}
 
 		   		// tie products to quote
 		   		foreach($products as $product) {
@@ -512,20 +507,26 @@ class QuotesController extends x2base {
 
 			Yii::app()->clientScript->scriptMap['*.js'] = false;
 			$contact = X2Model::model('Contacts')->findByPk($contacts[0]);
-			$this->renderPartial('quoteFormWrapper', array('model'=>$contact), false, true);
+			$this->renderPartial('quoteFormWrapper', array('modelId'=>$contact->id), false, true);
 
         }
-	}
+	}*/
 
 	/**
 	 * Obtain the markup for the inline quotes widget.
 	 *
 	 * @param type $contactId Contact ID to use for displaying quotes
 	 */
-	public function actionViewInline($contactId){
+	public function actionViewInline($recordId, $recordType){
 		Yii::app()->clientScript->scriptMap['*.js'] = false;
-		$contact = X2Model::model('Contacts')->findByPk($contactId);
-		$this->renderPartial('quoteFormWrapper', array('model' => $contact), false, true);
+        $model = X2Model::model ($recordType)->findByPk ($recordId);
+		$this->renderPartial(
+            'quoteFormWrapper', 
+            array(
+                'modelId' => $model->id,
+                'modelName' => $recordType
+            ), false, true
+        );
 	}
 
 	public function updateQuote($model, $oldAttributes, $products) {
@@ -614,7 +615,7 @@ class QuotesController extends x2base {
                                 $model->$field=$_POST['Quote'][$field];
                                 $fieldData=Fields::model()->findByAttributes(array('modelName'=>'Quote','fieldName'=>$field));
                                 if($fieldData->type=='assignment' && $fieldData->linkType=='multiple'){
-                                    $model->$field=Accounts::parseUsers($model->$field);
+                                    $model->$field=Fields::parseUsers($model->$field);
                                 }elseif($fieldData->type=='date'){
                                     $model->$field=Formatter::parseDate($model->$field);
                                 }
@@ -729,7 +730,12 @@ class QuotesController extends x2base {
 		if(isset($_POST['contactId'])) {
 		    Yii::app()->clientScript->scriptMap['*.js'] = false;
 		    $contact = X2Model::model('Contacts')->findByPk($_POST['contactId']);
-		    $this->renderPartial('quoteFormWrapper', array('contactId'=>$contact->id,'accountName'=>$contact->company), false, true);
+		    $this->renderPartial(
+                'quoteFormWrapper', 
+                array(
+                    'contactId'=>$contact->id,'accountName'=>$contact->company
+                ), false, true
+            );
 		}
 	}
 
@@ -743,12 +749,6 @@ class QuotesController extends x2base {
 
 		}  else
 			throw new CHttpException(400,Yii::t('app','Invalid request. Please do not repeat this request again.'));
-
-		if($_GET['contactId']) {
-			Yii::app()->clientScript->scriptMap['*.js'] = false;
-			$contact = X2Model::model('Contacts')->findByPk($_GET['contactId']);
-			$this->renderPartial('quoteFormWrapper', array('contactId'=>$contact->id,'accountName'=>$contact->company), false, true);
-		}
 	}
 
 	// delete a product from a quote
@@ -775,10 +775,15 @@ class QuotesController extends x2base {
 			    $qp->save();
 			}
 
-			if(isset($_POST['contactId'])) {
+			if(isset($_POST['recordId'])) {
 				Yii::app()->clientScript->scriptMap['*.js'] = false;
-				$contact = X2Model::model('Contacts')->findByPk($_POST['contactId']);
-				$this->renderPartial('quoteFormWrapper', array('contactId'=>$contact->id,'accountName'=>$contact->company), false, true);
+				$contact = X2Model::model('Contacts')->findByPk($_POST['recordId']);
+				$this->renderPartial(
+                    'quoteFormWrapper', 
+                    array(
+                        'recordId'=>$contact->id,'accountName'=>$contact->company
+                    ), false, true
+                );
 			}
 		}
 	}
@@ -805,5 +810,131 @@ class QuotesController extends x2base {
 		$result = $command->queryAll();
 		echo CJSON::encode($result); exit;
 	}
+
+    public function actionGetItems ($term) {
+        X2LinkableBehavior::getItems ($term);
+    }
+
+    /**
+     * Create a menu for Quotes
+     * @param array Menu options to remove
+     * @param X2Model Model object passed to the view
+     * @param array Additional menu parameters
+     */
+    public function insertMenu($selectOptions = array(), $model = null, $menuParams = null) {
+        $Quotes = Modules::displayName();
+        $Quote = Modules::displayName(false);
+        $modelId = isset($model) ? $model->id : 0;
+
+        /**
+         * To show all options:
+         * $menuOptions = array(
+         *     'index', 'invoices', 'create', 'view', 'email', 'edit', 'editLock', 'editStrictLock',
+         *     'delete', 'attach', 'print', 'import', 'export', 'convert',
+         * );
+         */
+
+        $menuItems = array(
+            array(
+                'name'=>'index',
+                'label'=>Yii::t('quotes','{module} List', array(
+                    '{module}'=>$Quotes
+                )),
+                'url' => array('index'),
+            ),
+            array(
+                'name'=>'invoices',
+                'label'=>Yii::t('quotes','Invoice List'),
+                'url'=>array('indexInvoice')
+            ),
+            array(
+                'name'=>'create',
+                'label'=>Yii::t('quotes','Create'),
+                'url'=>array('create')
+            ),
+            array(
+                'name'=>'view',
+                'label'=>Yii::t('quotes','View'),
+                'url'=>array('view', 'id'=>$modelId)
+            ),
+            array(
+                'name'=>'email',
+                'label'=>Yii::t('app','Email {type}', array(
+                    '{type}' => ((isset($model) && $model->type=='invoice') ? 'Invoice' : $Quote)
+                )),
+                'url'=>'#','linkOptions'=>array('onclick'=>'toggleEmailForm(); return false;'),
+            ),
+            array(
+                'name'=>'editStrictLock',
+                'label'=>Yii::t('quotes','Update'),
+                'url'=>'#',
+                'linkOptions'=>array('onClick'=>'dialogStrictLock();')
+            ),
+            array(
+                'name'=>'editLock',
+                'label'=>Yii::t('quotes','Update'),
+                'url'=>'#',
+                'linkOptions'=>array('onClick'=>'dialogLock();')
+            ),
+            array(
+                'name'=>'edit',
+                'label'=>Yii::t('quotes','Update'),
+                'url'=>array('update', 'id'=>$modelId),
+            ),
+            array(
+                'name'=>'delete',
+                'label'=>Yii::t('quotes','Delete'),
+                'url'=>'#',
+                'linkOptions'=>array(
+                    'submit'=>array('delete','id'=>$modelId),
+                    'confirm'=>'Are you sure you want to delete this item?'
+                ),
+            ),
+            array(
+                'name'=>'attach',
+                'label'=>Yii::t('app','Attach A File/Photo'),
+                'url'=>'#',
+                'linkOptions'=>array(
+                    'onclick'=>'toggleAttachmentForm(); return false;'
+                ),
+            ),
+            array(
+                'name'=>'print',
+                'label'=>((isset($model) && $model->type == 'invoice') ? 
+                    Yii::t('quotes', 'Print Invoice') : Yii::t('quotes','Print {quote}', array(
+                        '{quote}' => $Quote,
+                    ))),
+                'url'=>'#',
+                'linkOptions'=>array(
+                    'onClick'=>"window.open('".
+                        Yii::app()->createUrl('/quotes/quotes/print',
+                        array('id'=>$modelId)) ."')"
+                )
+            ),
+            array(
+                'name'=>'import',
+                'label'=>Yii::t('quotes', 'Import {module}', array(
+                    '{module}' =>$Quotes,
+                )),
+                'url'=>array('admin/importModels', 'model'=>'Quote'),
+            ),
+            array(
+                'name'=>'export',
+                'label'=>Yii::t('quotes', 'Export {module}', array(
+                    '{module}' => $Quotes,
+                )),
+                'url'=>array('admin/exportModels', 'model'=>'Quote'),
+            ),
+            array(
+                'name' => 'convert',
+                'label' => Yii::t('quotes', 'Convert To Invoice'),
+                'url' => array ('convertToInvoice', 'id' => $modelId),
+            ),
+        );
+
+        $this->prepareMenu($menuItems, $selectOptions);
+        $this->actionMenu = $this->formatMenu($menuItems, $menuParams);
+    }
+
 
 }

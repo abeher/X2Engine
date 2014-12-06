@@ -1,6 +1,6 @@
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -78,8 +78,8 @@ function mediaFileUpload(form, fileField, action_url, remove_url) {
             	
             	var temp = $('<input>', {
             		'type': 'hidden',
-            		'name': 'AttachmentFiles[temp][]',
-            		'value': true
+            		'name': 'AttachmentFiles[types][]',
+            		'value': 'temp'
             	});
             	
             	
@@ -96,6 +96,7 @@ function mediaFileUpload(form, fileField, action_url, remove_url) {
             	
  				$('#choose-file-saving-icon').animate({opacity: 0.0});
  				parent.find('.filename').html(response['name']).animate({opacity: 1.0});
+                parent.find('.error').html("");
  				
  				
     			form.removeAttribute("target");
@@ -111,8 +112,16 @@ function mediaFileUpload(form, fileField, action_url, remove_url) {
     			form.removeAttribute("encoding");
             	form.setAttribute("action", $(form).data('oldAction'));
             } else {
-            	fileField.parent().find('.error').html(response['message']);
-            	fileField.val("");
+                var parent = fileField.parent();
+                parent.find('.error').html(response['message']);
+                // clear old values
+                parent.find('.filename').html("");
+                parent.find('.temp-file-id').val("");
+                parent.val("");
+                parent.find('input[type="button"]').css({opacity: 1.0});
+                $('#choose-file-saving-icon').css({opacity: 0.0});
+                form.setAttribute("action", $(form).data('oldAction'));
+
             }
  			
             // Del the iframe...
@@ -150,7 +159,7 @@ function mediaCheckName(el) {
     
     // check the file extension
     var re = 1;
-    for(i in illegal_ext) {
+    for(var i in illegal_ext) {
         if(illegal_ext[i] == ar_ext) {
             re = 0;
             break;
@@ -162,6 +171,7 @@ function mediaCheckName(el) {
     	return true;
     }
     else {
+        var filenameError = "{X} is not an allowed filetype.";
         alert(filenameError.replace('{X}',ar_ext));
         return false;
     }

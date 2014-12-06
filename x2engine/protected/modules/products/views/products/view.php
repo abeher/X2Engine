@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -34,15 +34,26 @@
  * "Powered by X2Engine".
  *****************************************************************************************/
 
-include("protected/modules/products/productConfig.php");
+Yii::app()->clientScript->registerCss('recordViewCss', "
+
+#content {
+    background: none !important;
+    border: none !important;
+}
+");
+Yii::app()->clientScript->registerResponsiveCssFile(
+        Yii::app()->theme->baseUrl . '/css/responsiveRecordView.css');
+
+
 $themeUrl = Yii::app()->theme->getBaseUrl();
-$this->actionMenu = $this->formatMenu(array(
-	array('label'=>Yii::t('module','{X} List',array('{X}'=>$moduleConfig['recordName'])), 'url'=>array('index')),
-	array('label'=>Yii::t('module','Create',array('{X}'=>$moduleConfig['recordName'])), 'url'=>array('create')),
-	array('label'=>Yii::t('module','View',array('{X}'=>$moduleConfig['recordName']))),
-	array('label'=>Yii::t('module','Update',array('{X}'=>$moduleConfig['recordName'])), 'url'=>array('update', 'id'=>$model->id)),
-	array('label'=>Yii::t('module','Delete',array('{X}'=>$moduleConfig['recordName'])), 'url'=>'#', 'linkOptions'=>array('submit'=>array('delete','id'=>$model->id),'confirm'=>Yii::t('app','Are you sure you want to delete this item?'))),
-));
+
+
+$menuOptions = array(
+    'index', 'create', 'view', 'edit', 'delete', 'print',
+);
+$this->insertMenu($menuOptions, $model);
+
+
 $modelType = json_encode("Products");
 $modelId = json_encode($model->id);
 Yii::app()->clientScript->registerScript('widgetShowData', "
@@ -51,32 +62,51 @@ $(function() {
 	$('body').data('modelId', $modelId);
 });");
 ?>
-<div class="page-title icon products">
-<?php //echo CHtml::link('['.Yii::t('contacts','Show All').']','javascript:void(0)',array('id'=>'showAll','class'=>'right hide','style'=>'text-decoration:none;')); ?>
-<?php //echo CHtml::link('['.Yii::t('contacts','Hide All').']','javascript:void(0)',array('id'=>'hideAll','class'=>'right','style'=>'text-decoration:none;')); ?>
-	<h2><span class="no-bold"><?php echo Yii::t('products','Product:'); ?></span> <?php echo $model->name; ?></h2>
-	<a class="x2-button icon edit right" href="update/<?php echo $model->id;?>"><span></span></a>
+
+<div class="page-title-placeholder"></div>
+<div class="page-title-fixed-outer">
+    <div class="page-title-fixed-inner">
+        <div class="page-title icon products">
+            <?php //echo CHtml::link('['.Yii::t('contacts','Show All').']','javascript:void(0)',array('id'=>'showAll','class'=>'right hide','style'=>'text-decoration:none;')); ?>
+            <?php //echo CHtml::link('['.Yii::t('contacts','Hide All').']','javascript:void(0)',array('id'=>'hideAll','class'=>'right','style'=>'text-decoration:none;')); ?>
+            <h2><span class="no-bold"><?php echo Yii::t('products', '{module}:', array('{module}' => Modules::displayName(false))); ?></span> <?php echo CHtml::encode($model->name); ?></h2>
+            <?php
+            echo X2Html::editRecordButton($model);
+            echo X2Html::inlineEditButtons();
+            ?>
+        </div>
+    </div>
 </div>
 <div id="main-column" class="half-width">
-<?php $this->renderPartial('application.components.views._detailView',array('model'=>$model,'modelName'=>'Product')); ?>
+<?php $this->renderPartial('application.components.views._detailView', array('model' => $model, 'modelName' => 'Product')); ?>
 
-<div class="form">
-	<b><?php echo Yii::t('app', 'Tags'); ?></b>
-<?php $this->widget('InlineTags', array('model'=>$model)); ?>
-</div>
+    <?php
+    $this->widget('X2WidgetList', array(
+        'block' => 'center',
+        'model' => $model,
+        'modelType' => 'products'
+    ));
+    ?>
 
-<?php $this->widget('Attachments',array('associationType'=>'products','associationId'=>$model->id)); ?>
+    <?php
+    $this->widget(
+            'Attachments', array(
+        'associationType' => 'products',
+        'associationId' => $model->id,
+            )
+    );
+    ?>
 </div>
 <div class="history half-width">
-<?php
-$this->widget('Publisher',
-	array(
-		'associationType'=>'products',
-		'associationId'=>$model->id,
-		'assignedTo'=>Yii::app()->user->getName(),
-		'halfWidth'=>true
-	)
-);
+    <?php
+    $this->widget('Publisher', array(
+        'associationType' => 'products',
+        'associationId' => $model->id,
+        'assignedTo' => Yii::app()->user->getName(),
+        'calendar' => false
+            )
+    );
 
-$this->widget('History',array('associationType'=>'products','associationId'=>$model->id));
-?>
+    $this->widget('History', array('associationType' => 'products', 'associationId' => $model->id));
+    ?>
+</div>

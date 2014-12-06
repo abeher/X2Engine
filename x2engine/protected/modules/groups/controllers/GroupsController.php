@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -35,7 +35,7 @@
  *****************************************************************************************/
 
 /**
- * @package X2CRM.modules.groups.controllers 
+ * @package application.modules.groups.controllers 
  */
 class GroupsController extends x2base {
     public $modelClass='Groups';
@@ -72,6 +72,10 @@ class GroupsController extends x2base {
 		}
 		$str=substr($str,0,-2);
 		$users=User::getUserLinks($str);
+
+		// add group to user's recent item list
+        User::addRecentItem('g', $id, Yii::app()->user->getId()); 
+
 		$this->render('view',array(
 			'model'=>$this->loadModel($id),
 			'users'=>$users,
@@ -260,5 +264,69 @@ class GroupsController extends x2base {
 		Yii::app()->cache->delete('user_groups');
 		Yii::app()->cache->delete('user_roles');
 	}
+
+    public function actionGetItems ($term) {
+        X2LinkableBehavior::getItems ($term);
+    }
+
+    /**
+     * Create a menu for Groups
+     * @param array Menu options to remove
+     * @param X2Model Model object passed to the view
+     * @param array Additional menu parameters
+     */
+    public function insertMenu($selectOptions = array(), $model = null, $menuParams = null) {
+        $Group = Modules::displayName(false);
+        $modelId = isset($model) ? $model->id : 0;
+
+        /**
+         * To show all options:
+         * $menuOptions = array(
+         *     'index', 'create', 'view', 'edit', 'delete',
+         * );
+         */
+
+        $menuItems = array(
+            array(
+                'name'=>'index',
+                'label'=>Yii::t('groups','{group} List', array(
+                    '{group}' => $Group,
+                )),
+                'url'=>array('index')
+            ),
+            array(
+                'name'=>'create',
+                'label'=>Yii::t('groups','Create {group}', array(
+                    '{group}' => $Group,
+                )),
+                'url'=>array('create')
+            ),
+            array(
+                'name'=>'view',
+                'label'=>Yii::t('groups','View'),
+                'url'=>array('view', 'id'=>$modelId)
+            ),
+            array(
+                'name'=>'edit',
+                'label'=>Yii::t('groups','Edit {group}', array(
+                    '{group}' => $Group,
+                )),
+                'url'=>array('update', 'id'=>$modelId)
+            ),
+            array(
+                'name'=>'delete',
+                'label'=>Yii::t('groups','Delete {group}', array(
+                    '{group}' => $Group,
+                )),
+                'url'=>'#',
+                'linkOptions'=>array(
+                    'submit'=>array('delete','id'=>$modelId),
+                    'confirm'=>Yii::t('app','Are you sure you want to delete this item?'))
+            ),
+        );
+
+        $this->prepareMenu($menuItems, $selectOptions);
+        $this->actionMenu = $this->formatMenu($menuItems, $menuParams);
+    }
 
 }

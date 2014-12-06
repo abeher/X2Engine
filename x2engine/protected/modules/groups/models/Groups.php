@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -38,9 +38,12 @@ Yii::import('application.models.X2Model');
 
 /**
  * This is the model class for table "x2_groups".
- * @package X2CRM.modules.groups.models
+ * @package application.modules.groups.models
  */
 class Groups extends X2Model {
+
+    public $supportsWorkflow = false;
+
 	/**
 	 * Returns the static model of the specified AR class.
 	 * @return Groups the static model class
@@ -79,7 +82,8 @@ class Groups extends X2Model {
 	public static function getNames() {
 
 		$groupNames = array();
-		$data = Yii::app()->db->createCommand()->select('id,name')->from('x2_groups')->order('name ASC')->queryAll(false);
+		$data = Yii::app()->db->createCommand()
+            ->select('id,name')->from('x2_groups')->order('name ASC')->queryAll(false);
         foreach($data as $row){
 			$groupNames[$row[0]] = $row[1];
         }
@@ -98,9 +102,10 @@ class Groups extends X2Model {
 	 * @return array relational rules.
 	 */
 	public function relations() {
-		// NOTE: you may need to adjust the relation name and the related
-		// class name for the relations automatically generated below.
 		return array(
+            'users' => array (
+                self::MANY_MANY, 'User', 'x2_group_to_user(groupId, userId)'
+            ),
 		);
 	}
 
@@ -109,10 +114,21 @@ class Groups extends X2Model {
 	 */
 	public function attributeLabels() {
 		return array(
-			'id' => 'ID',
-			'name' => 'Name',
+			'id' => Yii::t('groups','ID'),
+			'name' => Yii::t('groups','Name'),
 		);
 	}
+
+    /**
+     * Delete associated group to user records 
+     */
+    public function afterDelete () {
+        GroupToUser::model ()->deleteAll (array (
+            'condition' => 'groupId='.$this->id
+        ));
+        parent::afterDelete ();
+    }
+
 
 	// public static function getLink($id) {
 		// $groupName = Yii::app()->db->createCommand()->select('name')->from('x2_groups')->where('id='.$id)->queryScalar();
@@ -141,22 +157,44 @@ class Groups extends X2Model {
 		));
 	}
 
-	/* inGroup
-	 *
+    /**
+     * @return bool True if group has online users, false otherwise 
+     */
+    public function hasOnlineUsers () {
+        return count ($this->getOnlineUsers ()) > 0;
+    }
+
+    /**
+     * @return <array of objects> An array of user models where each user has an active session
+     */
+    public function getOnlineUsers () {
+		$onlineUserUsernames = Session::getOnlineUsers();
+
+        $onlineUsers = array_filter($this->users,function ($a) use ($onlineUserUsernames) {
+            return in_array($a->username, $onlineUserUsernames);
+        });
+        return $onlineUsers;
+    }
+
+	/**
 	 * Find out if a user belongs to a group
 	 */
 	public static function inGroup($userId, $groupId) {
-		return GroupToUser::model()->exists("userId=$userId AND groupId=$groupId");
+        $groups = self::getUserGroups($userId);
+        return in_array($groupId,$groups);
 	}
 
-	/* Looks up groups to which the specified user belongs.
+	/** 
+     * Looks up groups to which the specified user belongs.
 	 * Uses cache to lookup/store groups.
 	 *
-	 * @param Integer $userId user to look up groups for
-	 * @param Boolean $cache whether to use cache
+	 * @param integer $userId user to look up groups for
+	 * @param boolean $cache whether to use cache
 	 * @return Array array of groupIds
 	 */
 	public static function getUserGroups($userId,$cache=true) {
+        if($userId === null)
+            return array();
 		// check the app cache for user's groups
 		if($cache === true && ($userGroups = Yii::app()->cache->get('user_groups')) !== false) {
 			if(isset($userGroups[$userId]))
@@ -164,15 +202,50 @@ class Groups extends X2Model {
 		} else {
 			$userGroups = array();
 		}
-
+        
 		$userGroups[$userId] = Yii::app()->db->createCommand()	// get array of groupIds
 			->select('groupId')
 			->from('x2_group_to_user')
-			->where('userId=' . $userId)->queryColumn();
+			->where('userId=:userId', array (':userId' => $userId))->queryColumn();
 
-		if($cache === true)
-			Yii::app()->cache->set('user_groups',$userGroups,259200); // cache user groups for 3 days
+		if($cache === true) {
+            // cache user groups for 3 days
+			Yii::app()->cache->set('user_groups',$userGroups,259200); 
+        }
 
 		return $userGroups[$userId];
 	}
+
+        /**
+     * Gets a list of names of all users having a group in common with a user.
+     *
+     * @param integer $userId User's ID
+     * @param boolean $cache Whether to cache or not
+     * @return array
+     */
+    public static function getGroupmates($userId,$cache=true) {
+       	if($cache === true && ($groupmates = Yii::app()->cache->get('user_groupmates')) !== false){
+            if(isset($groupmates[$userId]))
+                return $groupmates[$userId];
+        } else{
+            $groupmates = array();
+        }
+
+        $userGroups = self::getUserGroups($userId,$cache);
+        $groupmates[$userId] = array();
+        if(!empty($userGroups)) {
+            $groupParam = AuxLib::bindArray($userGroups,'gid_');
+            $inGroup = AuxLib::arrToStrList(array_keys($groupParam));
+
+            $groupmates[$userId] = Yii::app()->db->createCommand()
+                    ->select('DISTINCT(gtu.username)')
+                    ->from(GroupToUser::model()->tableName().' gtu')
+                    ->join(User::model()->tableName().' u',
+                            'gtu.userId=u.id AND gtu.groupId IN '.$inGroup, $groupParam)
+                    ->queryColumn();
+        }
+        if($cache === true)
+            Yii::app()->cache->set('user_groupmates',$groupmates,259200);
+        return $groupmates[$userId];
+    }
 }

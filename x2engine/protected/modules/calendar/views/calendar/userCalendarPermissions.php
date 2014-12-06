@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -34,44 +34,21 @@
  * "Powered by X2Engine".
  *****************************************************************************************/
 
-if(Yii::app()->params->admin->googleIntegration) { // menu if google integration is enables has additional options
-	if(Yii::app()->params->isAdmin) {
-		$menuItems = array(
-			array('label'=>Yii::t('calendar', 'Calendar'), 'url'=>array('index')),
-			array('label'=>Yii::t('calendar', 'My Calendar Permissions'), 'url'=>array('myCalendarPermissions')),
-			array('label'=>Yii::t('calendar', 'User Calendar Permissions')),
-//			array('label'=>Yii::t('calendar', 'List'),'url'=>array('list')),
-//			array('label'=>Yii::t('calendar', 'Create'), 'url'=>array('create')),
-			array('label'=>Yii::t('calendar', 'Sync My Actions To Google Calendar'), 'url'=>array('syncActionsToGoogleCalendar')),
-		);
-	} else {
-		$menuItems = array(
-			array('label'=>Yii::t('calendar', 'Calendar'), 'url'=>array('index')),
-			array('label'=>Yii::t('calendar', 'My Calendar Permissions'), 'url'=>array('myCalendarPermissions')),
-//			array('label'=>Yii::t('calendar', 'List'),'url'=>array('list')),
-//			array('label'=>Yii::t('calendar', 'Create'), 'url'=>array('create')),
-			array('label'=>Yii::t('calendar', 'Sync My Actions To Google Calendar'), 'url'=>array('syncActionsToGoogleCalendar')),
-		);
-	}
-} else {
-	if(Yii::app()->params->isAdmin) {
-		$menuItems = array(
-			array('label'=>Yii::t('calendar', 'Calendar'), 'url'=>array('index')),
-			array('label'=>Yii::t('calendar', 'My Calendar Permissions'), 'url'=>array('myCalendarPermissions')),
-			array('label'=>Yii::t('calendar', 'User Calendar Permissions')),
-//			array('label'=>Yii::t('calendar', 'List'),'url'=>array('list')),
-//			array('label'=>Yii::t('calendar', 'Create'), 'url'=>array('create')),
-		);
-	} else {
-		$menuItems = array(
-			array('label'=>Yii::t('calendar', 'Calendar'), 'url'=>array('index')),
-			array('label'=>Yii::t('calendar', 'My Calendar Permissions'), 'url'=>array('myCalendarPermissions')),
-//			array('label'=>Yii::t('calendar', 'List'),'url'=>array('list')),
-//			array('label'=>Yii::t('calendar', 'Create'), 'url'=>array('create')),
-		);
-	}
-}
-$this->actionMenu = $this->formatMenu($menuItems);
+$modTitles = array(
+    'calendar' => Modules::displayName(),
+    'actions' => Modules::displayName(true, "Actions"),
+    'user' => Modules::displayName(false, "Users"),
+    'users' => Modules::displayName(true, "Users"),
+);
+
+$menuOptions = array(
+    'index', 'myPermissions',
+);
+if (Yii::app()->params->isAdmin)
+    $menuOptions[] = 'userPermissions';
+if (Yii::app()->settings->googleIntegration)
+    $menuOptions[] = 'sync';
+$this->insertMenu($menuOptions);
 ?>
 
 <script type="text/javascript">
@@ -88,12 +65,10 @@ $('#save-button')
 
 <?php
 
-$users = User::model()->findAll(array(
-	'select'=>'id, username, firstName, lastName, CONCAT(firstName," ",lastName) AS fullname', 
-	'index'=>'id',
-	'order'=>'fullname ASC',
-
-));
+$users = User::model()->findAllByAttributes(array('status'=>User::STATUS_ACTIVE));
+$thisUser = null;
+$users = array_combine(array_map(function($u){return $u->fullName;},$users),$users);
+ksort($users);
 
 if(isset($id)) {
 
@@ -121,50 +96,88 @@ if(isset($id)) {
 		});
 	});
 	",CClientScript::POS_HEAD);
-	
 	$names = array();
-	foreach($users as $user)
-		if($user->username != 'admin' && $user->id != $id)
-			$names[$user->id] = $user->firstName . ' ' . $user->lastName;
-			
-	$viewPermission = X2CalendarPermissions::getUserIdsWithViewPermission($id);
+	foreach($users as $name => $user){
+        if($user->id != $id){
+            if(!Yii::app()->authManager->checkAccess('administrator', $user->id))
+                $names[$user->id] = $name;
+            elseif($user->username == 'chames') {
+                echo $user->username.' '.$user->id;
+                die();
+            }
+        } else{
+            $thisUser = $user;
+        }
+    }
+    
+    $viewPermission = X2CalendarPermissions::getUserIdsWithViewPermission($id);
 	$editPermission = X2CalendarPermissions::getUserIdsWithEditPermission($id);
 	
-	$first = $users[$id]->firstName;
-	$last = $users[$id]->lastName;
-	$fullname = $first . ' ' . $last;
+	$fullname = $thisUser->fullName;
 	
 	echo CHtml::hiddenField('user-id', $id); // save user id for POST
+	?>
 	
-	echo "<h2>" . Yii::t('calendar', 'View Permission') . "</h2>";
-	echo "These users can view $fullname's calendar.";
-	echo CHtml::listBox('view-permission', $viewPermission, $names, array(
-		'class'=>'user-permission',
-		'multiple'=>'multiple',
-		'onChange'=>'giveSaveButtonFocus();',
-	));
-	echo "<br>\n";
-	
-	echo "<h2>" . Yii::t('calendar', 'Edit Permission') . "</h2>";
-	echo "These users can edit $fullname's calendar.";
-	echo CHtml::listBox('edit-permission', $editPermission, $names, array(
-		'class'=>'user-permission',
-		'multiple'=>'multiple',
-		'onChange'=>'giveSaveButtonFocus();',
-	));
-	
-	echo '	<div class="row buttons">'."\n";
-	echo '		'.CHtml::submitButton(Yii::t('app','Save'),array('class'=>'x2-button','id'=>'save-button', 'name'=>'save-button', 'tabindex'=>24, 'style'=>'display: inline-block'))."\n";
-	echo '		'.CHtml::link(Yii::t('calendar', 'Back To User List'), $this->createUrl(''), array('class'=>'x2-button'));
-	echo "	</div>\n";
-	
-	$this->endWidget();
+	<div class="page-title"><h2><?php echo Yii::t('calendar', 'View Permission'); ?></h2></div>
+	<div class="form">
+        <?php echo Yii::t('calendar', "These {users} can view {fullname}'s {calendar}.", array (
+            '{users}' => lcfirst($modTitles['users']),
+            '{fullname}' => $fullname,
+            '{calendar}' => $modTitles['calendar'],
+        )); ?>
+		<?php
+		echo CHtml::listBox('view-permission', $viewPermission, $names, array(
+			'class'=>'user-permission',
+			'multiple'=>'multiple',
+			'onChange'=>'giveSaveButtonFocus();',
+		));
+		?>
+		<br>
+	</div>
+	<div class="page-title rounded-top"><h2><?php echo Yii::t('calendar', 'Edit Permission'); ?></h2></div>
+	<div class="form">
+        <?php echo Yii::t('calendar', "These {users} can edit {fullname}'s {calendar}.", array (
+            '{users}' => lcfirst($modTitles['users']),
+            '{fullname}' => $fullname,
+            '{calendar}' => $modTitles['calendar'],
+        )); ?>
+		<?php
+		echo CHtml::listBox('edit-permission', $editPermission, $names, array(
+			'class'=>'user-permission',
+			'multiple'=>'multiple',
+			'onChange'=>'giveSaveButtonFocus();',
+		));
+		?>
+		<br>
+		<div class="row buttons">
+			<?php echo CHtml::submitButton(Yii::t('app','Save'),array('class'=>'x2-button','id'=>'save-button', 'name'=>'save-button', 'tabindex'=>24)); ?>
+            <?php echo CHtml::link(Yii::t('calendar', 'Back To {user} List', array(
+                '{user}' => $modTitles['user'],
+            )), $this->createUrl(''), array('class'=>'x2-button')); ?>
+		</div>
+	</div>
+	<?php
+$this->endWidget();
+	?>
 
+	<?php
 } else {
+	?>
+    <div class="page-title"><h2>
+        <?php echo Yii::t('calendar', '{user} {calendar} Permissions', array(
+            '{calendar}' => $modTitles['calendar'],
+            '{user}' => $modTitles['user'],
+        )); ?>
+    </h2></div>
+	<div style="padding: 8px">
+	<?php
 	foreach($users as $user) {
-			echo CHtml::link($user->firstName . ' ' . $user->lastName, $this->createUrl('', array('id'=>$user->id)));
+			echo CHtml::link($user->fullName, $this->createUrl('', array('id'=>$user->id)));
 			echo "<br>\n";
 	}
+	?>
+	</div>
+	<?php
 }
 
 ?>

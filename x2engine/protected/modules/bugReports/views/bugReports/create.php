@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -37,10 +37,10 @@
 include("protected/modules/bugReports/bugReportsConfig.php");
 
 $this->actionMenu = $this->formatMenu(array(
-	array('label'=>Yii::t('module','{X} List',array('{X}'=>$moduleConfig['recordName'])), 'url'=>array('index')),
-	array('label'=>Yii::t('module','Create {X}',array('{X}'=>$moduleConfig['recordName']))),
+	array('label'=>Yii::t('module','{X} List',array('{X}'=>Modules::itemDisplayName())), 'url'=>array('index')),
+	array('label'=>Yii::t('module','Create {X}',array('{X}'=>Modules::itemDisplayName()))),
 ));
 ?>
-<div class="page-title"><h2><?php echo Yii::t('module','Create New {X}',array('{X}'=>$moduleConfig['recordName'])); ?></h2></div>
+<div class="page-title"><h2><?php echo Yii::t('module','Create New {X}',array('{X}'=>Modules::itemDisplayName())); ?></h2></div>
 
 <?php echo $this->renderPartial('application.components.views._form', array('model'=>$model,'users'=>$users,'modelName'=>'bugReports')); ?>

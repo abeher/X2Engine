@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -38,15 +38,15 @@ return array (
 // Opportunities Attributes
 'ID'=>'ID',
 'Assigned To'=>'Назначено',
-'Name'=>'имя',
-'Account'=>'счет',
-'Contacts'=>'связи',
-'Quote Amount'=>'Цитата сумма',
-'Sales Stage'=>'Продажи этап',
+'Name'=>'Имя',
+'Account'=>'Организация',
+'Contacts'=>'Контакты',
+'Quote Amount'=>'Бюджет',
+'Sales Stage'=>'Этап продажи',
 'Expected Close Date'=>'Ожидаемая Дата закрытия',
-'Probability'=>'вероятность',
-'Lead Source'=>'источник',
-'Description'=>'описание',
+'Probability'=>'Вероятность',
+'Lead Source'=>'Источник',
+'Description'=>'Описание',
 'Create Date'=>'Дата создания',
 'Last Updated'=>'Последнее обновление',
 'Updated By'=>'Обновил',
@@ -54,10 +54,10 @@ return array (
 'Working'=>'рабочий',
 'Won'=>'выигранный',
 'Lost'=>'потерянный',
-'Website'=>'веб-сайт',
-'Cold Call'=>'Холодная вызова',
+'Website'=>'WWW',
+'Cold Call'=>'Холодный звонок',
 'E-Mail'=>'E-Mail',
-'Store'=>'магазин',
+'Store'=>'Магазин',
 'Other Info'=>'Другая информация',
 'Basic Information'=>'Основная информация',
 'None'=>'никто',
@@ -67,39 +67,44 @@ return array (
 'Last Activity'=>'Последняя активность',
 
 // Opportunities Actions
-'Opportunities List'=>'Продажи Список',
+'Opportunities List'=>'Список продаж',
 'Create Opportunity'=>'Создать продажу',
 'View Opportunity'=>'Посмотреть продажу',
 'Update Opportunity'=>'Обновление продажу',
 'Delete Opportunity'=>'Удалить продажу',
-'Manage Opportunities'=>'Управление продаж',
-'Create'=>'создавать',
-'View'=>'смотреть',
-'Update'=>'обновление',
-'Update Opportunity:'=>'Обновление продажу:',
-'Edit Opportunity'=>'Изменить возможностей',
+'Manage Opportunities'=>'Управление продажей',
+'Create'=>'Создать',
+'View'=>'Просмотр',
+'Update'=>'Обновить',
+'Update Opportunity:'=>'Обновить продажу:',
+'Edit Opportunity'=>'Изменить продажу',
 
 'Add A User'=>'Добавить пользователя',
 'Add A Contact'=>'Добавить контакт',
 'Remove A User'=>'Удаление пользователя',
 'Remove A Contact'=>'Удалить Контакт',
 'Share Opportunity'=>'Доля продажи',
-'Delete'=>'удалять',
-'Add'=>'добавлять',
-'Remove'=>'удаление',
+'Delete'=>'Удалить',
+'Add'=>'Добавить',
+'Remove'=>'Удаление',
 
 // Opportunities Titles
-'Opportunities'=>'реализация',
-'Opportunity'=>'продажа',
+'Opportunities'=>'Продажи',
+'Opportunity'=>'Продажа',
 'Opportunity:'=>'Продажа:',
-'Update Opportunity: {name}'=>'Обновление Продажа: {name}',
+'Update Opportunity: {name}'=>'Обновление продажи: {name}',
 
 // Misc Text
-'Please click any new users you wish to add.'=>'Пожалуйста, нажмите на любую новых пользователей вы хотите добавить.',
-'Please select the contacts you wish to add.'=>'Пожалуйста, нажмите на любую новых пользователей вы хотите добавить.',
+'Please click any new users you wish to add.'=>'Пожалуйста, выберите пользователей, которых вы хотите добавить.',
+'Please select the contacts you wish to add.'=>'Пожалуйста, выберите контаты, которые вы хотите добавить.',
 'Please select the users you wish to remove.'=>'Пожалуйста, выберите пользователей, которых вы хотите удалить.',
 'Please select the contacts you wish to remove.'=>'Пожалуйста, выберите контакты, которые вы хотите удалить.',
 'Opportunity Record Details'=>'Подробнее Продажа Запись',
-'Create a new Contact associated with this Opportunity.'=>'Создание нового контакта, связанных с этим возможностей.',
-'Create a new Account associated with this Opportunity.'=>'Создать новую учетную запись, связанные с этим возможности.',
+'Create a new Contact associated with this Opportunity.'=>'Создание нового контакта, связанных с этой продажей.',
+'Create a new Account associated with this Opportunity.'=>'Создать новую учетную запись, связанную с этой продажей.',
+'Create a new Opportunity associated with this Opportunity.'=>'Создайте новые возможности, связанные с этой возможности.',
+'Opportunities Stage'=>'Возможности Стадия',
+'Relationships for Contact: '=>'Отношения для связи:',
+'Import Opportunities'=>'Импорт Возможности',
+'Export Opportunities'=>'Экспортные возможности',
 );

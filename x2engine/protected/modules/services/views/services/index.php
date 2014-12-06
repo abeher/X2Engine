@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -34,15 +34,10 @@
  * "Powered by X2Engine".
  *****************************************************************************************/
 
-$menuItems = array(
-	array('label'=>Yii::t('services','All Cases')),
-	array('label'=>Yii::t('services','Create Case'), 'url'=>array('create')),
-	array('label'=>Yii::t('services','Create Web Form'), 'url'=>array('createWebForm')),
-    array('label'=>Yii::t('services','Case Report'), 'url'=>array('servicesReport')),
-
+$menuOptions = array(
+    'index', 'create', 'createWebForm', 'import', 'export',
 );
-
-$this->actionMenu = $this->formatMenu($menuItems);
+$this->insertMenu($menuOptions);
 
 Yii::app()->clientScript->registerScript('search', "
 $('.search-button').click(function(){
@@ -75,20 +70,30 @@ if($field) {
 	}
 }
 
-$this->widget('application.components.X2GridView', array(
+$this->widget('X2GridView', array(
 	'id'=>'services-grid',
 	'title'=>Yii::t('services','Service Cases'),
-	'buttons'=>array('advancedSearch','clearFilters','columnSelector'),
-	'template'=> '<div class="page-title icon services">{title}{buttons}{filterHint}{summary}</div>{items}{pager}',
+	'buttons'=>array('advancedSearch','clearFilters','columnSelector','autoResize'),
+	'template'=> 
+        '<div id="x2-gridview-top-bar-outer" class="x2-gridview-fixed-top-bar-outer">'.
+        '<div id="x2-gridview-top-bar-inner" class="x2-gridview-fixed-top-bar-inner">'.
+        '<div id="x2-gridview-page-title" '.
+         'class="page-title icon services x2-gridview-fixed-title">'.
+        '{title}{buttons}{filterHint}'.
+        
+        '{summary}{topPager}{items}{pager}',
+    'fixedHeader'=>true,
 	'dataProvider'=>$model->searchWithStatusFilter(),
 	// 'enableSorting'=>false,
 	// 'model'=>$model,
 	'filter'=>$model,
+	'pager'=>array('class'=>'CLinkPager','maxButtonCount'=>10),
 	// 'columns'=>$columns,
 	'modelName'=>'Services',
 	'viewName'=>'services',
 	// 'columnSelectorId'=>'contacts-column-selector',
 	'defaultGvSettings'=>array(
+        'gvCheckbox' => 30,
 		'id' => 43,
 		'impact' => 80,
 		'status' => 233,
@@ -108,9 +113,19 @@ $this->widget('application.components.X2GridView', array(
 		),
 		'account'=>array(
 			'name'=>'account',
-			'header'=>Yii::t('accounts', 'Account'),
+			'header'=>Yii::t('contacts', 'Account'),
 			'type'=>'raw',
 			'value'=>'$data->contactIdModel? (isset($data->contactIdModel->companyModel) ? $data->contactIdModel->companyModel->getLink() : "") : ""'
+		),
+        'status'=>array(
+			'name'=>'status',
+			'type'=>'raw',
+			'value'=>'Yii::t("services",$data->renderAttribute("status"))',
+		),
+        'impact'=>array(
+			'name'=>'impact',
+			'type'=>'raw',
+			'value'=>'Yii::t("services",$data->renderAttribute("impact"))',
 		),
 /*		'name'=>array(
 			'name'=>'name',

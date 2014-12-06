@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -35,40 +35,51 @@
  *****************************************************************************************/
 
 return array (
-'Calendar'=>'календарь',
+'Calendar'=>'Календарь',
 'Calendars'=>'Календари',
 // // 
-'User Calendars'=>'Google Календарь',
-'Group Calendars'=>'Группа Календари',
-'Google Calendars'=>'Пользователь Календари',
+'User Calendars'=>'Календари пользователей',
+'Group Calendars'=>'Календари групп',
+'Google Calendars'=>'Google Календари',
+'Sync My Actions To Google Calendar'=>'Синхронизировать с Google',
+'Don\'t Sync My Actions To Google Calendar'=>'Отменить привязку к моему календарю',
+'Google Calendar Name'=>'Пользователь календаря',
 'Filter'=>'Фильтр',
-'My Calendar Permissions'=>'Мои разрешения календарь',
-'User Calendar Permissions'=>'Разрешения Пользователь календарь',
+'My Calendar Permissions'=>'Доступ к моему календарю',
+'User Calendar Permissions'=>'Доступ к календарям пользователей',
 'Google Event'=>'Google события',
-'Contacts'=>'связи',
-'Accounts'=>'счета',
-'Opportunities'=>'возможности',
+'Contacts'=>'Контакты',
+'Accounts'=>'Компании',
+'Opportunities'=>'Возможности',
 'Products'=>'Продукты',
-'Media'=>'средства массовой информации',
+'Media'=>'Медиафайлы',
 'View Permission'=>'Просмотр разрешений',
 'These users can view your calendar.'=>'Эти пользователи могут просматривать ваш календарь.',
 'Edit Permission'=>'Изменить разрешение',
 'These users can edit your calendar.'=>'Эти пользователи могут редактировать свои календаря.',
+
 // // 
-'Completed'=>'завершенный',
+
+
+'Completed'=>'Завершенный',
 'Quotes'=>'кавычки',
 'Email'=>'E-mail',
-'Attachment'=>'привязанность',
+'Attachment'=>'Вложение',
+'Quick Note'=>'Быстрая заметка',
+
+
 // // 
-'List'=>'список',
-'Delete'=>'удалять',
-'Create'=>'создавать',
+'List'=>'Список',
+'Delete'=>'Удалить',
+'Create'=>'Создать',
+
+
 // // button text
-'Update'=>'обновление',
-'today'=>'сегодня',
-'month'=>'месяц',
-'week'=>'неделя',
-'day'=>'день',
+'Update'=>'Обновить',
+'today'=>'Сегодня',
+'month'=>'Месяц',
+'week'=>'Неделя',
+'day'=>'День',
 // // 
 // // month names
 'January'=>'январь',
@@ -115,4 +126,28 @@ return array (
 'Thu'=>'ЧТВ',
 'Fri'=>'ПТН',
 'Sat'=>'СБТ',
+
+
+'Create Shared Calendar'=>'Создать общий календарь',
+'Don\'t link to Google Calendar'=>'T Don \ &#39;ссылка на Google Calendar',
+'Link to Google Calendar'=>'Ссылка на Google Calendar',
+'Shared Calendar:'=>'Общий календарь:',
+'These users can view {fullname}\'s calendar.'=>'Эти пользователи могут просматривать {fullname} \ &#39;ы календаря.',
+'These users can edit {fullname}\'s calendar.'=>'Эти пользователи могут редактировать {fullname} \ &#39;ы календаря.',
+'Back To User List'=>'Вернуться к Список пользователей',
+'Your actions are being synced to the Google Calendar "{calendarName}".'=>'Ваши действия синхронизируются с Google Calendar &quot; {calendarName} &quot;.',
+'Google Integration is not configured on this server.'=>'Интеграция с Google не настроен на этом сервере.',
+'Once'=>'Один раз',
+'Yearly'=>'Ежегодный',
+'Google Calendar'=>'Календарь Google',
+'Google Feed'=>'Поток Google',
+'Show Actions associated with Contacts'=>'Показать действия, связанные с контактами',
+'Show Actions associated with Accounts'=>'Показать Действия связанные с учетными записями',
+'Show Actions associated with Opportunities'=>'Показать действия, связанные с возможностями',
+'Show Actions associated with Quotes'=>'Показать действия, связанные с кавычками',
+'Show Actions associated with Products'=>'Показать Действия, связанные с продуктами',
+'Show Actions associated with Media'=>'Показать действия, связанные со средствами массовой информации',
+'Show Completed Actions'=>'Показать завершенных действий',
+'Show Emails'=>'Показать Письма',
+'Show Attachments'=>'Показать Вложения',
 );

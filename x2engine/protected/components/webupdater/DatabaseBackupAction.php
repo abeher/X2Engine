@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -40,17 +40,43 @@ Yii::import('application.components.webupdater.*');
  * Back up the database and existing files to be deleted or replaced in an
  * update or upgrade.
  * 
- * @package X2CRM.components.webupdater
+ * @package application.components.webupdater
  * @author Demitri Morgan <demitri@x2engine.com>
  */
-class DatabaseBackupAction extends CAction {
+class DatabaseBackupAction extends WebUpdaterAction {
 
-	public function run(){
-		set_error_handler('ResponseBehavior::respondWithError');
-		set_exception_handler('ResponseBehavior::respondWithException');
-		if($this->controller->makeDatabaseBackup())
-			$this->controller->webRespond(Yii::t('admin', 'Backup saved to').' protected/data/'.UpdaterBehavior::BAKFILE);
-	}
+    public function behaviors() {
+        return array(
+			'UpdaterBehavior' => array(
+				'class' => 'application.components.UpdaterBehavior',
+                'errorCode' => 200, // Simple UI-based error reporting
+                'handleErrors' => true,
+                'handleExceptions' => true
+			)
+		);
+    }
+
+    public function run($download = false){
+        if(!$download){
+            if($this->controller->makeDatabaseBackup())
+                $this->respond(Yii::t('admin', 'Backup saved to').' protected/data/'.UpdaterBehavior::BAKFILE);
+        } else {
+            $backup = realpath($this->dbBackupPath);
+            if((bool) $backup){
+                header("Cache-Control: public");
+                header("Content-Description: File Transfer");
+                header("Content-Disposition: attachment; filename=".UpdaterBehavior::BAKFILE);
+                header("Content-type: application/octet");
+                header("Content-Transfer-Encoding: binary");
+                readfile($backup);
+            }else{
+                if(!empty($_SERVER['HTTP_REFERER']))
+                    header("Location: {$_SERVER['HTTP_REFERER']}");
+                else
+                    $this->controller->redirect('index');
+            }
+        }
+    }
 
 }
 

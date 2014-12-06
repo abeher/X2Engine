@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -35,21 +35,18 @@
  *****************************************************************************************/
 
 $this->pageTitle = Yii::t('marketing','Create Campaign');
-$this->actionMenu = $this->formatMenu(array(
-	array('label'=>Yii::t('marketing','All Campaigns'), 'url'=>array('index')),
-	array('label'=>Yii::t('marketing','Create Campaign')),
-	array('label'=>Yii::t('contacts','Contact Lists'), 'url'=>array('/contacts/lists')),
-	array('label'=>Yii::t('marketing','Newsletters'), 'url'=>array('weblist/index')),
-	array('label'=>Yii::t('marketing','Web Lead Form'), 'url'=>array('webleadForm')),
-	array('label'=>Yii::t('marketing','Web Tracker'), 'url'=>array('webTracker')),
-	array('label'=>Yii::t('app','X2Flow'),'url'=>array('/studio/flowIndex'),'visible'=>(Yii::app()->params->edition==='pro')),
-));
+$menuOptions = array(
+    'all', 'create', 'lists', 'newsletters', 'weblead', 'webtracker', 'x2flow',
+);
+
+$this->insertMenu($menuOptions);
 
 $form = $this->beginWidget('CActiveForm', array(
 	'id'=>'campaign-form',
 	'enableAjaxValidation'=>false
 ));
 ?>
+
 <div class="page-title icon marketing">
 	<h2><?php echo Yii::t('marketing','Create Campaign'); ?></h2>
 	<?php echo CHtml::submitButton(Yii::t('module','Create'),array('class'=>'x2-button highlight right')); ?>
@@ -58,3 +55,4 @@ $form = $this->beginWidget('CActiveForm', array(
 $this->renderPartial('_form', array('model'=>$model, 'modelName'=>'Campaign','form'=>$form));
 
 $this->endWidget();
+?>

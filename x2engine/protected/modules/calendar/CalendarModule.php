@@ -1,9 +1,9 @@
 <?php
 
 /**
- * @package X2CRM.modules.calendar 
+ * @package application.modules.calendar 
  */
-class CalendarModule extends CWebModule {
+class CalendarModule extends X2WebModule {
 	public function init() {
 		// this method is called when the module is being created
 		// you may place code here to customize the module or the application

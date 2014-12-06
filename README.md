@@ -1,77 +1,105 @@
-# X2CRM 3.2 #
-7/10/2013
-## Changes ##
-* Enhancements to X2Flow Automation
-  * Improved UI is more intuitive
-  * You can now set time delays to run actions at a later date
-  * New cronjob endpoint for time-based events
-* New multi-account email system
-  * You can now create and manage unlimited SMTP accounts for email integration
-* Advanced Google Drive integration
-  * Upload, view and access your Drive files from within X2CRM
-  * Effortlessly attach files to emails
-  * General improvements to Google integration
-* New charting system on the home page feed lets you visualize new leads and user activity
-* Numerous bug fixes
+# X2Engine 5.0 #
+12/5/2014
 
-## Release Notes ##
-### 3.0 ###
-* The automation designer, while largely complete, is still in active 
-  development, and thus has been deemed a "beta" feature.
-* Quotes created before updating to 3.0 may display incorrect totals in email,
-  print and inline views. This can be easily corrected by opening the update 
-  view of the quote and saving it (even without any changes). This is due to 
-  how, in previous versions, totals weren't stored in quote records, but rather 
-  were re-calculated on-the-fly whereverthere they were displayed. This required 
-  writing and maintaining three separate versions of the code that calculated
-  totals: the default quotes update page (JavaScript), the inline quotes widget
-  in the contact view (JavaScript), and in the model where the line items table 
-  was generated (PHP). In order to improve the maintainability and reliability 
-  of the line items code (by reducing the number of places it could fail), and 
-  in keeping with the DRY (don't repeat yourself) principle, all line item 
-  calculations are now performed via client-side JavaScript in the 
-  "\_lineItems" view of the quotes module. The arithmetic, however, is only run 
-  when a quote is created or updated. Thus, to correct the total displayed on 
-  a quote, open the quote's update view so that the subtotal can be 
-  recalculated, and then save it.
+New in 5.0 (see [CHANGELOG](CHANGELOG.md) for full history):
 
-### 3.0.1 ###
-* The API has undergone some fundamental changes in its response format:
-  * It always responds in JSON-encoded objects for all actions, with the
-    exception of checkPermissions, which responds with code 200, mimetype
-    "text/plain" and content "true" or "false" (as it always has)
-  * With the exception of the "create" and "update" actions, all actions that
-    return JSON-encoded objects shall remain unchanged in terms of the structure
-    of their responses.
-  * The attributes of the model returned in the "update" and "create" methods
-    should be in the "model" property of the response. All references to these
-    actions should thus use the "model" property of the response to get the
-    attributes of the model created/updated instead of treating the entire
-    response object as the model.
-  * API scripts that used actions which previously returned HTML pages or page
-    fragments should now refer to the "message" property of the returned object
-    for the content to be rendered.
-  * In the APIModel class, there should now be a new "modelErrors" property,
-    which stores the validation errors for each attribute of the object, returned by
-    [CActiveRecord.getErrors()](http://www.yiiframework.com/doc/api/1.1/CModel#errors-detail)
-    on the server. The source of this data is the "modelErrors" property of the
-    response from the create and update actions.
+* **Highlights**
+  * New in _Platinum Edition_
+    * Advanced Security Tools
+      * Ban, whitelist, or blacklist IP addresses
+      * View a log of user logins and failed login attempts
+      * Lock out IPs or users after a certain number of failed login attempts
+  * New in _Professional Edition_
+    * Integrated Email Client
+      * Manage inbound and outbound emails through private and/or shared email inboxes
+      * Automatically or manually Log emails to the action histories of associated records
+      * View contact information via hovering tooltip
+      * Create contacts and actions on the fly from email address links
+    * Reports 2.0
+      * New summation and rows & columns reports
+      * Drill down into summation report groups
+      * Improved report filtering, sorting, and column selection
+      * Create reports on almost any record type
+      * Report on attributes of related records
+    * Charts 2.0
+      * Customizable charting dashboard
+      * Generate gauge, bar, line, pie, and time series charts built from data in saved reports
+    * X2Packager
+      * Export and package modules, custom fields, flows, themes, and more
+      * Import packages to instantly inherit a pre-built X2Engine environment
+    * Record merge tool
+      * Interactively mass merge contact or account records from the grid view or duplicate checker
+    * X2Graph
+      * Explore and edit record relationships through an interactive relationships graph
+      * Visualize relationships across all records simultaneously
+      * Dynamically add relationship graph nodes and edges
+  * New in _Open Source Edition_
+    * User Interface Revamp
+      * Vastly improved app themability
+        * Prepackaged dark and light themes
+        * Simplified theme color selection
+        * Themable login screen
+        * Login animation
+    * X2Touch 2.0
+      * Refreshed user interface
+    * Inline Editing
+      * Edit record fields from the record view page
+    * Module Deep Rename
+      * All references to the module are now fully replaced with your custom name, including in actionable events, dropdown menus, and relationships.
+    * Importer 3.0
+      * Automatic field detection
+      * Configurable import batch size
+      * Greatly reduced import time
+    * Improved campaign click tracking
+      * Automatically generate email redirect links
+      * Track email clicks with the campaign chart and campaign progress grids
+    * Record aliasing
+      * Add multiple email addresses, phone numbers, and social media handles to Contact records
+      * Click-to-call/chat Skype aliases
+    * Twitter integration
+      * New contact Twitter feed widget allows you to view the Twitter feed for any of the contact's Twitter aliases
+    * Calendar event copying
+      * Duplicate a Calendar event from the event tooltip
+    * Duplicate checker now detects both contact and account duplicates
+    * Convert leads to opportunities or contacts
+* Tracked Bug Fixes:
+  * [1553](http://x2software.com/index.php/bugReports/1553): "Do Not Email Page" does not save  
+  * [1554](http://x2software.com/index.php/bugReports/1554): explode() expects parameter 2 to be string, array given  
+  * [1555](http://x2software.com/index.php/bugReports/1555): Invalid argument supplied for foreach()  
+  * [1562](http://x2software.com/index.php/bugReports/1562): The system is unable to find the requested action "www.google.com".  
+  * [1565](http://x2software.com/index.php/bugReports/1565): CDbCommand failed to execute the SQL statement: SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '{"contacts\  
+  * [1567](http://x2software.com/index.php/bugReports/1567): Class: AnonContact not found.  
+  * [1572](http://x2software.com/index.php/bugReports/1572): Unable to resolve the request "actions/viewAll/showActions/incomplete".  
+  * [1574](http://x2software.com/index.php/bugReports/1574): Trying to get property of non-object  
+  * [1578](http://x2software.com/index.php/bugReports/1578): Undefined variable: users  
+  * [1584](http://x2software.com/index.php/bugReports/1584): Undefined variable: newFields  
+  * [1589](http://x2software.com/index.php/bugReports/1589): CDbCommand failed to execute the SQL statement: SQLSTATE[23000]: Integrity constraint violation: 1062 Duplicate entry '3' for key 'PRIMARY'  
+  * [1596](http://x2software.com/index.php/bugReports/1596): Undefined variable: fmtNumber  
+  * [1621](http://x2software.com/index.php/bugReports/1621): Non-static method Tags::normalizeTags() should not be called statically, assuming $this from incompatible context  
+  * [1648](http://x2software.com/index.php/bugReports/1648): Invalid address:   
+  * [1659](http://x2software.com/index.php/bugReports/1659): User Report  
+  * [1660](http://x2software.com/index.php/bugReports/1660): Undefined index: first  
+  * [1688](http://x2software.com/index.php/bugReports/1688): Undefined index: last  
+  * [1697](http://x2software.com/index.php/bugReports/1697): htmlspecialchars(): Invalid multibyte sequence in argument  
+  * [1706](http://x2software.com/index.php/bugReports/1706): Undefined variable: email  
+  * [1808](http://x2software.com/index.php/bugReports/1808): Undefined index: fingerprint  
+  * [1849](http://x2software.com/index.php/bugReports/1849): Undefined variable: l  
+  * [1856](http://x2software.com/index.php/bugReports/1856): Trying to get property of non-object  
+  * [1857](http://x2software.com/index.php/bugReports/1857): Undefined variable: imporMap  
+  * [1876](http://x2software.com/index.php/bugReports/1876): ContactsNameBehavior and its behaviors do not have a method or closure named "setName". 
 
-### 3.1 ###
-* In the deletion action of the API, the primary key can now be specified in
-  either the GET or POST parameters. This way, the "DELETE" request type can be
-  used for deletion, and not just the POST type of request.
+
 
 
 # Introduction #
-Welcome to  X2CRM!
-X2CRM is a next-generation,  open source social sales application for small and 
-medium sized businesses.  X2CRM  was designed to  streamline  contact and sales 
+Welcome to  X2Engine!
+X2Engine is a next-generation,  open source social sales application for small and 
+medium sized businesses.  X2Engine  was designed to  streamline  contact and sales 
 actions into  one  compact blog-style user interface.  Add to this contact  and
 colleague social feeds  and  sales  representatives  become  smarter  and  more
 effective resulting in increased sales and higher customer satisfaction.
 
-X2CRM is  unique  in the  crowded  Customer Relationship Management (CRM) field 
+X2Engine is  unique  in the  crowded  Customer Relationship Management (CRM) field 
 with its compact blog-style user interface. Interactive and collaborative tools 
 which  users are already  familiar  with from  social networking  sites such as  
 tagging,  pictures,  docs,  web pages,  group chat, discussions boards and rich 
@@ -92,15 +120,17 @@ value to their customer interactions resulting in higher close rates.
   which the user of the connection has full permissions rights (i.e. SELECT, 
   DROP, CREATE and UPDATE)
 * PHP 5.3 or later
-* PHP must be run as the same system user that owns the directory where X2CRM 
+* PHP must be run as the same system user that owns the directory where X2Engine 
   will be installed
 * The server must have internet access for automatic updates
 * The server must be publicly accessible for web lead capture, service requests 
   and email tracking to work
 
-X2CRM comes with a requirements check script, "requirements.php", which you can 
-upload by itself to your server. Simply visit the script in your browser to see 
-if your server will run X2CRM.
+X2Engine comes with a requirements check script, 
+[requirements.php](https://x2planet.com/installs/requirements.php) (also can be 
+found in x2engine/protected/components/views), which can be uploaded by itself 
+to your server. Simply visit the script in your browser to see if your server 
+will run X2Engine.
 
 # Installation #
 1. Upload X2Engine to the web directory of your choice. Be sure to set your FTP 
@@ -109,27 +139,18 @@ if your server will run X2CRM.
 3. Browse to the x2engine folder and you will be redirected to the installer.
 4. Fill out the form, click install, and that's it!
 5. You are now ready to use X2Engine.  If you chose to install Dummy Data,  you 
-   will have about 1100 contacts, 125 actions, and 30 accounts to play with.
-
-
-# Creating the Action Reminder Cronjob #
-As we don't have access to your server, you'll need to create a cronjob to make 
-the server send out action reminders. You can either do this on your own server 
-or use a free service on the internet to run it for you.  All you need to do is 
-have the cronjob access the url once a day to send out action reminders:
-
-    http://www.[yourserver].com/[path to x2engine]/actions/sendReminder
+   will have numerous sample records (i.e. about 1100 contacts) to play with.
 
 # Languages #
 Most of the  included language packs were produced by  copy/paste  from  Google 
-Translate and copy/paste.  If you have any  corrections,  suggestions or custom 
+Translate.  If you have any  corrections,  suggestions or custom 
 language packs, please feel free to post them on www.x2community.com
 
 We greatly appreciate your input for internationalization!
 
 
 # Tips and Tricks #
-X2CRM  is designed to be intuitive,  but we have included a few tips and tricks 
+X2Engine  is designed to be intuitive,  but we have included a few tips and tricks 
 to get you started!
 * To change the background color,  menu color,  language  or any other setting, 
   click on Profile in the top right and select 'Settings'.
@@ -149,4 +170,10 @@ to get you started!
   .htaccess file (the application will still work without it.)
 - eAccelerator may cause PHP errors on various pages  ("Invalid Opcode").  This 
   is due to a bug in eAccelerator, and can be fixed by disabling or updating
-  eAccelerator.
+  eAccelerator. Furthermore, eAccelerator causes PHP to fail when using 
+  anonymous functions. In general, it is recommended that you disable 
+  eAccelerator altogether.
+- Version 2 of the API will not work in a web directory that is password-protected.
+  This is because there can only be one "Auth" header in HTTP requests, and the web
+  server would in this case require an Auth header distinct from the one required 
+  to authenticate with the API.

@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -34,22 +34,56 @@
  * "Powered by X2Engine".
  *****************************************************************************************/
 
-$menuItems = array(
-	array('label'=>Yii::t('actions','Action List')),
-	array('label'=>Yii::t('actions','Create'),'url'=>array('create')),
+Yii::app()->clientScript->registerResponsiveCss('responsiveActionsCss',"
+
+@media (max-width: 759px) {
+
+    #action-frame {
+        height: 366px !important;
+    }
+
+    #action-view-pane {
+        width: 100% !important;
+    }
+
+    #action-list > .items {
+        margin-right: 0 !important;
+    }
+
+}
+
+");
+
+$menuOptions = array(
+    'list', 'create', 'import', 'export',
 );
-$this->actionMenu = $this->formatMenu($menuItems);
+$this->insertMenu($menuOptions, $model);
 
 ?>
-<div class="page-title icon actions" id="page-header">
-    <h2><?php echo Yii::t('actions','Actions');?></h2>
-
-    <div class="title-bar" style="padding-left:0px;">
-        <?php echo CHtml::link(Yii::t('app','Back to Top'),'#',array('class'=>'x2-button right','id'=>'scroll-top-button')); ?>
-        <?php echo CHtml::link(Yii::t('app','Filters'),'#',array('class'=>'controls-button x2-button right','id'=>'advanced-controls-toggle')); ?>
-        <?php echo CHtml::link(Yii::t('actions','New Action'),array('/actions/create'),array('class'=>'controls-button x2-button right','id'=>'create-button')); ?>
-        <?php echo CHtml::link(Yii::t('actions','Switch to Grid'),array('index','toggleView'=>1),array('class'=>'x2-button right')); ?>
-    </div>
+<div class="responsive-page-title page-title icon actions" id="page-header">
+    <h2>
+    <?php echo Yii::t('actions','{module}', array(
+        '{module}' => Modules::displayName(),
+    ));?>
+    </h2>
+    <?php 
+    echo ResponsiveHtml::gripButton ();
+    ?>
+        <div class='responsive-menu-items'>
+        <?php
+        /*
+        disabled until fixed header is added
+        echo CHtml::link(Yii::t('actions','Back to Top'),'#',array('class'=>'x2-button right','id'=>'scroll-top-button')); */
+        echo CHtml::link(Yii::t('actions','Filters'),'#',array('class'=>'controls-button x2-button right','id'=>'advanced-controls-toggle')); 
+        echo CHtml::link(
+            Yii::t('actions','New {module}', array(
+                '{module}' => Modules::displayName(false),
+            )),
+            array('/actions/actions/create'),
+            array('class'=>'controls-button x2-button right','id'=>'create-button')
+        ); 
+        echo CHtml::link(Yii::t('actions','Switch to Grid'),array('index','toggleView'=>1),array('class'=>'x2-button right')); ?>
+        </div>
 </div>
 <?php echo $this->renderPartial('_advancedControls',$params,true); ?>
 <?php
@@ -84,10 +118,11 @@ $this->widget('zii.widgets.CListView', array(
 <script>
     var clickedFlag=false;
     var lastClass="";
+    /* disabled until fixed header is added
     $(document).on('click','#scroll-top-button',function(e){
         e.preventDefault();
         $(".items").animate({ scrollTop: 0 }, "slow");
-    });
+    });*/
     $(document).on('click','#advanced-controls-toggle',function(e){
         e.preventDefault();
         if($('#advanced-controls').is(':hidden')){
@@ -99,7 +134,13 @@ $this->widget('zii.widgets.CListView', array(
     $(document).on('ready',function(){
         $('#advanced-controls').after('<div class="form" id="action-view-pane" style="float:right;width:0px;display:none;padding:0px;"></div>');
     });
-    $(document).on('click','.view',function(e){
+    <?php 
+	if (IS_IPAD) { 
+		echo "$(document).on('vclick', '.view', function (e) {" ;
+	} else {
+		echo "$(document).on('click','.view',function(e){";
+	}
+	?>
         if(!$(e.target).is('a')){
             e.preventDefault();
             if(clickedFlag){
@@ -120,27 +161,47 @@ $this->widget('zii.widgets.CListView', array(
                     $('#action-view-pane').removeClass(lastClass);
                     $('#action-view-pane').addClass($(this).attr('id'));
                     lastClass=$(this).attr('id');
+                    x2.actionFrames.setLastClass (lastClass);
                     var pieces=lastClass.split('-');
+                    x2.actionFrames.setLastClass (lastClass);
                     var id=pieces[1];
-                    $('#action-view-pane').html('<iframe style="width:99%;height:800px" id="action-frame" src="actions/viewAction?id='+id+'" onload="createControls('+id+', false);"></iframe>');
+                   	$('#action-view-pane').html(
+                        '<iframe id="action-frame" src="<?php 
+                            echo Yii::app()->controller->createAbsoluteUrl(
+                            '/actions/actions/viewAction'); ?>?id=' + id +
+                            '" onload="x2.actionFrames.createControls(' + id + ', false);">' +
+                        '</iframe>');
                 }
             }else{
                 $(this).addClass('important');
-                $('.items').css('margin-right','20px').animate({'margin-right': '60%'});
+				if (x2.isAndroid)
+                	$('.items').css('margin-right','20px').animate({'margin-right': '5%'});
+				else
+                	$('.items').css('margin-right','20px').animate({'margin-right': '60%'});
                 $('#action-view-pane').addClass($(this).attr('id'));
                 lastClass=$(this).attr('id');
                 var pieces=lastClass.split('-');
+                x2.actionFrames.setLastClass (lastClass);
                 var id=pieces[1];
                 $('#action-view-pane').show();
-                $('#action-view-pane').animate({width: '59%'});;
-                clickedFlag=!clickedFlag;
-                $('#action-view-pane').html('<iframe style="width:99%;height:800px" id="action-frame" src="actions/viewAction?id='+id+'" onload="createControls('+id+', false);"></iframe>');
+                $('#action-view-pane').animate({width: '59%'});
+                clickedFlag = !clickedFlag;
+                $('#action-view-pane').html(
+                    '<iframe id="action-frame" src="<?php 
+                        echo Yii::app()->controller->createAbsoluteUrl(
+                        '/actions/actions/viewAction'); ?>?id=' + id +
+                        '" onload="x2.actionFrames.createControls(' + id + ', false);">' +
+                    '</iframe>');
             }
         }
     });
 
 </script>
 <style>
+	#action-frame {
+		width:99%;
+		height:800px;
+	}
     #action-list .items{
         clear:none;
         max-height:800px;

@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -34,49 +34,114 @@
  * "Powered by X2Engine".
  *****************************************************************************************/
 
-$model = new Contacts;
-$attributeLabels = $model->attributeLabels();
+
+Yii::app()->clientScript->registerCss ('quickCreateCss', "
+    #quick-contact-form .quick-contact-narrow {
+        color: #aaa;
+        width: 68px;
+        margin-right: 3px;
+    }
+    #quick-contact-form .quick-contact-wide {
+        color: #aaa;
+        width: 150px;
+        margin-right: 3px;
+    }
+    .quick-create-feedback {
+        margin-top: 17px;
+    }
+    #quick-contact-form label {
+        color: #aaa;
+        float: left;
+        margin-top: 3px;
+        margin-right: 3px;
+    }
+");
+
+// default fields
+$formFields = array (
+    'firstName' => X2Model::model('Contacts')->getAttributeLabel('firstName'),
+    'lastName' => X2Model::model('Contacts')->getAttributeLabel('lastName'),
+    'phone' => X2Model::model('Contacts')->getAttributeLabel('phone'),
+    'email' => X2Model::model('Contacts')->getAttributeLabel('email')
+);
+
+// get required fields not in default set
+foreach ($model->getFields () as $field) {
+    if ($field->required && 
+        !in_array ($field->fieldName, 
+            array ('firstName', 'lastName', 'phone', 'email', 'visibility'))) {
+        $formFields[$field->fieldName] = 
+            X2Model::model('Contacts')->getAttributeLabel($field->fieldName);
+    }
+}
+
+// set placeholder text
+$model->setAttributes ($formFields, false);
 
 $form = $this->beginWidget('CActiveForm', array(
 	'id'=>'quick-contact-form',
-	'action'=>'',
 	'enableAjaxValidation'=>false,
 	'method'=>'POST',
 ));
 
-$model->firstName = X2Model::model('Contacts')->getAttributeLabel('firstName');
-$model->lastName = X2Model::model('Contacts')->getAttributeLabel('lastName');
-$model->phone = X2Model::model('Contacts')->getAttributeLabel('phone');
-$model->email = X2Model::model('Contacts')->getAttributeLabel('email');
-
 ?>
+
 <div class="form thin">
-	<div class="row inlineLabel">
-		<?php echo $form->textField($model,'firstName',array('maxlength'=>40,'tabindex'=>100,'style'=>'color:#aaa;width:68px;','title'=>$model->getAttributeLabel('firstName'))); ?>
-		<?php echo $form->error($model,'firstName'); ?>
-
-		<?php echo $form->textField($model,'lastName',array('maxlength'=>40,'tabindex'=>101,'style'=>'color:#aaa;width:68px;','title'=>$model->getAttributeLabel('lastName'))); ?>
-		<?php echo $form->error($model,'lastName'); ?>
-
-		<?php echo $form->textField($model,'phone',array('maxlength'=>40,'tabindex'=>102,'style'=>'color:#aaa;width:150px;','title'=>$model->getAttributeLabel('phone'))); ?>
-		<?php echo $form->error($model,'phone'); ?>
-
-		<?php echo $form->textField($model,'email',array('maxlength'=>100,'tabindex'=>103,'style'=>'color:#aaa;width:150px;','title'=>$model->getAttributeLabel('email'))); ?>
-		<?php echo $form->error($model,'email'); ?>
+	<div id='quick-contact-form-contents-container' class="row inlineLabel">
+        <?php $this->renderContactFields ($model); ?>
 	</div>
 </div>
 <?php
+Yii::app()->clientScript->registerScript('blur-datepickers', '
+    $("#quick-contact-form").find("input.hasDatepicker").val("").blur();
+');
+
 echo CHtml::ajaxSubmitButton(
 	Yii::t('app','Create'),
-	array('/contacts/quickContact'),
+	array('/contacts/contacts/quickContact'),
 	array('success'=>"function(response) {
-			if(response!='') {
-				alert('".Yii::t('app','Contact Saved')."');
-				$('#quick-contact-form').html(response);
-			}
+
+            // clear errors
+            var quickContactForm = $('#quick-contact-form');
+            $(quickContactForm).find ('input').removeClass ('error');
+            $(quickContactForm).find ('input').next ('.error-msg').remove ();
+            $(quickContactForm).find ('.star-rating-control').parent('span').next ('.error-msg').remove ();
+
+			if(response === '') { // success
+                auxlib.createReqFeedbackBox ({
+                    prevElem: $(quickContactForm).find ('.x2-button'),
+                    message: '".Yii::t('app','Contact Saved')."',
+                    delay: 3000,
+                    classes: ['quick-create-feedback']
+                });
+
+                var textFields = $(quickContactForm).find ('input[type=\"text\"]');
+                var textFieldsWithoutDatepicker = textFields.not('.hasDatepicker');
+
+                // reset form inputs
+                textFields.val ('');
+                $(quickContactForm).find ('.star-rating-control').rating('select');
+                $(quickContactForm).find ('input[type=\"checkbox\"]').removeAttr('checked');
+
+                // reset placeholder text
+                $(textFieldsWithoutDatepicker).focus ();
+                $(textFields).blur ();
+			} else { // failure, display errors
+                var errors = JSON.parse (response);
+                var selector;
+                for (var i in errors) {
+                    selector = '#quick_create_Contacts_' + i;
+                    $(selector).after ($('<div>', {
+                        'class': 'error-msg',
+                        text: errors[i]
+                    }));
+                    $(selector).addClass ('error');
+                }
+            }
 		}",
 	),
-	array('class'=>'x2-button')
+	array('class'=>'x2-button left')
 );
 $this->endWidget();
 ?>
+

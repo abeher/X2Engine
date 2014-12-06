@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -37,7 +37,7 @@
 /**
  * This is the model class for table "x2_criteria".
  *
- * @package X2CRM.models
+ * @package application.models
  * @property integer $id
  * @property string $modelType
  * @property string $modelField
@@ -67,8 +67,8 @@ class Criteria extends CActiveRecord
 
 	/**
 	 * Validation rules for model attvributes.
-	 * 
-	 * @return array 
+	 *
+	 * @return array
 	 */
 	public function rules()
 	{
@@ -102,13 +102,13 @@ class Criteria extends CActiveRecord
 	public function attributeLabels()
 	{
 		return array(
-			'id' => 'ID',
-			'modelType' => 'Model Type',
-			'modelField' => 'Model Field',
-			'modelValue' => 'Model Value',
-			'comparisonOperator' => 'Comparison Operator',
-			'users' => 'Users',
-			'type' => 'Type',
+			'id' => Yii::t('admin','ID'),
+			'modelType' => Yii::t('admin','Model Type'),
+			'modelField' => Yii::t('admin','Model Field'),
+			'modelValue' => Yii::t('admin','Model Value'),
+			'comparisonOperator' => Yii::t('admin','Comparison Operator'),
+			'users' => Yii::t('admin','Users'),
+			'type' => Yii::t('admin','Type'),
 		);
 	}
 

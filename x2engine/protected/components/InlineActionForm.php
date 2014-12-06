@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -40,7 +40,7 @@
  * Provides a form for creating actions. The form is typically used within the 
  * view of the record with which the resulting action will be associated.
  * 
- * @package X2CRM.components
+ * @package application.components
  */
 class InlineActionForm extends X2Widget {
 	public $associationType;
@@ -67,8 +67,6 @@ class InlineActionForm extends X2Widget {
 				"$('#action-form').ready(gotoActionForm);
 				function gotoActionForm() {
 					$('#action-form').show();
-					//toggleForm('#action-form',400);
-					// $('#action-form #Actions_actionDescription').focus();
 				}
 				",CClientScript::POS_HEAD);
 		}

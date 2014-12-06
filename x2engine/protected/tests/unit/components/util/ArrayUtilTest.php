@@ -1,8 +1,8 @@
 <?php
 
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -39,10 +39,10 @@ Yii::import('application.components.util.*');
 
 /**
  * 
- * @package X2CRM.tests.unit.components.util
+ * @package application.tests.unit.components.util
  * @author Demitri Morgan <demitri@x2engine.com>
  */
-class ArrayUtilTest extends CTestCase {
+class ArrayUtilTest extends X2TestCase {
 
 	public $arrayTemplate = array(
 		'this' => null,
@@ -77,6 +77,29 @@ class ArrayUtilTest extends CTestCase {
 		foreach($keepKeys as $key)
 			$this->assertEquals($this->arrayOld[$key],$normalized[$key],"Array value changed when it shouldn't have!");
 	}
+
+    public function testArraySearchPreg () {
+        $arr = array (
+            'a' => 'one',
+            'b' => 'two',
+        );
+        $matches = ArrayUtil::arraySearchPreg ('o|t', $arr);
+        VERBOSE_MODE && print_r ($matches);
+        $this->assertContains ('a', $matches);
+        $this->assertContains ('b', $matches);
+        $arr = array (
+            'a' => 'one',
+            'b' => 'two',
+            array (
+                'c' =>'three',
+            )
+        );
+        $matches = ArrayUtil::arraySearchPreg ('o|t', $arr);
+        VERBOSE_MODE && print_r ($matches);
+        $this->assertContains ('a', $matches);
+        $this->assertContains ('b', $matches);
+        $this->assertContains ('c', $matches);
+    }
 
 }
 

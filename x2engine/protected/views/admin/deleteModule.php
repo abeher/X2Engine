@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -34,15 +34,21 @@
  * "Powered by X2Engine".
  *****************************************************************************************/
 ?>
-<div class="page-title"><h2><?php echo Yii::t('admin','Delete A Module');?></h2></div>
+<div class="page-title"><h2><?php echo Yii::t('admin', 'Delete A Module'); ?></h2></div>
+<div class="form">
 
-<?php echo Yii::t('admin','Please select a model to delete.  WARNING: This operation cannot be undone, be very careful.');?> 
+    <?php
+        echo Yii::t('admin', 'Please select a model to delete.  WARNING: This operation cannot be '.
+        'undone, be very careful. Please note that all associated Events, Actions, and '.
+        'Relationships will be removed.'); ?>
 
-<form name="deleteModule" action="deleteModule" method="POST">
-	<br />
-	<select name="name">
-		<?php foreach($modules as $name=>$module) echo "<option value='$name'>$module</option>"; ?>
-	</select>
-	<br /><br />
-	<input class="x2-button" type="submit" value="<?php echo Yii::t('admin','Delete');?>" />
-</form>
+    <form name="deleteModule" action="deleteModule" method="POST">
+        <br />
+        <select name="name">
+            <?php foreach($modules as $name => $module)
+                echo "<option value='$name'>$module</option>"; ?>
+        </select>
+        <br /><br />
+        <input class="x2-button" type="submit" value="<?php echo Yii::t('admin', 'Delete'); ?>" />
+    </form>
+</div>

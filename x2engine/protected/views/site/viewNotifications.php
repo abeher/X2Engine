@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -34,17 +34,44 @@
  * "Powered by X2Engine".
  *****************************************************************************************/
 
+Yii::app()->clientScript->registerCss('viewNotificationsCss',"
+
+#clear-all-button {
+    margin-top: 4px;
+}
+
+");
+?>
+<div class="flush-grid-view">
+<?php
+
 $this->widget('zii.widgets.grid.CGridView', array(
-	'id'=>'actions-grid',
+	'id'=>'notifs-grid',
 	'baseScriptUrl'=>Yii::app()->request->baseUrl.'/themes/'.Yii::app()->theme->name.'/css/gridview',
 	'dataProvider'=>$dataProvider,
 	'template'=>'<div class="page-title"><h2>'.Yii::t('app','Notifications').'</h2>'
 		.CHtml::link(Yii::t('app','Clear All'),'#',array(
 			'class'=>'x2-button right',
+            'id' => 'clear-all-button',
 			'submit'=>array('/notifications/deleteAll'),
 			'confirm'=>Yii::t('app','Permanently delete all notifications?'
 		)))
 		.'<div class="title-bar right">{summary}</div></div>{items}{pager}',
+    'summaryText' => Yii::t('app', '<b>{start}&ndash;{end}</b> of <b>{count}</b>')
+    .'<div class="form no-border" style="display:inline;"> '
+    .CHtml::dropDownList(
+        'resultsPerPage', Profile::getResultsPerPage(), Profile::getPossibleResultsPerPage(),
+        array(
+            'ajax' => array(
+                'url' => Yii::app()->controller->createUrl('/profile/setResultsPerPage'),
+                'data' => 'js:{results:$(this).val()}',
+                'complete' => 'function(response) { 
+                    $.fn.yiiGridView.update("notifs-grid"); 
+                }',
+            ),
+            'style' => 'margin: 0;',
+        )
+    ).'</div>',
 	'columns'=>array(
 		array(
 			// 'name'=>'text',
@@ -60,16 +87,33 @@ $this->widget('zii.widgets.grid.CGridView', array(
 			'type'=>'raw',
 		),
 		array(
-			'class'=>'CButtonColumn',
+			'class'=>'X2ButtonColumn',
 			'template'=>'{delete}',
-			'deleteButtonUrl'=>'Yii::app()->controller->createUrl("/notifications/delete/".$data->id)',
-			'afterDelete'=>'function(link,success,data){ removeNotification(data); }',
+			'deleteButtonUrl'=>'Yii::app()->controller->createUrl("/notifications/delete",array("id"=>$data->id))',
+			'afterDelete'=>'function(link,success,data){
+                var match = $(link).attr ("href").match (/[0-9]+$/);
+                if (match !== null) x2.Notifs.triggerNotifRemoval (match[0]);
+            }',
 			'deleteConfirmation'=>false,
 			'headerHtmlOptions'=>array('style'=>'width:40px'),
 		 ),
 	),
 	'rowCssClassExpression'=>'$data->viewed? "" : "unviewed"',
+    'pager' => array (
+        'class' => 'CLinkPager', 
+        'header' => '',
+        'firstPageCssClass' => '',
+        'lastPageCssClass' => '',
+        'prevPageLabel' => '<',
+        'nextPageLabel' => '>',
+        'firstPageLabel' => '<<',
+        'lastPageLabel' => '>>',
+    ),
 ));
+
+?>
+</div>
+<?php
 
 foreach($dataProvider->getData() as $notif) {
 	if(!$notif->viewed) {

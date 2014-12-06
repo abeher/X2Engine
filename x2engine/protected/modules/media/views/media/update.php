@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -34,15 +34,13 @@
  * "Powered by X2Engine".
  *****************************************************************************************/
 
-$this->actionMenu = $this->formatMenu(array(
-	array('label'=>Yii::t('media', 'All Media'), 'url'=>array('index')),
-	array('label'=>Yii::t('media', 'Upload'), 'url'=>array('upload')),
-	array('label'=>Yii::t('media', 'View'), 'url'=>array('view', 'id'=>$model->id)),
-	array('label'=>Yii::t('media', 'Update')),
-	array('label'=>Yii::t('media', 'Delete'), 'url'=>'#', 'linkOptions'=>array('submit'=>array('delete','id'=>$model->id),'confirm'=>Yii::t('media','Are you sure you want to delete this item?'))),
-));
+$menuOptions = array(
+    'index', 'upload', 'view', 'edit', 'delete',
+);
+$this->insertMenu($menuOptions, $model);
+
 ?>
-<div class="page-title icon media"><h2><span class="no-bold"><?php echo Yii::t('media','Update File: '); ?></span> <?php echo $model->drive?$model->title:$model->fileName; ?></h2></div>
+<div class="page-title icon media"><h2><span class="no-bold"><?php echo Yii::t('media','Update File: '); ?></span> <?php echo $model->renderAttribute (($model->drive || !empty($model->name))? "name" : "fileName"); ?></h2></div>
 
 <?php $form=$this->beginWidget('CActiveForm', array(
    'id'=>'media-form',
@@ -58,13 +56,16 @@ $file = Yii::app()->file->set('uploads/'.$model->fileName);
 $file_ext = strtolower($file->getExtension());	// extension is the last part
 
 $legal_extensions = array('jpg','gif','png','bmp','jpeg','jpe');
-
 $fileView = '';
+
+$file_assoc = $model->associationType;
+
 
 if(file_exists("uploads/media/{$model->uploadedBy}/{$model->fileName}")) {
 	$file = Yii::app()->file->set("uploads/media/{$model->uploadedBy}/{$model->fileName}");
 	$file_ext = strtolower($file->getExtension());	// extension is the last part
 	$fileURL = Yii::app()->request->baseUrl.'/uploads/media/'. $model->uploadedBy . '/'.urlencode($model->fileName);
+
 	if(in_array($file_ext,$legal_extensions))
 		$fileView .= CHtml::link(CHtml::image($fileURL,'',array('class'=>'attachment-img', 'style'=>'height: 100%; display: block; margin-left: auto; margin-right: auto; padding: 5px')),$fileURL);
 
@@ -75,20 +76,41 @@ if(file_exists("uploads/media/{$model->uploadedBy}/{$model->fileName}")) {
 }
 ?>
 
-<table style="width: 900px;">
-	<tr>
 		<?php if(!empty($fileView)) { ?>
-			<td style="width: 32%;">
+			<div style="float: left; margin-right: 5px;">
 				<div class="formItem" style="height: 200px; border: 1px solid #CCC; background: #FAFAFA; display: table-cell; -moz-border-radius: 4px; -o-border-radius: 4px; -webkit-border-radius: 4px; border-radius: 4px;">
 					<?php echo $fileView; ?>
 				</div>
-			</td>
+			</div>
 		<?php } ?>
 
 
-		<td style="vertical-align: top;">
-
 			<div class="x2-layout form-view" style="margin-bottom: 0;">
+
+				<?php if (! $model->drive) { ?>
+				<div class="formSection showSection">
+					<div class="formSectionHeader">
+						<span class="sectionTitle"><?php echo Yii::t('media', 'Title'); ?></span>
+					</div>
+					<div class="tableWrapper">
+						<table>
+							<tbody>
+								<tr class="formSectionRow">
+									<td style="width: 300px">
+										<div class="formItem leftLabel">
+											<label><?php echo Yii::t('media', 'Title'); ?></label>
+											<div class="formInputBox" style="width: 200px; height: auto;">
+												<?php echo $form->textField($model, 'name'); ?>
+											</div>
+										</div>
+
+									</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</div>
+				<?php } ?>
 
 				<div class="formSection showSection">
 					<div class="formSectionHeader">
@@ -102,14 +124,31 @@ if(file_exists("uploads/media/{$model->uploadedBy}/{$model->fileName}")) {
 										<div class="formItem leftLabel">
 											<label><?php echo Yii::t('media', 'Association Type'); ?></label>
 											<div class="formInputBox" style="width: 200px; height: auto;">
-												<?php echo $form->dropDownList($model,'associationType',
-													array(
+												<?php 
+
+													$display_array=array(
 														'none'=>Yii::t('actions','None'),
 														'contacts'=>Yii::t('actions','Contact'),
 														'opportunities'=>Yii::t('actions','Opportunity'),
 														'accounts'=>Yii::t('actions','Account'),
 														'bg'=>Yii::t('media', 'Background'),
-													), array('onChange'=>'showAssociationAutoComplete(this)')); ?>
+														// 'products'=>Yii::t('media', 'Product'),
+														'docs'=>Yii::t('media','Doc'),
+														'theme'=>Yii::t('media','Theme'));
+
+													if(!isset($display_array[$file_assoc])){
+														$selected = $display_array['none'];
+													}
+													else {
+														$selected = $display_array[$file_assoc];
+													}
+
+													echo $form->dropDownList($model,'associationType',
+														$display_array,
+													 array('onChange'=>'showAssociationAutoComplete(this)',
+															'options' => 
+														array($selected=>array('selected'=>true))
+													)); ?>
 											</div>
 										</div>
 
@@ -241,10 +280,6 @@ if(file_exists("uploads/media/{$model->uploadedBy}/{$model->fileName}")) {
 			</div>
 
 
-		</td>
-
-	</tr>
-</table>
 
 <?php
 echo '	<div class="row buttons">'."\n";

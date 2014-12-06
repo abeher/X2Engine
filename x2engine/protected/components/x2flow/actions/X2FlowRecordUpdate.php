@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -36,29 +36,56 @@
 
 /**
  * X2FlowAction that updates a new record
- * 
- * @package X2CRM.components.x2flow.actions
+ *
+ * @package application.components.x2flow.actions
  */
 class X2FlowRecordUpdate extends X2FlowAction {
-	public $title = 'Update Record';
-	public $info = 'Change one or more fields on an existing record.';
-	
-	public function paramRules() {
-		return array(
-			'title' => Yii::t('studio',$this->title),
-			'info' => Yii::t('studio',$this->info),
-			'modelReqired' => 1,
-			// 'modelClass' => 'modelClass',
-			'options' => array(
-				array('name'=>'attributes'),
-			));
-	}
-	
-	public function execute(&$params) {
-		if(!isset($this->config['attributes']) || empty($this->config['attributes']))
-			return false;
-		
-		$this->setModelAttributes($params['model'],$this->config['attributes'],$params);
-		return $params['model']->save();
-	}
+
+    public $title = 'Update Record';
+    public $info = 'Change one or more fields on an existing record.';
+
+    public function paramRules(){
+        return array(
+            'title' => Yii::t('studio', $this->title),
+            'info' => Yii::t('studio', $this->info),
+            'modelReqired' => 1,
+            // 'modelClass' => 'modelClass',
+            'options' => array(
+                array('name' => 'attributes'),
+            )
+        );
+    }
+
+    public function execute(&$params){
+        if(!isset($this->config['attributes']) || empty($this->config['attributes'])) {
+            return array (
+                false, 
+                Yii::t('studio', "Flow item configuration error: No attributes added"));
+        }
+        $model = $params['model'];
+
+        if(!$this->setModelAttributes($model, $this->config['attributes'], $params)) {            
+            return array(
+                false,
+                Yii::t('app', '{method} called on model of class {model} encountered an error. Perhaps a formula was not properly written?', array(
+                    '{method}' => get_class($this).'.setModelAttributes',
+                    '{model}' => get_class($model))
+                )
+            );
+        }
+        if ($model->save ()) {
+        //if ($model->updateByPk($model->id, $model->attributes)) {
+		    if(is_subclass_of($model,'X2Model')) {
+                return array (
+                    true,
+                    Yii::t('studio', 'View updated record: ').$model->getLink ()
+                );
+            } else {
+                return array (true, "");
+            }
+        } else {
+            return array (false, "");
+        }
+    }
+
 }

@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -58,7 +58,8 @@ $selected=array();
 $unselected=array();
 $fields=Fields::model()->findAllBySql("SELECT * FROM x2_fields ORDER BY modelName ASC");
 foreach($fields as $field){
-        $unselected[$field->id]=$field->modelName." - ".$field->attributeLabel;
+    $unselected[$field->id] = 
+        X2Model::getModelTitle ($field->modelName)." - ".$field->attributeLabel;
 }
 $users=User::getNames();
 unset($users['']);
@@ -71,22 +72,51 @@ foreach($groups as $group){
 }
 /* end x2temp */
 ?>
-<div class="page-title"><h2><?php echo Yii::t('admin','Add Role'); ?></h2></div>
-<div style="width:600px">
+<div class="page-title rounded-top"><h2><?php echo Yii::t('admin','Add Role'); ?></h2></div>
+<div class="form">
+<div style="max-width:600px">
     <?php echo Yii::t('admin','Roles allow you to control which fields are editable on a record and by whom.  To add a role, enter the name, a list of users, and a list of fields they are allowed to view or edit.  Any field not included will be assumed to be unavailable to users of that Role.') ?>
 </div>
-<div class="form">
+
 
 <?php $form=$this->beginWidget('CActiveForm', array(
 	'id'=>'role-form',
 	'enableAjaxValidation'=>false,
-        'action'=>'roleEditor',
-)); 
+        'action'=>'manageRoles',
+));
 ?>
 <div class="row">
         <?php echo $form->labelEx($model,'name'); ?>
         <?php echo $form->textField($model,'name'); ?>
         <?php echo $form->error($model,'name'); ?>
+
+        <?php echo $form->labelEx($model,'timeout'); ?>
+        <?php echo Yii::t('admin', 'Set role session expiration time (in minutes).'); ?>
+        <?php Yii::app()->clientScript->registerScript('setSlider', '
+                    $("#createRoleTimeout").slider("value", '.$model->timeout.');
+                ', CClientScript::POS_LOAD); ?>
+        <?php $this->widget('zii.widgets.jui.CJuiSlider', array(
+            'value' => $model->timeout / 60,
+            // additional javascript options for the slider plugin
+            'options' => array(
+                'min' => 5,
+                'max' => 1440,
+                'step' => 5,
+                'change' => "js:function(event,ui) {
+                                $('#createTimeout').val(ui.value);
+                                $('#save-button').addClass('highlight');
+                            }",
+                'slide' => "js:function(event,ui) {
+                                $('#createTimeout').val(ui.value);
+                            }",
+            ),
+            'htmlOptions' => array(
+                'style' => 'width:340px;margin:10px 0;',
+                'id' => 'createRoleTimeout'
+            ),
+        )); ?>
+        <?php echo $form->textField($model,'timeout', array('id'=>'createTimeout')); ?>
+        <?php echo $form->error($model, 'timeout'); ?>
 </div>
 <div id="addRole">
         <?php echo $form->labelEx($model,'users'); ?>

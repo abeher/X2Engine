@@ -1,8 +1,7 @@
 <?php
-
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -58,8 +57,8 @@ Yii::import('application.components.util.*');
  * Note also that any files in the uploads folder will also need to be backed up,
  * if the data is to be re-used elsewhere; references to files on the server 
  * will otherwise point to nonexistent files.
- * @package X2CRM.commands
- * @author Demitri Morgan <demitri@x2crm.com>
+ * @package application.commands
+ * @author Demitri Morgan <demitri@x2engine.com>
  */
 class SampleDataCommand extends CConsoleCommand {
 
@@ -90,10 +89,15 @@ class SampleDataCommand extends CConsoleCommand {
 	 * @return type 
 	 */
 	public function actionExport($args) {
-// [edition] => [array of table names]
+
+        if (!copy ("./data/install_timestamp", "./data/dummy_data_date")) {
+            die ("Error: actionExport: failed to copy install_timestamp to dummy_data_date");
+        }
+
+        // [edition] => [array of table names]
 		$tblEditions = require(realpath(Yii::app()->basePath . '/data/nonFreeTables.php'));
-		$nonFreeEditions = require(realpath(Yii::app()->basePath . '/data/editions.php'));
 		$allEditions = array_keys($tblEditions);
+        $nonFreeEditions = array_diff($allEditions,array('opensource'));
 		$specTemplate = array_fill_keys($allEditions, array());
 		$this->pdo = Yii::app()->db->pdoInstance;
 		$conf = realpath(Yii::app()->basePath . '/config/X2Config.php');
@@ -119,20 +123,12 @@ class SampleDataCommand extends CConsoleCommand {
 		 */
 		$command = "mysqldump -tc -u $user -p$pass $dbname ";
 
-		/* $dummy_data = true; */
-// Ignore pattern for lines in output of mysqldump:
+		// Ignore pattern for lines in output of mysqldump:
 		$lPat = '/^(\/\*|\-\-|\s*$';
-		/* if ($dummy_data) { */
 		// Export current app's data as "dummy" (usage example) data
 		$lPat.='|(?:UN)?LOCK TABLES)/';
 		$out = FileUtil::rpath(Yii::app()->basePath . '/data/dummy_data%s.sql');
-		/* } else {
-		  $lPat .= ')/';
-		  $out = $argv[1];
-		  if (!realpath($outDir = dirname($out)))
-		  die("Error: path " . $outDir . " does not exist.\n");
-		  } */
-
+		
 		/**
 		 * Update the list of tables for each edition with the default tables:
 		 */
@@ -141,10 +137,10 @@ class SampleDataCommand extends CConsoleCommand {
 				}, array());
 		$tblEditions['opensource'] = array_diff($allTbls, $nonFreeTbls);
 
-		/*		 * **************************************** */
-		/* Declare the export specification arrays */
-		/*		 * **************************************** */
-		/* Here it's specified what data will be exported and how.
+		/**
+         * Declare the export specification arrays
+		 *
+		 * Here it's specified what data will be exported and how.
 		 * Each of these arrays follows the basic pattern of $specTemplate:
 		 * [edition] => [array of table names or ([table name] =>[spec])]
 		 */
@@ -153,6 +149,7 @@ class SampleDataCommand extends CConsoleCommand {
 		 * These will be excluded from data export altogether
 		 */
 		$tblsExclude = $specTemplate;
+        // These will be excluded for open source and above:
 		$tblsExclude['opensource'] = array_merge(array(
 			'x2_admin',
 			'x2_auth_assignment',
@@ -164,10 +161,15 @@ class SampleDataCommand extends CConsoleCommand {
 			'x2_timezones',
 			'x2_timezone_points',
 			'x2_tips'
-		),$tblEditions['pro']);
-		$tblsExclude['pro'] = array(
+		),$tblEditions['pro'],$tblEditions['pla']);
+        // These for professional edition:
+		$tblsExclude['pro'] = array_merge(array(
 			'x2_forwarded_email_patterns',
-		);
+		),$tblEditions['pla']);
+        // These for platform/platinum edition:
+        $tblsExclude['pla'] = array(
+            'x2_forwarded_email_patterns'
+        );
 
 		/**
 		 * These will be included, but with specific criteria
@@ -201,7 +203,10 @@ class SampleDataCommand extends CConsoleCommand {
 			),
 			'x2_users' => array(
 				'pk' => 'id',
-				'fields' => array('id', 'firstName', 'lastName', 'officePhone', 'cellPhone', 'showCalendars', 'calendarViewPermission', 'calendarEditPermission', 'calendarFilter', 'setCalendarPermissions'),
+				'fields' => array('id', 'firstName', 'lastName', 'officePhone',
+                    'cellPhone', 'showCalendars', 'calendarViewPermission',
+                    'calendarEditPermission', 'calendarFilter',
+                    'setCalendarPermissions','recentItems','topContacts'),
 				'where' => '`id`=1'
 			)
 		);
@@ -215,7 +220,8 @@ class SampleDataCommand extends CConsoleCommand {
 			'x2_list_criteria' => array('x2_lists'),
 			'x2_list_items' => array('x2_lists'),
 			'x2_role_to_workflow' => array('x2_workflow_stages', 'x2_roles', 'x2_workflows'),
-			'x2_workflow_stages' => array('x2_workflows')
+			'x2_workflow_stages' => array('x2_workflows'),
+            'x2_action_text' => array('x2_actions')
 		);
 		/**
 		 * This array stores tables to be executed "next"
@@ -243,15 +249,15 @@ class SampleDataCommand extends CConsoleCommand {
 				$allTbls[$edition][$tbl] = $where;
 		}
 
-// The update statement that will be used for updating records post-insertion:
+        // The update statement that will be used for updating records post-insertion:
 		$updateStatement = "UPDATE `%s` SET %s WHERE %s;";
 
 		foreach ($nonFreeEditions as $edition)
 			$allSql[$edition][] = "/* @edition:$edition */";
 
-		/*		 * ************************** */
-		/* Generate SQL for the data */
-		/*		 * ************************** */
+		/**
+		 * Generate SQL for the data:
+         */
 		foreach ($allTbls as $edition => $tbls) {
 
 			/**
@@ -321,18 +327,9 @@ class SampleDataCommand extends CConsoleCommand {
 			}
 		}
 
-		/* if ($dummy_data) { */
 		// Create dummy data files
 		foreach ($allSql as $edition => $sqls)
 			file_put_contents(sprintf($out, $edition == 'opensource' ? '' : "-$edition"), implode("\n/*&*/\n", $sqls));
-		/* } else {
-		  // Put it all in the same file
-		  $allOut = array();
-		  foreach ($allSql as $edition => $sqls)
-		  foreach ($sqls as $sql)
-		  $allOut[] = $sql;
-		  file_put_contents($out, implode("\n", $allOut));
-		  } */
 	}
 
 	/**
@@ -369,7 +366,11 @@ class SampleDataCommand extends CConsoleCommand {
 
 			$select = array_merge(is_array($pk) ? $pk : array($pk), $pastCols);
 			$where = '`' . implode("`>$time OR `", $pastCols) . "`>$time";
-			$dates = Yii::app()->db->createCommand()->select($select)->from($table)->where($where)->queryAll();
+			$dates = Yii::app()->db->createCommand()
+                ->select($select)
+                ->from($table)
+                ->where($where)
+                ->queryAll();
 			if(!empty($dates))
 				echo implode("\t", $pastCols) . "\t($table)\n";
 			foreach ($dates as $record) {
@@ -404,6 +405,80 @@ class SampleDataCommand extends CConsoleCommand {
 
 	}
 
+    /**
+     * "Compress" all sample data timestamps
+     *
+     * Brings all timestamps closer to "now" using a logarithmic scale. This is
+     * to bring really far-apart events closer together while avoiding too much
+     * "clumping" of events around the installation timestamp.
+     *
+     * @param array $newDisp The new furthest time into the past that any event
+     *  is allowed to go.
+     */
+    public function actionSquashtime($dtnew) {
+        $newDisp = (int) trim($dtnew);
+        echo "Finding the oldest event in the sample data...\n";
+        $dateFields = require(realpath(Yii::app()->basePath . '/data/dateFields.php'));
+        $installTimestamp = (integer) file_get_contents(implode(DIRECTORY_SEPARATOR,array(
+            Yii::app()->basePath,'data','dummy_data_date'
+        )));
+        $now = $installTimestamp;
+        $min = $now;
+        foreach($dateFields as $table => $columns) {
+            $newMin = Yii::app()->db->createCommand()
+                    ->select(count($columns) > 1
+                            ? 'LEAST(MIN(`'.implode('`),MIN(`',$columns).'`))'
+                            : 'MIN(`'.reset($columns).'`)')
+                    ->from($table)
+                    ->queryScalar();
+            if(!empty($newMin) && $newMin < $min) {
+                $min = $newMin;
+                echo "Older timestamp $newMin found in table $table\n";
+            }
+        }
+        echo "min: $min\nnow: $now\n";
+        $oldDisp = $installTimestamp - $min;
+
+        $yn = $this->prompt("The oldest record is $oldDisp seconds in the "
+                . "past. Are you sure you want to proceed with adjusting all "
+                . "timestamps logarithmically such that the old maximum time "
+                . "displacement into the past $oldDisp becomes the new, $newDisp?");
+        if(!preg_match('/^y(es)?$/i',trim($yn)))
+            Yii::app()->end();
+
+        foreach($dateFields as $table => $columns) {
+            foreach($columns as $column) {
+                list($setClause,$params) = $this->timeCompressSql($column,
+                        $installTimestamp,$oldDisp,$newDisp);
+                $sqlRun = "UPDATE `$table` ".$setClause;
+                Yii::app()->db->createCommand($sqlRun)
+                        ->execute($params);
+                echo 'Ran "'.strtr($sqlRun,$params)."\"\n";
+            }
+        }
+    }
+
+    /**
+     * Generates update SQL for a timestamp column to "compress" times
+     * 
+     * @param string $column Attribute/column name to be changed
+     * @param type $ti Timestamp of installation ("now")
+     * @param type $dtMax Furthest time into the past that events go
+     * @param type $dtMaxNew New furthest time into the past that events can go
+     * @return type
+     */
+    public function timeCompressSql($column,$ti,$dtMax,$dtMaxNew) {
+        $sql = "SET `$column`=(:ti1-:dtMaxNew*LOG2(1+(:ti2-`$column`)/:dtMax)) "
+                . "WHERE `$column` < :ti3";
+        $params = array(
+            ':ti1' => $ti,
+            ':ti2' => $ti,
+            ':ti3' => $ti,
+            ':dtMaxNew' => $dtMaxNew,
+            ':dtMax' => $dtMax
+        );
+        return array($sql,$params);
+    }
 }
 
 ?>

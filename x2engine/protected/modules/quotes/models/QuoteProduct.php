@@ -7,7 +7,7 @@
  * designates it as an adjustment to the subtotal
  * @property bool $isPercentAdjustment Tells whether the adjustment units is
  * a percentage
- * @package X2CRM.modules.quotes.models
+ * @package application.modules.quotes.models
  * @author David Visbal, Demitri Morgan <demitri@x2engine.com>
  */
 class QuoteProduct extends CActiveRecord {
@@ -58,11 +58,12 @@ class QuoteProduct extends CActiveRecord {
 // NOTE: you should only define rules for those attributes that
 // will receive user inputs.
 		return array(
-			array('quantity,lineNumber,productId', 'numerical', 'integerOnly' => true),
+			array('lineNumber,productId', 'numerical', 'integerOnly' => true),
+			array('quantity','numerical'),
 			array('price,adjustment,total','numerical','allowEmpty'=>true),
 			array('name','required'),
 			array('name,type,currency', 'length', 'max' => 100),
-			array('description','length','max'=>140),
+			array('description', 'safe', 'safe' => true),
 			array('adjustmentType', 'in', 'range' => array('percent', 'linear', 'totalPercent', 'totalLinear')),
 		);
 	}

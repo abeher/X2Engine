@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -34,27 +34,37 @@
  * "Powered by X2Engine".
  *****************************************************************************************/
 
-$this->actionMenu = $this->formatMenu(array(
-	array('label'=>'Manage Groups'),
-	array('label'=>'Create Group', 'url'=>array('create')),
-));
+$menuOptions = array(
+    'index', 'create',
+);
+$this->insertMenu($menuOptions);
+
+?>
+<div class="flush-grid-view">
+<?php 
 
 $this->widget('zii.widgets.grid.CGridView', array(
 	'id'=>'roles-grid',
 	'baseScriptUrl'=>Yii::app()->request->baseUrl.'/themes/'.Yii::app()->theme->name.'/css/gridview',
-	'template'=> '<div class="page-title icon groups"><h2>'.Yii::t('groups','Groups').'</h2><div class="title-bar">'
-		.'{summary}</div></div>{items}{pager}',
+	'template'=> '<div class="page-title icon groups"><h2>'.Yii::t('groups','{groups}', array(
+            '{groups}' => Modules::displayName(),
+        )).'</h2><div class="title-bar">{summary}</div></div>{items}{pager}',
 	'dataProvider'=>$dataProvider,
 	'columns'=>array(
 		array(
+            'header'=>Yii::t('groups','Name'),
 			'name'=>'name',
-			'value'=>'CHtml::link($data->name,array("view","id"=>$data->id))',
+			'value'=>'CHtml::link($data->renderAttribute("name"),array("view","id"=>$data->id))',
 			'type'=>'raw',
 		),
 		array(
+            'header'=>Yii::t('groups','{users}', array(
+                '{users}' => Modules::displayName(true, "Users")
+            )),
 			'name'=>'users',
 			'value'=>'count(GroupToUser::model()->findAllByAttributes(array("groupId"=>$data->id)))',
 			'type'=>'raw',
 		),
 	),
 )); ?>
+</div>

@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -34,22 +34,17 @@
  * "Powered by X2Engine".
  *****************************************************************************************/
 
-$authParams['assignedTo'] = $model->assignedTo;
-$this->actionMenu = $this->formatMenu(array(
-	array('label'=>Yii::t('contacts','All Contacts'),'url'=>array('index')),
-	array('label'=>Yii::t('contacts','Lists'),'url'=>array('lists')),
-	array('label'=>Yii::t('contacts','Create Contact'),'url'=>array('create')),
-	array('label'=>Yii::t('contacts','Create List'),'url'=>array('createList')),
-	array('label'=>Yii::t('contacts','View List'),'url'=>array('list/'.$model->id)),
-	array('label'=>Yii::t('contacts','Edit List')),
-	array('label'=>Yii::t('contacts','Delete List'),'url'=>'#', 'linkOptions'=>array('submit'=>array('deleteList','id'=>$model->id),'confirm'=>'Are you sure you want to delete this item?')),
-),$authParams);
+$authParams['X2Model'] = $model;
+$menuOptions = array(
+    'all', 'lists', 'create', 'createList', 'viewList', 'editList', 'deleteList',
+);
+$this->insertMenu($menuOptions, $model, $authParams);
 
 ?>
 
-<div class="page-title icon contacts"><h2><?php echo Yii::t('contacts','Update List'); ?></h2></div>
+<div class="page-title icon contacts"><h2><?php echo Yii::t('contacts','Edit List'); ?></h2></div>
 
-<?php 
+<?php
 echo $this->renderPartial('_listForm', array(
 	'model'=>$model,
 	'criteriaModels'=>$criteriaModels,
@@ -58,5 +53,5 @@ echo $this->renderPartial('_listForm', array(
 	'users'=>$users,
 	'listTypes'=>$listTypes,
 	'itemModel'=>$itemModel,
-)); 
-?> 
+));
+?>

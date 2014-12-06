@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -37,7 +37,7 @@
 /**
  * X2FlowTrigger 
  * 
- * @package X2CRM.components.x2flow.actions
+ * @package application.components.x2flow.actions
  */
 class RecordInactiveTrigger extends X2FlowTrigger {
 	public $title = 'Record Inactivity';
@@ -49,7 +49,7 @@ class RecordInactiveTrigger extends X2FlowTrigger {
 			'info' => Yii::t('studio',$this->info),
 			'modelClass' => 'modelClass',
 			'options' => array(
-				array('name'=>'modelClass','label'=>Yii::t('studio','Record Type'),'type'=>'dropdown','options'=>X2Model::getModelTypes(true)),
+				array('name'=>'modelClass','label'=>Yii::t('studio','Record Type'),'type'=>'dropdown','options'=>X2Flow::getModelTypes(true)),
 				array('name'=>'duration','type'=>'numeric','label'=>Yii::t('studio','Duration (s)')),
 			));
 	}
@@ -57,11 +57,13 @@ class RecordInactiveTrigger extends X2FlowTrigger {
 	public static function checkCondition($condition,&$params) {
 		if(isset($condition['name']) && $condition['name'] === 'duration') {
 			if($params['model']->hasAttribute('lastActivity'))
-				return $params['model']->lastActivity < time() - (int)$condition->value;
+				return array ($params['model']->lastActivity < time() - (int)$condition->value,
+                    '');
 			elseif($params['model']->hasAttribute('lastUpdated'))
-				return $params['model']->lastUpdated < time() - (int)$condition->value;
+				return array ($params['model']->lastUpdated < time() - (int)$condition->value,
+                    '');
 			else
-				return false;
+				return array (false, '');
 		} else {
 			return parent::checkCondition($condition,$params);
 		}

@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -33,8 +33,9 @@
  * technical reasons, the Appropriate Legal Notices must display the words
  * "Powered by X2Engine".
  *****************************************************************************************/
+
 $menuItems = array(
-            array('label' => Yii::t('app', 'Main Menu'), 'url' => array('site/home/')),
+            array('label' => Yii::t('app', 'Main Menu'), 'url' => array('/mobile/site/home')),
         );
 
 $this->widget('MenuList', array(
@@ -58,18 +59,18 @@ $model->lastName = $attributeLabels['lastName'];
 ?>
 
 <div class="form thin">
-	<div class="row">
-		<?php echo $form->textField($model,'firstName',array('maxlength'=>40,'tabindex'=>100,'onfocus'=>'toggleText(this);','onblur'=>'toggleText(this);','style'=>'color:#aaa;width:275px;')); ?>
+	<div class="row x2-mobile-narrow-input-row">
+		<?php echo $form->textField($model,'firstName',array('maxlength'=>40,'tabindex'=>100,'onfocus'=>'x2.forms.toggleText(this);','onblur'=>'x2.forms.toggleText(this);','class'=>'x2-mobile-narrow-input')); ?>
 		<?php echo $form->error($model,'firstName'); ?>
 
-		<?php echo $form->textField($model,'lastName',array('maxlength'=>40,'tabindex'=>101,'onfocus'=>'toggleText(this);','onblur'=>'toggleText(this);','style'=>'color:#aaa;width:275px;')); ?>
+		<?php echo $form->textField($model,'lastName',array('maxlength'=>40,'tabindex'=>101,'onfocus'=>'x2.forms.toggleText(this);','onblur'=>'x2.forms.toggleText(this);','class'=>'x2-mobile-narrow-input')); ?>
 		<?php echo $form->error($model,'lastName'); ?>
 	</div>
 </div>
 <?php
 echo CHtml::ajaxSubmitButton(
 	Yii::t('app','Search'),
-	array('/contacts/viewAll'),
+	array('/mobile/contacts/viewAll'),
 	array('success'=>"function(response) {
 			if(response!='') {
 				alert('".Yii::t('app','Contact Saved')."');
@@ -81,17 +82,3 @@ echo CHtml::ajaxSubmitButton(
 );
 $this->endWidget();
 ?>
-
-<script>
-
-	function toggleText(field) {
-		if (field.defaultValue==field.value) {
-			field.value = ''
-			field.style.color = 'black'
-		} else if (field.value=='') {
-			field.value = field.defaultValue
-			field.style.color = '#aaa'
-		}
-	}
-	
-</script>

@@ -1,68 +1,17 @@
 <?php
-/*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
- * 
- * This program is free software; you can redistribute it and/or modify it under
- * the terms of the GNU Affero General Public License version 3 as published by the
- * Free Software Foundation with the addition of the following permission added
- * to Section 15 as permitted in Section 7(a): FOR ANY PART OF THE COVERED WORK
- * IN WHICH THE COPYRIGHT IS OWNED BY X2ENGINE, X2ENGINE DISCLAIMS THE WARRANTY
- * OF NON INFRINGEMENT OF THIRD PARTY RIGHTS.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU Affero General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU Affero General Public License along with
- * this program; if not, see http://www.gnu.org/licenses or write to the Free
- * Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
- * 02110-1301 USA.
- * 
- * You can contact X2Engine, Inc. P.O. Box 66752, Scotts Valley,
- * California 95067, USA. or at email address contact@x2engine.com.
- * 
- * The interactive user interfaces in modified source and object code versions
- * of this program must display Appropriate Legal Notices, as required under
- * Section 5 of the GNU Affero General Public License version 3.
- * 
- * In accordance with Section 7(b) of the GNU Affero General Public License version 3,
- * these Appropriate Legal Notices must retain the display of the "Powered by
- * X2Engine" logo. If the display of the logo is not reasonably feasible for
- * technical reasons, the Appropriate Legal Notices must display the words
- * "Powered by X2Engine".
- *****************************************************************************************/
-
 return array (
 // Campaign model
-'Campaign'=>'Campanha',
 'Campaigns'=>'Campanhas',
-'ID'=>'ID',
 'Master Campaign ID'=>'Master ID Campanha',
-'Name'=>'Nome',
-'Assigned To'=>'Atribuído A',
 'Contact List'=>'Lista de Contatos',
-'Active'=>'Ativo',
-'Description'=>'Descrição',
-'Type'=>'Tipo',
 'Cost'=>'Custar',
-'Subject'=>'Assunto',
 'Content'=>'Conteúdo',
-'Complete'=>'Concluída',
-'Visibility'=>'Visibilidade',
-'Create Date'=>'Data de Criação',
 'Launch Date'=>'Data de Lançamento',
-'Last Updated'=>'Última Atualização',
-'Updated By'=>'Atualizado Por',
-'None'=>'Nenhum',
 'Basic Info'=>'Informações Básicas',
-'Email'=>'E-mail',
 'Call List'=>'Lista de Chamada',
 'Physical Mail'=>'Correio Física',
 'Email Template'=>'Modelo de E-mail',
 'Update Campaign'=>'Campanha Atualize',
-'Last Activity'=>'Última Atividade',
 'Template'=>'Modelo',
 
 // Menu
@@ -70,8 +19,8 @@ return array (
 'Create Campaign'=>'Criar uma Campanha',
 'Newsletters'=>'Cartas de Notícias',
 'Create Newsletter'=>'Criar Boletim',
-'Create Web Form'=>'Criar Formulário Web',
 'Web Tracker'=>'Web Tracker',
+'Email List'=>'Lista de E-mail',
 
 // Launching
 'The campaign has already been launched.'=>'A campanha já foi lançada.',
@@ -89,7 +38,6 @@ return array (
 'Opened'=>'Inaugurado',
 'Clicked'=>'é Clicado',
 'Unsubscribed'=>'Inscrição Cancelada',
-'Status'=>'Estado',
 
 // Mailing
 'The email sending limit has been reached.'=>'O limite de envio de e-mail tenha sido atingido.',
@@ -122,11 +70,9 @@ return array (
 'Contact has clicked a link'=>'O contato tenha clicado em um link',
 'has clicked a link'=>'tenha clicado em um link',
 'To stop receiving these messages, click here'=>'Para parar de receber estas mensagens, clique aqui',
+'Send As'=>'Enviar como',
 
 // WebForm model
-'Model Name'=>'Nome do Modelo',
-'Fields'=>'Campos',
-'Parameters'=>'Parâmetros',
 'CSS'=>'CSS',
 
 // Web Lead Form creator
@@ -138,25 +84,92 @@ return array (
 'Copy and paste this code into your website to include the web lead form.'=>'Copie e cole este código em seu site para incluir o formulário de chumbo web.',
 'Choose an existing form as a starting point.'=>'Escolha um formulário existente como ponto de partida.',
 'Text Color'=>'Cor do Texto',
-'Background Color'=>'Cor de Fundo',
 'Font'=>'Fonte',
 'Border'=>'Fronteira',
 'Size'=>'Tamanho',
 'pixels'=>'pixels',
-'Color'=>'Cor',
-'Tags'=>'Etiquetas',
-'Default'=>'Por Padrão',
 'black'=>'preto',
 'transparent'=>'transparente',
 'none'=>'nenhum',
-'Example'=>'Eexemplo',
 'These tags will be applied to any contact created by the form.'=>'Estas etiquetas será aplicada a qualquer contacto criada pela forma.',
-'Save'=>'Salvar',
 'Enter a name and save this form to edit later.'=>'Digite um nome e salve este formulário para editar mais tarde.',
 'Form Saved'=>'Forma Salvo',
 'Reset Form'=>'Redefinir Forma',
 'Embed Code'=>'Código para Incorporar',
 'Saved Forms'=>'Formas Salvos',
-'Settings'=>'Configurações',
-'Preview'=>'Visualização',
+'Enter custom css for the web form.'=>'Digite css personalizado para o formulário web.',
+'Custom &lt;HEAD&gt;'=>'&lt;HEAD&gt; Personalizado',
+'Enter any HTML you would like inserted into the &lt;HEAD&gt; tag.'=>'Digite qualquer código HTML que você gostaria inserido na tag HEAD.',
+'Select email templates to send to the new weblead and the user assigned to the weblead.'=>'Escolha modelos de email para enviar para o novo weblead eo usuário atribuído ao weblead.',
+'NOTE: The weblead form must be saved for these emails to be sent.'=>'NOTA: A forma weblead deve ser guardado para esses e-mails a serem enviados.',
+'User Email'=>'Usuário Email',
+'Weblead Email'=>'Weblead Email',
+'Drag and Drop fields from Fields List to Form.'=>'Arrastar e soltar campos da Lista de Campos para Form.',
+'Live web form preview.'=>'Vivo formulário de visualização web.',
+'Label:'=>'Etiqueta:',
+'Position:'=>'Posição:',
+
+// Web Tracker
+'Web Tracker Code'=>'Web Rastreador Código',
+'This HTML tag will allow you to track contacts who visit your website.'=>'Esta tag HTML permite que você acompanhe os contatos que visitam seu site.',
+'Paste this code into the body section of every page of your website.'=>'Cole este código na seção do corpo de cada página do seu site.',
+'<b>Note:</b> Contacts can be tracked only if they filled out the web lead capture form, or clicked on a tracking link in an email campaign.'=>'<b>Nota:</b> Os contatos podem ser controladas apenas se preenchido o formulário de captura de chumbo web, ou clicou em um link de rastreamento em uma campanha de e-mail.',
+'Web Tracker Settings'=>'Configurações web tracker',
+'You can enable or disable the web tracker. The tracker will ignore repeat hits from a given contact during the cooldown period.'=>'Você pode ativar ou desativar o rastreador web. O rastreador irá ignorar sucessos repetição de um determinado contato no período de cooldown.',
+'If a contact visits several pages in a short time, you will only get one notification.'=>'Se um contacto visita várias páginas em um curto espaço de tempo, você só vai conseguir uma notificação.',
+'Turn it down all the way to receive notifications about every page hit.'=>'Transformá-lo de todas as maneiras para receber notificações sobre cada página hit.',
+'Contact has opened the email sent on '=>'Contato abriu o e-mail enviado em',
+'Email sent'=>'E-mail enviado',
+'Header Code'=>'Código cabeçalho',
+'Batch completed, sending again in '=>'Batch concluída, o envio de novo em',
+'A new web lead has been assigned to you: '=>'A nova pista web tem sido atribuído a você:',
+'Marketing Automation'=>'Marketing Automation',
+'Contacts for Account Report ('=>'Contatos para Relatório de Conta (',
+'Mailing for Account Report ('=>'Mailing para o Relatório de Conta (',
+'Create a public form to receive new services cases. When the form is submitted, a new '=>'Crie um formulário pública para receber novos casos de serviços. Quando o formulário é enviado, um novo',
+'This HTML tag will allow you to track contacts who visit your '=>'Este tag HTML lhe permitirá rastrear contatos que visitam o',
+'Paste this code into the body section of every page of your '=>'Cole este código na seção de corpo de cada página de seu',
+'You can enable or disable the web tracker. The tracker will '=>'Você pode ativar ou desativar o rastreador web. O rastreador será',
+'If a contact visits several pages in a short time, you '=>'Se um contato visita várias páginas em um curto espaço de tempo, você',
+'Turn it down all the way to receive notifications about '=>'Vire-a para baixo todo o caminho para receber notificações sobre',
+'The contact you enter here will be used for variable replacement, i.e. for "John Doe" the token {firstName} will get replaced with "John"'=>'O contato que você inserir aqui serão utilizados para a substituição de variável, ou seja, para &quot;John Doe&quot; o token {firstName} vai ter substituído por &quot;João&quot;',
+'If you want to keep your current HTML forms but still get web leads into X2, please see the wiki article located here: {link}'=>'Se você quer manter seus formulários HTML atuais, mas ainda obter web leva em X2, por favor, consulte o artigo wiki localizado aqui: {link}',
+'Web Lead API'=>'Web API chumbo',
+'Custom HTML could not be removed.'=>'HTML personalizado não pode ser removido.',
+'Custom HTML could not be saved.'=>'HTML personalizado não poderia ser salvo.',
+'Select email templates to send to the new weblead and the user '=>'Escolha modelos de email para enviar para o novo weblead eo usuário',
+'Type:'=>'Tipo:',
+'Value:'=>'Valor:',
+'The web form must be saved for custom fields to get '=>'O formulário on-line deve ser guardado para campos personalizados para obter',
+'The web form must be saved for your custom fields or custom HTML to '=>'O formulário on-line deve ser salvo para os seus campos personalizados ou HTML customizado',
+'Anonymous Contacts'=>'Anônimos Contactos',
+'Fingerprints'=>'As impressões digitais',
+'Anonymous Contact {email}'=>'Anônimo Contato {email}',
+'Anonymous Contact'=>'Anônimo Contato',
+'X2Identity Settings'=>'Configurações X2Identity',
+'X2Identity uses browser fingerprinting as an alternative '=>'X2Identity usa impressões digitais do navegador como uma alternativa',
+'If browser fingerprinting is enabled, the tracker will '=>'Se fingerprinting navegador está habilitado, o TRACKER',
+'You can set the threshold for the minimum number of attributes that '=>'Você pode definir o limite para o número mínimo de atributos que',
+'Disable Slider'=>'Desativar Slider',
+'Import Campaigns'=>'Campanhas de importação',
+'Export Campaigns'=>'Campanhas de exportação',
+'Email Delivery Progress'=>'Email Progress Entrega',
+'Click to refresh displays of campaign data on this page.'=>'Clique para atualizar exibições de dados da campanha nesta página.',
+'Errors that occurred when attempting to send email:'=>'Os erros que ocorreram ao tentar enviar e-mail:',
+'You have unsent mail in this campaign. Are you sure you want to forcibly mark this campaign as complete?'=>'Você tem e-mail não enviado nesta campanha. Você tem certeza que quer marcar à força desta campanha tão completa?',
+'Please try again in {t} {units}.'=>'Por favor, tente novamente em {t} {units} .',
+'Skipping {email}; another concurrent send operation is handling delivery to this address.'=>'Ignorando {email} ; outra operação de envio simultâneo está a lidar com entrega para este endereço.',
+'Skipping delivery for recipient {id}; email address has been set to blank.'=>'Ignorando entrega para destinatário {id} ; endereço de e-mail foi definido para em branco.',
+'Skipping {email}; the contact has unsubscribed.'=>'Ignorando {email} ; o contato não subscritas.',
+'Email has already been sent to {address}'=>'E-mail já foi enviado para {address}',
+'Email sent successfully to {address}.'=>'E-mail enviado com sucesso para {address} .',
+'Email could not be sent to {address}. The message given was: {message}'=>'E-mail não pode ser enviado para {address} . A mensagem dada foi: {message}',
+'All emails sent.'=>'Todos os e-mails enviados.',
+'Batch timeout limit reached.'=>'Limite de lote de tempo limite atingido.',
+'Failed to save temporary list.'=>'Falha ao salvar lista temporária.',
+'Specified campaign does not exist.'=>'Especificado campanha não existe.',
+'Delete Form'=>'Excluir Form',
+'Select email templates to send to the new web lead and the user '=>'Escolha modelos de email para enviar para o novo líder web eo usuário',
+'NOTE: The web lead form must be saved for these emails to be sent.'=>'NOTA: A forma principal da web deve ser guardado para esses e-mails para serem enviadas.',
+'NOTE: The web lead form must be saved for these tags to be applied.'=>'NOTA: A forma principal da web deve ser guardado para essas marcas a ser aplicada.',
 );

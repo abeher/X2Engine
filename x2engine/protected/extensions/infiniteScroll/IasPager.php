@@ -15,7 +15,7 @@ class IasPager extends CLinkPager {
         parent::init();
 
         $assets = dirname(__FILE__) . '/assets';
-        $this->baseUrl = Yii::app()->assetManager->publish($assets);
+        $this->baseUrl = Yii::app()->assetManager->publish($assets, false, -1, true);
 
         $cs = Yii::app()->getClientScript();
         $cs->registerCoreScript('jquery');
@@ -39,8 +39,10 @@ class IasPager extends CLinkPager {
 
         
         $cs = Yii::app()->clientScript;
-        $cs->registerScript('infscrl', $js, CClientScript::POS_READY);
-
+        /* x2modstart */ 
+        // added uid to script name
+        $cs->registerScript('infscrl'.$this->listViewId, $js, CClientScript::POS_READY);
+        /* x2modend */ 
 
         $buttons = $this->createPageButtons();
 

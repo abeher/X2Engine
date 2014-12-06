@@ -1,77 +1,64 @@
 <?php
-/*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
- * 
- * This program is free software; you can redistribute it and/or modify it under
- * the terms of the GNU Affero General Public License version 3 as published by the
- * Free Software Foundation with the addition of the following permission added
- * to Section 15 as permitted in Section 7(a): FOR ANY PART OF THE COVERED WORK
- * IN WHICH THE COPYRIGHT IS OWNED BY X2ENGINE, X2ENGINE DISCLAIMS THE WARRANTY
- * OF NON INFRINGEMENT OF THIRD PARTY RIGHTS.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU Affero General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU Affero General Public License along with
- * this program; if not, see http://www.gnu.org/licenses or write to the Free
- * Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
- * 02110-1301 USA.
- * 
- * You can contact X2Engine, Inc. P.O. Box 66752, Scotts Valley,
- * California 95067, USA. or at email address contact@x2engine.com.
- * 
- * The interactive user interfaces in modified source and object code versions
- * of this program must display Appropriate Legal Notices, as required under
- * Section 5 of the GNU Affero General Public License version 3.
- * 
- * In accordance with Section 7(b) of the GNU Affero General Public License version 3,
- * these Appropriate Legal Notices must retain the display of the "Powered by
- * X2Engine" logo. If the display of the logo is not reasonably feasible for
- * technical reasons, the Appropriate Legal Notices must display the words
- * "Powered by X2Engine".
- *****************************************************************************************/
-
 return array (
 'All Workflows'=>'Alle Werkstromen',
-'Workflow'=>'Werkstroom',
 'Stage Number'=>'Stage Nummer',
 'Stage Name'=>'Stage Naam',
-'Description'=>'Beschrijving',
 'Conversion Rate'=>'Succespercentage',
-'Delete'=>'Verwijder',
-'Value'=>'Waarde',
-'Roles'=>'Rollen',
-'Comment'=>'Commentaar',
 'Stage'=>'Fase',
 'Stages'=>'Fasen',
-'None'=>'Geen',
-'All'=>'Alle',
 'Del'=>'Verwijder',
-'Add'=>'Toevoegen',
 'Started'=>'Gestart',
-'Completed'=>'Voltooid',
-'Completed By'=>'Ingevuld door',
-'Comments'=>'Reacties',
-'Create Workflow'=>'Maak Workflow',
 'Workflows'=>'Workflows',
 'Edit Workflow:'=>'Bewerken Workflow:',
 'Workflow:'=>'Workflow:',
-'User'=>'Gebruiker',
 'Required Stages'=>'Vereiste Fasen',
+'Workflow Stage'=>'Workflow Stage',
 'Workflow Name'=>'Werkstroomnaam',
-'Last Updated'=>'Laatst Aangepast',
 'Comment Required'=>'Reactie Verplicht',
 'Stage {n}'=>'Stage {n}',
 'Please summarize how this stage was completed.'=>'Gelieve samengevat hoe deze fase is afgerond.',
 'Details'=>'Details',
 'Undo'=>'Ongedaan Maken',
-'Complete'=>'Voltooien',
 'Start'=>'Beginnen',
 'Edit Workflow'=>'Bewerken Workflow',
 'Delete Workflow'=>'Verwijder Workflow',
 'Workflow Status'=>'Workflow Status',
 'Any stage'=>'Elke fase',
+'Default Workflow'=>'Default Workflow',
+'Up'=>'Omhoog',
+'Down'=>'Beneden',
+'Process:'=>'Proces:',
+'Process Status'=>'Proces Status',
+'record type(s)'=>'type record (s)',
+'You do not have permission to revert this stage.'=>'Je hebt geen toestemming om deze fase terug te hebben.',
+'You do not have permission to complete this stage.'=>'Je hebt geen toestemming om deze fase te voltooien.',
+'Total Amount'=>'Totaal bedrag',
+'First Stage Color:'=>'Eerste Fase Kleur:',
+'Last Stage Color:'=>'Laatste Stadium Kleur:',
+'Create Process'=>'Maak Proces',
+'All Processes'=>'Alle processen',
+'Processes'=>'Processen',
+'View Process'=>'Bekijk Process',
+'Edit Process'=>'Proces bewerken',
+'Delete Process'=>'Verwijder Proces',
+'You do not have permission to perform that stage change.'=>'Je hebt geen toestemming om dat stadium verandering uit te voeren.',
+'Start the {workflowName} process for the following record:'=>'Start de {workflowName} proces voor het volgende verslag:',
+'{recordName}'=>'{recordName}',
+'Update Process'=>'Proces-update',
+'Stage started'=>'Fase gestart',
+'Stage completed'=>'Fase afgerond',
+'Stage reverted'=>'Stage teruggekeerd',
+'Process Name'=>'Proces Naam',
+'Default Process'=>'Standaard Proces',
+'Stage {stage} has already been completed'=>'Stage {stage} is reeds afgerond',
+'Stage {stage} has already been started'=>'Stage {stage} al is gestart',
+'Stage {stage} has not been started.'=>'Stage {stage} is niet gestart.',
+'You do not have permission to perform that action.'=>'U heeft geen toestemming om die actie uit te voeren.',
+'Stage requirements were not met.'=>'Eisen stadium werd niet voldaan.',
+'Stage required a comment but was given none.'=>'Fase vereist een reactie, maar kreeg niets.',
+'Stage could not be reverted because its '=>'Stage kon niet worden teruggedraaid omdat de',
+'Stage change failed. This could be because your interface is displaying '=>'Stage verandering mislukt. Dit kan zijn omdat de interface wordt weergegeven',
+'A stage required a comment but was given none.'=>'Een fase vereist een reactie, maar kreeg niets.',
+'At least one stage could not be reverted because its '=>'Ten minste een fase kon niet worden teruggedraaid omdat de',
+'Process Stage'=>'Proces Stage',
 );

@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -68,12 +68,11 @@ $form=$this->beginWidget('CActiveForm', array(
 
 <div class="row">
 	<div class="cell dialog-cell">
-		<?php //echo CHtml::label(Yii::t('Actions', 'Start Date'), 'dialog-Actions_dueDate'); ?>
 		<?php echo $form->label($model,('startDate'), array('class'=>'dialog-label'));
 		$defaultDate = Formatter::formatDate($model->dueDate, 'medium');
 		$model->dueDate = Formatter::formatDateTime($model->dueDate);	//format date from DATETIME
 //		$event->start = Formatter::formatDateTime($event->start);
-		
+
 		Yii::import('application.extensions.CJuiDateTimePicker.CJuiDateTimePicker');
 		$this->widget('CJuiDateTimePicker',array(
 			'model'=>$model, //Model object
@@ -93,7 +92,7 @@ $form=$this->beginWidget('CActiveForm', array(
 				'onChange'=>'giveSaveButtonFocus();',
 			),
 		));
-		
+
 		echo $form->label($model, 'endDate', array('class'=>'dialog-label'));
 		$defaultDate = Formatter::formatDate($model->completeDate, 'medium');
 		$model->completeDate = Formatter::formatDateTime($model->completeDate);	//format date from DATETIME
@@ -121,10 +120,12 @@ $form=$this->beginWidget('CActiveForm', array(
 		<?php echo $form->label($model, 'allDay', array('class'=>'dialog-label')); ?>
 		<?php echo $form->checkBox($model, 'allDay', array('onChange'=>'giveSaveButtonFocus();')); ?>
 	</div>
-	
+
 	<div class="cell dialog-cell">
-		<?php echo $form->label($model, 'color', array('class'=>'dialog-label')); ?>
-		<?php echo $form->dropDownList($model, 'color', Actions::getColors(), array('onChange'=>'giveSaveButtonFocus();')); ?>
+		<?php 
+        echo $form->label($model, 'color', array('class'=>'dialog-label')); 
+        echo $model->renderInput('color', array('onChange' => 'giveSaveButtonFocus();')); 
+        ?>
 	</div>
 </div>
 

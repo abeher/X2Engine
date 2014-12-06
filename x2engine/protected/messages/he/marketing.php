@@ -1,68 +1,17 @@
 <?php
-/*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
- * 
- * This program is free software; you can redistribute it and/or modify it under
- * the terms of the GNU Affero General Public License version 3 as published by the
- * Free Software Foundation with the addition of the following permission added
- * to Section 15 as permitted in Section 7(a): FOR ANY PART OF THE COVERED WORK
- * IN WHICH THE COPYRIGHT IS OWNED BY X2ENGINE, X2ENGINE DISCLAIMS THE WARRANTY
- * OF NON INFRINGEMENT OF THIRD PARTY RIGHTS.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU Affero General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU Affero General Public License along with
- * this program; if not, see http://www.gnu.org/licenses or write to the Free
- * Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
- * 02110-1301 USA.
- * 
- * You can contact X2Engine, Inc. P.O. Box 66752, Scotts Valley,
- * California 95067, USA. or at email address contact@x2engine.com.
- * 
- * The interactive user interfaces in modified source and object code versions
- * of this program must display Appropriate Legal Notices, as required under
- * Section 5 of the GNU Affero General Public License version 3.
- * 
- * In accordance with Section 7(b) of the GNU Affero General Public License version 3,
- * these Appropriate Legal Notices must retain the display of the "Powered by
- * X2Engine" logo. If the display of the logo is not reasonably feasible for
- * technical reasons, the Appropriate Legal Notices must display the words
- * "Powered by X2Engine".
- *****************************************************************************************/
-
 return array (
 // Campaign model
-'Campaign'=>'מבצע',
 'Campaigns'=>'קמפיינים',
-'ID'=>'זהות',
 'Master Campaign ID'=>'יחידת זיהוי מבצע',
-'Name'=>'שם',
-'Assigned To'=>'משויך אל',
 'Contact List'=>'רשימת אנשי קשר',
-'Active'=>'פעיל',
-'Description'=>'תאור',
-'Type'=>'סוג',
 'Cost'=>'עלות',
-'Subject'=>'נושא',
 'Content'=>'תוכן',
-'Complete'=>'השלם',
-'Visibility'=>'ראות',
-'Create Date'=>'יצירת תאריך',
 'Launch Date'=>'הפעל תאריך',
-'Last Updated'=>'עדכון אחרון',
-'Updated By'=>'עודכן על ידי',
-'None'=>'אף אחד',
 'Basic Info'=>'מידע בסיסי',
-'Email'=>'דוא"ל',
 'Call List'=>'התקשר רשימה',
 'Physical Mail'=>'דואר פיזי',
 'Email Template'=>'תבנית דוא"ל',
 'Update Campaign'=>'עדכון מבצע',
-'Last Activity'=>'הפעילות האחרונה',
 'Template'=>'תבנית',
 
 // Menu
@@ -70,8 +19,8 @@ return array (
 'Create Campaign'=>'צור מסע פרסום',
 'Newsletters'=>'עלונים',
 'Create Newsletter'=>'יצירת עלון',
-'Create Web Form'=>'יצירת טופס אינטרנט',
 'Web Tracker'=>'האינטרנט Tracker',
+'Email List'=>'רשימת דוא&quot;ל',
 
 // Launching
 'The campaign has already been launched.'=>'הקמפיין כבר השיקה.',
@@ -89,7 +38,6 @@ return array (
 'Opened'=>'נפתח',
 'Clicked'=>'הוא נלחץ',
 'Unsubscribed'=>'בטל את המינוי',
-'Status'=>'מצב',
 
 // Mailing
 'The email sending limit has been reached.'=>'גבול שליחת דוא"ל הושג.',
@@ -122,11 +70,9 @@ return array (
 'Contact has clicked a link'=>'איש הקשר לחץ על קישור',
 'has clicked a link'=>'כבר לחץ על קישור',
 'To stop receiving these messages, click here'=>'כדי להפסיק לקבל הודעות אלה, לחץ כאן',
+'Send As'=>'שלח כ',
 
 // WebForm model
-'Model Name'=>'שמו של דגם',
-'Fields'=>'Champs',
-'Parameters'=>'פרמטרים',
 'CSS'=>'CSS',
 
 // Web Lead Form creator
@@ -138,25 +84,92 @@ return array (
 'Copy and paste this code into your website to include the web lead form.'=>'העתק והדבק את הקוד באתר האינטרנט שלך כדי לכלול את טופס עופרת האינטרנט.',
 'Choose an existing form as a starting point.'=>'בחר בטופס קיים כנקודת התחלה.',
 'Text Color'=>'צבע טקסט',
-'Background Color'=>'צבע רקע',
 'Font'=>'גופן',
 'Border'=>'גבול',
 'Size'=>'גודל',
 'pixels'=>'פיקסלים',
-'Color'=>'Couleur',
-'Tags'=>'תגיות',
-'Default'=>'לפי ברירת מחדל',
 'black'=>'שחור',
 'transparent'=>'שקוף',
 'none'=>'אף לא אחד',
-'Example'=>'דוגמה',
 'These tags will be applied to any contact created by the form.'=>'תגים אלה יחולו על כל מגע שנוצר על ידי הטופס.',
-'Save'=>'להציל',
 'Enter a name and save this form to edit later.'=>'זן שם ולשמור בטופס זה כדי לערוך מאוחר יותר.',
 'Form Saved'=>'טופס שנשמר',
 'Reset Form'=>'איפוס טופס',
 'Embed Code'=>'קוד להטמעה',
 'Saved Forms'=>'טפסים שמורים',
-'Settings'=>'הגדרות',
-'Preview'=>'תצוגה מקדימה',
+'Enter custom css for the web form.'=>'הזן CSS המותאם אישית עבור טופס האינטרנט.',
+'Custom &lt;HEAD&gt;'=>'&lt;HEAD&gt; המותאם אישית',
+'Enter any HTML you would like inserted into the &lt;HEAD&gt; tag.'=>'הזן את כל ה-HTML שאתה רוצה להוסיף לתג &lt;HEAD&gt;.',
+'Select email templates to send to the new weblead and the user assigned to the weblead.'=>'בחר תבניות דואר אלקטרוני כדי לשלוח לweblead החדש והמשתמש שהוקצה לweblead.',
+'NOTE: The weblead form must be saved for these emails to be sent.'=>'הערה: טופס weblead יש לשמור על הודעות דוא&quot;ל אלה להישלח.',
+'User Email'=>'דוא&quot;ל של משתמש',
+'Weblead Email'=>'דוא&quot;ל Weblead',
+'Drag and Drop fields from Fields List to Form.'=>'גרור ושחרר שדות מרשימת שדות לטופס.',
+'Live web form preview.'=>'תצוגה מקדימה חית טופס אינטרנט.',
+'Label:'=>'תווית:',
+'Position:'=>'עמדה:',
+
+// Web Tracker
+'Web Tracker Code'=>'אינטרנט קוד מעקב',
+'This HTML tag will allow you to track contacts who visit your website.'=>'תג HTML זה יאפשר לך לעקוב אחר אנשי קשר שמבקרים באתר האינטרנט שלך.',
+'Paste this code into the body section of every page of your website.'=>'להדביק קוד זה בקטע הגוף של כל דף באתר שלך.',
+'<b>Note:</b> Contacts can be tracked only if they filled out the web lead capture form, or clicked on a tracking link in an email campaign.'=>'<b>הערה:</b> ניתן לעקוב במגעים רק אם הם מילא את הטופס להוביל ללכידת האינטרנט, או לחצו על קישור מעקב בקמפיין דוא&quot;ל.',
+'Web Tracker Settings'=>'הגדרות מעקב אינטרנט',
+'You can enable or disable the web tracker. The tracker will ignore repeat hits from a given contact during the cooldown period.'=>'ניתן להפעיל או להשבית את גשש האינטרנט. הגשש יתעלם להיטים חוזרים מקשר נתון בתקופת קירור.',
+'If a contact visits several pages in a short time, you will only get one notification.'=>'אם קשר מבקר כמה עמודים בזמן קצר, אתה מקבל רק הודעה אחת.',
+'Turn it down all the way to receive notifications about every page hit.'=>'להפוך אותו כל הדרך למטה כדי לקבל הודעות על כל מכת דף.',
+'Contact has opened the email sent on '=>'קשר פתח את הדואר האלקטרוני שנשלח על',
+'Email sent'=>'דוא&quot;ל שנשלח',
+'Header Code'=>'קוד הכותרת',
+'Batch completed, sending again in '=>'אצווה הושלם, שולח שוב ב',
+'A new web lead has been assigned to you: '=>'הובלה אינטרנט חדשה כבר הוקצתה לך:',
+'Marketing Automation'=>'שיווק אוטומציה',
+'Contacts for Account Report ('=>'אנשי קשר לדו&quot;ח חשבון (',
+'Mailing for Account Report ('=>'דיוור לדו&quot;ח חשבון (',
+'Create a public form to receive new services cases. When the form is submitted, a new '=>'יצירת טופס ציבור לקבל מקרי שירותים חדשים. כאשר הטופס שהוגש, חדש',
+'This HTML tag will allow you to track contacts who visit your '=>'תג HTML זה יאפשר לך לעקוב אחר אנשי קשר שמבקרים',
+'Paste this code into the body section of every page of your '=>'להדביק קוד זה בקטע הגוף של כל דף שלך',
+'You can enable or disable the web tracker. The tracker will '=>'ניתן להפעיל או להשבית את גשש האינטרנט. הגשש יהיה',
+'If a contact visits several pages in a short time, you '=>'אם קשר מבקר כמה עמודים בזמן קצר, אתה',
+'Turn it down all the way to receive notifications about '=>'הפעל אותו כל הדרך עד לקבלת הודעות על',
+'The contact you enter here will be used for variable replacement, i.e. for "John Doe" the token {firstName} will get replaced with "John"'=>'הקשר שתזין כאן ישמש להחלפה משתנה, כלומר עבור &quot;John Doe&quot; האסימון {firstName} יוחלף עם &quot;ג&#39;ון&quot;',
+'If you want to keep your current HTML forms but still get web leads into X2, please see the wiki article located here: {link}'=>'אם אתה רוצה לשמור על טפסי HTML הנוכחיים שלך, אבל עדיין מקבל אינטרנט מוביל לתוך X2, אנא עיין במאמר wiki נמצא כאן: {link}',
+'Web Lead API'=>'API עופרת האינטרנט',
+'Custom HTML could not be removed.'=>'המותאם אישית HTML לא ניתן להסירו.',
+'Custom HTML could not be saved.'=>'המותאם אישית HTML לא יכול להינצל.',
+'Select email templates to send to the new weblead and the user '=>'בחר תבניות דואר אלקטרוני כדי לשלוח לweblead החדש והמשתמש',
+'Type:'=>'סוג:',
+'Value:'=>'ערך:',
+'The web form must be saved for custom fields to get '=>'הטופס באינטרנט יש לשמור לשדות מותאמים אישית כדי לקבל',
+'The web form must be saved for your custom fields or custom HTML to '=>'הטופס באינטרנט יש לשמור עבור השדות המותאמים אישית או HTML מותאם אישית שלך',
+'Anonymous Contacts'=>'מגעים אנונימי',
+'Fingerprints'=>'טביעות אצבעות',
+'Anonymous Contact {email}'=>'אנונימי לתקשר {email}',
+'Anonymous Contact'=>'אנונימי לתקשר',
+'X2Identity Settings'=>'הגדרות X2Identity',
+'X2Identity uses browser fingerprinting as an alternative '=>'X2Identity משתמש בטביעת אצבע דפדפן כחלופה',
+'If browser fingerprinting is enabled, the tracker will '=>'אם טביעת אצבע דפדפן מופעלת, יהיה הגשש',
+'You can set the threshold for the minimum number of attributes that '=>'באפשרותך להגדיר את הסף למספר המינימאלי של תכונות ש',
+'Disable Slider'=>'להשבית Slider',
+'Import Campaigns'=>'קמפיינים יבוא',
+'Export Campaigns'=>'יצוא מסעות פרסום',
+'Email Delivery Progress'=>'התקדמות משלוח דואר אלקטרוני',
+'Click to refresh displays of campaign data on this page.'=>'לחץ כדי לרענן את התצוגות של נתונים קמפיין בדף זה.',
+'Errors that occurred when attempting to send email:'=>'שגיאות שאירעו בעת הניסיון לשלוח דואר אלקטרוני:',
+'You have unsent mail in this campaign. Are you sure you want to forcibly mark this campaign as complete?'=>'יש לך דואר שלא נשלח בקמפיין הזה. האם אתה בטוח שברצונך לסמן זה קמפיין שלם ככפייה?',
+'Please try again in {t} {units}.'=>'אנא נסה שוב {t} {units}',
+'Skipping {email}; another concurrent send operation is handling delivery to this address.'=>'דילוג {email} עוד מבצע לשלוח בו זמנית מטפל במשלוח לכתובת זו.',
+'Skipping delivery for recipient {id}; email address has been set to blank.'=>'דילוג על משלוח לנמען {id} כתובת הדוא&quot;ל הוגדרה לריקה.',
+'Skipping {email}; the contact has unsubscribed.'=>'דילוג {email} הקשר בטל את המינוי.',
+'Email has already been sent to {address}'=>'אימייל כבר נשלח {address}',
+'Email sent successfully to {address}.'=>'אימייל נשלח בהצלחה {address}',
+'Email could not be sent to {address}. The message given was: {message}'=>'דוא&quot;ל לא ניתן היה לשלוח {address} ההודעה ניתנה הייתה: {message}',
+'All emails sent.'=>'כל הודעות הדוא&quot;ל שנשלחו.',
+'Batch timeout limit reached.'=>'מגבלת פסק זמן אצווה הגיעה.',
+'Failed to save temporary list.'=>'לא הצליח להציל את הרשימה זמנית.',
+'Specified campaign does not exist.'=>'קמפיין שצוין אינו קיים.',
+'Delete Form'=>'מחיקת טופס',
+'Select email templates to send to the new web lead and the user '=>'בחר תבניות דואר אלקטרוני כדי לשלוח לאינטרנט להוביל החדש והמשתמש',
+'NOTE: The web lead form must be saved for these emails to be sent.'=>'הערה: הטופס להוביל האינטרנט יש לשמור על הודעות דוא&quot;ל אלה שיישלחו.',
+'NOTE: The web lead form must be saved for these tags to be applied.'=>'הערה: הטופס להוביל האינטרנט חייב להיות שמור לתגים אלה כדי להיות מיושמים.',
 );

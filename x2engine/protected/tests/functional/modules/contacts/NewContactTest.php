@@ -2,10 +2,11 @@
 
 Yii::import('application.modules.contacts.models.Contacts');
 Yii::import('application.modules.actions.models.Actions');
+Yii::import('application.modules.accounts.models.Accounts');
 
 /**
  * 
- * @package X2CRM.tests.functional.modules.contacts
+ * @package application.tests.functional.modules.contacts
  */
 class NewContactTest extends X2WebTestCase {
 
@@ -13,6 +14,10 @@ class NewContactTest extends X2WebTestCase {
 		'contacts' => 'Contacts',
 		'actions' => 'Actions'
 	);
+
+    protected function setUp () {
+        $this->markTestSkipped ();
+    }
 	
 	public function testNewContactAndAccount() {
 		$this->openX2('/contacts/create');

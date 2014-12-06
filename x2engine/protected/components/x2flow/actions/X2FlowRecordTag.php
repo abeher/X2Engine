@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -36,39 +36,61 @@
 
 /**
  * X2FlowAction that adds, removes or clears all tags on a record
- * 
- * @package X2CRM.components.x2flow.actions
+ *
+ * @package application.components.x2flow.actions
  */
 class X2FlowRecordTag extends X2FlowAction {
 	public $title = 'Add or Remove Tags';
-	public $info = 'Enter a commna-separated list of tags to add to the record';
-	
+	public $info = 'Enter a comma-separated list of tags to add to the record';
+
 	public function paramRules() {
 		$tagActions = array(
-			'add' => 'Add',
-			'remove' => 'Remove',
-			'clear' => 'Clear All',
+			'add' => Yii::t('studio','Add'),
+			'remove' => Yii::t('studio','Remove'),
+			'clear' => Yii::t('studio','Clear All'),
 		);
 		return array(
 			'title' => Yii::t('studio',$this->title),
 			'info' => Yii::t('studio',$this->info),
 			'modelRequired' => 1,
 			'options' => array(
-				array('name'=>'tags','label'=>'Tags','type'=>'tags'),
-				array('name'=>'action','label'=>'Action','type'=>'dropdown','options'=>$tagActions),
+				array(
+                    'name'=>'tags',
+                    'label'=>Yii::t('studio','Tags'),
+                    'type'=>'tags',
+                    'optional'=>true
+                ),
+				array('name'=>'action','label'=>Yii::t('studio','Action'),'type'=>'dropdown','options'=>$tagActions),
 			));
 	}
-	
+
 	public function execute(&$params) {
-		$tags = Tags::parseTags($this->parseOption('tags',$params));
-		
+		$tags = $this->parseOption('tags',$params);
+
+        $retVal;
+        $model = $params['model'];
 		switch($this->parseOption('action',$params)) {
 			case 'add':
-				return $params['model']->addTags($tags);
+				$retVal = $model->addTags($tags);
+                break;
 			case 'remove':
-				return $params['model']->removeTags($tags);
+				$retVal = $model->removeTags($tags);
+                break;
 			case 'clear':
-				return $params['model']->clearTags();
+				$retVal = $model->clearTags();
+                break;
 		}
+        if ($retVal) {
+		    if(is_subclass_of ($model,'X2Model')) {
+                return array (
+                    true,
+                    Yii::t('studio', 'View updated record: ').$model->getLink ()
+                );
+            } else {
+                return array (true, "");
+            }
+        } else {
+            return array (false, "");
+        }
 	}
 }

@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -39,7 +39,7 @@
  * 
  * Class for rendering the widget that displays the message of the day.
  * 
- * @package X2CRM.components 
+ * @package application.components 
  */
 class MessageBox extends X2Widget {
 
@@ -51,7 +51,7 @@ class MessageBox extends X2Widget {
 	public function run() {
 		$content=Social::model()->findByAttributes(array('type'=>'motd'));
 		if(isset($content))
-			$content=$content->data;
+			$content=CHtml::encode($content->data);
 		else
 			$content=Yii::t('app','Please enter a message of the day!');
 		$this->render('messageBox', array(

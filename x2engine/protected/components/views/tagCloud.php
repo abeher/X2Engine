@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -36,12 +36,43 @@
 
 $justMeUrl = $this->controller->createUrl('/site/toggleShowTags', array('tags'=>'justMe'));
 $allUsersUrl = $this->controller->createUrl('/site/toggleShowTags', array('tags'=>'allUsers'));?><span style="float:left"><?php
-echo CHtml::ajaxLink(Yii::t('app','Just Me'), $justMeUrl,array('success'=>'function(response) { $("#myTags").show(); $("#allTags").hide(); } '))." | ".CHtml::ajaxLink(Yii::t('app','All Users'), $allUsersUrl,array('success'=>'function() { $("#allTags").show(); $("#myTags").hide(); }'))."<br />";
-?></span><span style="float:right"><span id="tag-hint" style="color:#06c">[?]</span></span> <br><br>
+echo CHtml::ajaxLink(
+    Yii::t('app','Just Me'), 
+    $justMeUrl,
+    array(
+        'success'=>'function(response) { 
+            $("#myTags").show(); 
+            $("#allTags").hide(); 
+        } '
+    ))." | ".CHtml::ajaxLink(Yii::t('app','All Users'), 
+    $allUsersUrl,
+    array(
+        'success'=>'function() { 
+            $("#allTags").show(); 
+            $("#myTags").hide(); 
+        }'))."<br />";
+?></span>
+<span style="float:right">
+    <?php
+    echo X2Html::hint (
+        Yii::t(
+            'app','Pressing the X button on a tag will hide it from this widget. Hidden tags can '.
+            'be restored from your Preferences page.')); 
+    ?>
+</span> <br><br>
 <div id="myTags" <?php echo ($showAllUsers? 'style="display:none;"' : ''); ?>>
 <?php
 foreach($myTags as &$tag) {
-	echo '<span style="position:relative;" class="tag hide" tag-name="'.substr($tag['tag'],1).'">'.CHtml::link($tag['tag'],array('/search/search?term=%23'.substr($tag['tag'],1)), array('class'=>'x2-link x2-tag')).'</span>';
+	echo 
+        '<span style="position:relative;" class="tag hide" tag-name="'.substr($tag['tag'],1).'">'.
+            CHtml::link(
+                CHtml::encode ($tag['tag']),
+                array(
+                    '/search/search','term'=>'#'.ltrim($tag['tag'],'#')
+                ),
+                array('class'=>'x2-link x2-tag')
+            ).
+        '</span>';
 }
 ?>
 </div>
@@ -49,7 +80,17 @@ foreach($myTags as &$tag) {
 <div id="allTags"  <?php echo ($showAllUsers? '' : 'style="display:none;"'); ?>>
 <?php
 foreach($allTags as &$tag) {
-	echo '<span style="position:relative;" class="tag hide" tag-name="'.substr($tag['tag'],1).'">'.CHtml::link($tag['tag'],array('/search/search?term=%23'.substr($tag['tag'],1)), array('class'=>'x2-link x2-tag')).' </span>';
+	echo 
+        '<span style="position:relative;" class="tag hide" tag-name="'.substr($tag['tag'],1).'">'.
+            CHtml::link(
+                CHtml::encode ($tag['tag']),
+                array(
+                    '/search/search',
+                    'term'=>'#'.ltrim($tag['tag'],'#'),
+                ),
+                array('class'=>'x2-link x2-tag')
+            ).
+        '</span>';
 }
 ?>
 </div>
@@ -71,9 +112,5 @@ foreach($allTags as &$tag) {
         });
     }).mouseleave(function(){
         $('.hide-link-span').remove();
-    });
-    $('#tag-hint').qtip({
-       position:{'my':'top right','at':'bottom left'},
-       content:'Pressing the X button on a tag will hide it from this widget. Hidden tags can be restored from your Preferences page.'
     });
 </script>

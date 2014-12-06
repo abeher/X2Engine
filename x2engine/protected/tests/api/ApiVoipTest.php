@@ -9,13 +9,16 @@ Yii::import('application.models.*');
  *
  * @author Demitri Morgan <demitri@x2engine.com>
  */
-class ApiVoipTest extends CURLTestCase {
+class ApiVoipTest extends CURLDbTestCase {
 
 	public $fixtures = array(
 		'notifications' => 'Notification',
 		'contacts' => 'Contacts',
-		'phoneNumbers' => 'PhoneNumber',
 	);
+
+	public static function referenceFixtures() {
+		return array('phoneNumbers' => 'PhoneNumber',);
+	}
 
 	public function urlFormat() {
 		return 'api/voip?data={data}';

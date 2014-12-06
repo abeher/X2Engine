@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -36,30 +36,50 @@
 
 /**
  * X2FlowAction that adds a comment to a record
- * 
- * @package X2CRM.components.x2flow.actions
+ *
+ * @package application.components.x2flow.actions
  */
 class X2FlowRecordListRemove extends X2FlowAction {
 	public $title = 'Remove from List';
 	public $info = 'Remove this record from a static list.';
-	
+
 	public function paramRules() {
 		return array(
 			'title' => Yii::t('studio',$this->title),
 			'info' => Yii::t('studio',$this->info),
 			'modelRequired' => 'Contacts',
 			'options' => array(
-				array('name'=>'listId','label'=>'List','type'=>'link','linkType'=>'X2List','linkSource'=>Yii::app()->controller->createUrl(
-					CActiveRecord::model('X2List')->autoCompleteSource
-				)),
+				array(
+                    'name'=>'listId',
+                    'label'=>Yii::t('studio','List'),
+                    'type'=>'link',
+                    'linkType'=>'X2List',
+                    'linkSource'=>Yii::app()->createUrl(
+					    CActiveRecord::model('X2List')->autoCompleteSource
+				    )
+                ),
 			));
 	}
-	
+
 	public function execute(&$params) {
-		$list = CActiveRecord::model('X2List')->findByPk($this->parseOption('listId',$params));
-		if($list !== null && $list->modelName === get_class($params['model']))
-			return $list->removeIds($params['model']->id);
-		else
-			return false;
+        $listId = $this->parseOption('listId',$params);
+        if(is_numeric($listId)){
+            $list = CActiveRecord::model('X2List')->findByPk($listId);
+        }else{
+            $list = CActiveRecord::model('X2List')->findByAttributes(
+                array('name'=>$listId));
+        }
+		
+        if($list === null) {
+            return array (false, Yii::t('studio', 'List could not be found'));
+        } else if ($list->modelName !== get_class($params['model'])) {
+            return array (false, Yii::t('studio', 'The selected list does not contain records '.
+                'of this type'));
+        } else { // $list !== null && $list->modelName === get_class($params['model'])
+			if ($list->removeIds($params['model']->id)) {  
+                return array (true, "");
+            }
+        }
+        return array (false, "");
 	}
 }

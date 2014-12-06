@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -34,17 +34,35 @@
  * "Powered by X2Engine".
  *****************************************************************************************/
 
+Yii::app()->clientScript->registerCss('actionsFormCss',"
+    #Actions_actionDescription {
+        box-sizing: border-box;
+    }
+");
+
 Yii::app()->clientScript->registerScript('validate', '
 $(document).ready(function(){
 	$("#actions-newCreate-form").submit(function(){
-		if($("#' . CHtml::activeId($actionModel, 'associationType') . '").val()!="none"){
-			if($("#' . CHtml::activeId($actionModel, 'associationId') . '").val()==""){
-				alert("Please enter a valid association");
+        x2.forms.clearErrorMessages ($("#action-form"));
+		if($("#action-form #'.CHtml::activeId($actionModel, 'associationType').'").val()!="none"){
+			if($("#action-form #'.CHtml::activeId($actionModel, 'associationId').'").val()==""){
+                $("#auto_select").addClass ("error");
+                x2.forms.errorSummaryAppend ($("#action-form"), [
+				    "'.Yii::t('actions', "Please enter a valid association").'"
+                ]);
 				return false;
 			}
 		}
-        if($("#' . CHtml::activeId($actionModel, 'actionDescription') . '").val()=="" && $("#' . CHtml::activeId($actionModel, 'subject') . '").val()==""){
-            alert("Please enter a description or subject");
+        var actionDescription$ = $("#action-form #'.CHtml::activeId($actionModel, 'actionDescription').'");
+        if(actionDescription$.hasClass ("x2-required") && 
+           actionDescription$.val()=="" && 
+           $("#'.CHtml::activeId($actionModel, 'subject').'").val()==""){
+
+            actionDescription$.addClass ("error");
+            $("#'.CHtml::activeId($actionModel, 'subject').'").addClass ("error");
+            x2.forms.errorSummaryAppend ($("#action-form"), [
+                "'.Yii::t('actions', "Please enter a description or subject").'"
+            ]);
             return false;
         }
 	}
@@ -55,14 +73,13 @@ Yii::app()->clientScript->registerScript('highlightSaveAction', "
 $(function(){
 	$('#action-form input, #action-form select, #action-form textarea').change(function(){
 		$('#save-button, #save-button1, #save-button2').addClass('highlight'); //css('background','yellow');
-	}
-	);
+	});
 }
 );");
 $themeUrl = Yii::app()->theme->getBaseUrl();
-$backdating=!(Yii::app()->user->checkAccess('ActionsAdmin') || Yii::app()->params->admin->userActionBackdating);
+$backdating = !(Yii::app()->user->checkAccess('ActionsAdmin') || Yii::app()->settings->userActionBackdating);
 ?>
-<div class="form focus-mini-module" id="action-form">
+<div class="form" id="action-form">
     <?php
     $form = $this->beginWidget('CActiveForm', array(
         'id' => 'actions-newCreate-form',
@@ -72,22 +89,27 @@ $backdating=!(Yii::app()->user->checkAccess('ActionsAdmin') || Yii::app()->param
     ?>
     <div class="row">
         <b><?php echo $form->labelEx($actionModel, 'subject'); ?></b>
-        <?php echo $form->textField($actionModel, 'subject', array('size' => 80)); ?>
+        <?php echo $form->textField($actionModel, 'subject', array('class' => 'x2-xxwide-input')); ?>
         <div class="row">
             <b><?php echo $form->labelEx($actionModel, 'actionDescription'); ?></b>
             <?php //echo $form->label($actionModel,'actionDescription'); ?>
-            <div class="text-area-wrapper">
-                <?php echo $form->textArea($actionModel, 'actionDescription', array('rows' => (6), 'cols' => 40)); ?>
-                <?php //echo $form->error($actionModel,'actionDescription'); ?>
+            <div>
+                <?php 
+                echo $actionModel->renderInput ('actionDescription',
+                    array(
+                        'class' => 'x2-xxwide-input', 'rows' => 6
+                    )); 
+                //echo $form->error($actionModel,'actionDescription'); 
+                ?>
             </div>
             <div class="row">
                 <div class="cell">
                     <?php echo $form->label($actionModel, 'associationType'); ?>
                     <?php
-                    echo $form->dropDownList($actionModel, 'associationType', array_merge(array('none' => 'None'), $modelList), array(
+                    echo $form->dropDownList($actionModel, 'associationType', array_merge(array('none' => Yii::t('app','None')), $modelList), array(
                         'ajax' => array(
                             'type' => 'POST', //request type
-                            'url' => CController::createUrl('/actions/parseType'), //url to call.
+                            'url' => CController::createUrl('/actions/actions/parseType'), //url to call.
                             //Style: CController::createUrl('currentController/methodToCall')
                             'update' => '#', //selector to update
                             'success' => 'function(data){
@@ -103,14 +125,17 @@ $backdating=!(Yii::app()->user->checkAccess('ActionsAdmin') || Yii::app()->param
                             )
                     );
                     echo $form->error($actionModel, 'associationType');
-                    if ($actionModel->associationType != 'none') {
+                    if($actionModel->associationType != 'none'){
                         $linkModel = X2Model::getModelName($actionModel->associationType);
-                    } else {
+                    }else{
                         $linkModel = null;
                     }
-                    if (class_exists($linkModel)) {
-                        $linkSource = $this->createUrl(X2Model::model($linkModel)->autoCompleteSource);
-                    } else {
+                    if(!empty($linkModel) && class_exists($linkModel)){
+                        if($linkModel == 'X2Calendar')
+                            $linkSource = '';
+                        else
+                            $linkSource = $this->createUrl(X2Model::model($linkModel)->autoCompleteSource);
+                    }else{
                         $linkSource = "";
                     }
                     ?>
@@ -125,10 +150,10 @@ $backdating=!(Yii::app()->user->checkAccess('ActionsAdmin') || Yii::app()->param
                         'options' => array(
                             'minLength' => '2',
                             'select' => 'js:function( event, ui ) {
-                            $("#' . CHtml::activeId($actionModel, 'associationId') . '").val(ui.item.id);
-                            $(this).val(ui.item.value);
-                            return false;
-                        }',
+                                $("#'.CHtml::activeId($actionModel, 'associationId').'").val(ui.item.id);
+                                $(this).val(ui.item.value);
+                                return false;
+                            }',
                         ),
                     ));
                     ?>
@@ -136,13 +161,15 @@ $backdating=!(Yii::app()->user->checkAccess('ActionsAdmin') || Yii::app()->param
                 <div class="cell">
                     <?php echo $form->hiddenField($actionModel, 'associationId'); ?>
                     <?php
-                    if ($actionModel->type == 'event')
-                        echo $form->label($actionModel, 'startDate');
-                    else
-                        echo $form->label($actionModel, 'dueDate');
-                    if (is_numeric($actionModel->dueDate))
-                        $actionModel->dueDate = Formatter::formatDateTime($actionModel->dueDate); //format date from DATETIME
                     Yii::import('application.extensions.CJuiDateTimePicker.CJuiDateTimePicker');
+                    if(!$actionModel->isTimedType) {
+                        if($actionModel->type == 'event')
+                            echo $form->label($actionModel, 'startDate');
+                        else
+                            echo $form->label($actionModel, 'dueDate');
+                    if(is_numeric($actionModel->dueDate))
+                        $actionModel->dueDate = Formatter::formatDateTime($actionModel->dueDate); //format date from DATETIME
+                    
                     $this->widget('CJuiDateTimePicker', array(
                         'model' => $actionModel, //Model object
                         'attribute' => 'dueDate', //attribute name
@@ -157,13 +184,13 @@ $backdating=!(Yii::app()->user->checkAccess('ActionsAdmin') || Yii::app()->param
                         'language' => (Yii::app()->language == 'en') ? '' : Yii::app()->getLanguage(),
                         'htmlOptions' => array('onClick' => "$('#ui-datepicker-div').css('z-index', '20');"), // fix datepicker so it's always on top
                     ));
+                    echo $form->error($actionModel, 'dueDate'); 
                     ?>
-                    <?php echo $form->error($actionModel, 'dueDate'); ?>
                     <?php
-                    if ($actionModel->type == 'event') {
+                    if($actionModel->type == 'event'){
                         echo $form->label($actionModel, 'endDate');
-                        if ($actionModel->isNewRecord)
-                            if (isset($this->controller)) // inline action?
+                        if($actionModel->isNewRecord)
+                            if(isset($this->controller)) // inline action?
                                 $actionModel->completeDate = Formatter::formatDateEndOfDay(time()); //default to tomorow for new actions
                             else
                                 $actionModel->completeDate = Formatter::formatDateEndOfDay(time()); //default to tomorow for new actions
@@ -177,7 +204,7 @@ $backdating=!(Yii::app()->user->checkAccess('ActionsAdmin') || Yii::app()->param
                             'mode' => 'datetime', //use "time","date" or "datetime" (default)
                             'options' => array(
                                 'dateFormat' => ( (isset($this->controller)) ? Formatter::formatDatePicker('medium') : Formatter::formatDatePicker('medium') ),
-                                'timeFormat' => ( (isset($this->controller)) ? Formatter::formatTimePicker() : $this->formattimePicker() ),
+                                'timeFormat' => ( (isset($this->controller)) ? Formatter::formatTimePicker() : Formatter::formatTimePicker() ),
                                 'ampm' => ( (isset($this->controller)) ? Formatter::formatAMPM() : Formatter::formatAMPM() ),
                                 'changeMonth' => true,
                                 'changeYear' => true
@@ -189,59 +216,29 @@ $backdating=!(Yii::app()->user->checkAccess('ActionsAdmin') || Yii::app()->param
                         echo $form->label($actionModel, 'allDay');
                         echo $form->checkBox($actionModel, 'allDay');
                     }
+                    }
                     ?>
                 </div>
                 <div class="cell">
                     <?php echo $form->label($actionModel, 'priority'); ?>
-                    <?php
-                    echo $form->dropDownList($actionModel, 'priority', array(
-                        '1' => Yii::t('actions', 'Low'),
-                        '2' => Yii::t('actions', 'Medium'),
-                        '3' => Yii::t('actions', 'High')));
-                    ?>
+                    <?php echo $form->dropDownList($actionModel, 'priority', Actions::getPriorityLabels()); ?>
 
                     <?php
-                    if ($actionModel->type == 'event') {
+                    if($actionModel->type == 'event'){
                         echo $form->label($actionModel, 'color');
                         ?>
                         <?php
-                        echo $form->dropDownList($actionModel, 'color', Actions::getColors());
+                        echo $actionModel->renderInput('color');
                     }
                     ?>
                 </div>
                 <div class="cell">
-                    <?php echo $form->label($actionModel, 'assignedTo'); ?>
-                    <?php echo $form->dropDownList($actionModel, 'assignedTo', $users, array('id' => 'actionsAssignedToDropdown')); ?>
-                    <?php //echo $form->error($actionModel,'assignedTo'); ?>
-                    <?php
-                    echo "<br />";
-                    if (isset($this->module) && $this->module instanceof ActionsModule) {
-                        $url = $this->createUrl('/groups/getGroups');
-                    } else {
-                        $url = $this->controller->createUrl('/groups/getGroups');
-                    }
-                    echo "<label>" . Yii::t('app', 'Group?') . "</label>";
-                    echo CHtml::checkBox('group', '', array(
-                        'id' => 'groupCheckbox',
-                        'ajax' => array(
-                            'type' => 'POST', //request type
-                            'url' => $url, //url to call.
-                            //Style: CController::createUrl('currentController/methodToCall')
-                            'update' => '#actionsAssignedToDropdown', //selector to update
-                            'data' => 'js:{checked: $(this).attr("checked")=="checked"}',
-                            'complete' => 'function(){
-                                            if($("#groupCheckbox").attr("checked")!="checked"){
-                                                $("#groupCheckbox").attr("checked","checked");
-                                                $("#Actions_visibility option[value=\'2\']").remove();
-                                            }else{
-                                                $("#groupCheckbox").removeAttr("checked");
-                                                $("#Actions_visibility").append(
-                                                    $("<option></option>").val("2").html("User\'s Groups")
-                                                );
-                                            }
-                                        }'
-                        )
-                    ));
+                    <?php 
+                    echo $form->label($actionModel, 'assignedTo');
+                    echo $actionModel->renderInput (
+                        'assignedTo', array('id' => 'actionsAssignedToDropdown')); 
+                    //echo $form->dropDownList($actionModel, 'assignedTo', X2Model::getAssignmentOptions(), array('id' => 'actionsAssignedToDropdown')); 
+                    echo $form->error($actionModel, 'assignedTo'); 
                     ?>
                 </div>
 
@@ -258,88 +255,55 @@ $backdating=!(Yii::app()->user->checkAccess('ActionsAdmin') || Yii::app()->param
             </div>
         </div>
     </div>
-<div class="form">
-    <span><?php echo CHtml::link(CHtml::image($themeUrl . '/images/icons/Collapse_Widget.png', '', array('style' => 'float:left;')) . "<label style='cursor:pointer'>&nbsp;Action Reminders</label>", '#', array('id' => 'reminder-link', 'style' => 'color:black;text-decoration:none;')); ?></span>
-    <div id="action-reminders">
-        <br>
-        <?php echo $form->checkBox($actionModel, 'reminder'); ?>
-        <?php echo Yii::t('actions', 'Create a notification reminder for'); ?>
-        <?php
-        echo CHtml::dropDownList('notificationUsers', !empty($notifType)?$notifType:'assigned', array(
-            'me' => 'me',
-            'assigned' => 'the assigned user',
-            'both' => 'me and the assigned user',
-        ));
-        ?>
-        <?php
-        echo CHtml::dropDownList('notificationTime', !empty($notifTime)?$notifTime:15, array(
-            1 => '1 minute',
-            5 => '5 minutes',
-            10 => '10 minutes',
-            15 => '15 minutes',
-            30 => '30 minutes',
-            60 => '1 hour'
-        ));
-        ?>
-        <?php echo Yii::t('actions', 'before this action is due.') ?>
+    <div class="form">
+        <span><?php echo CHtml::link(CHtml::image($themeUrl.'/images/icons/Collapse_Widget.png', '', array('style' => 'float:left;'))."<label style='cursor:pointer'>&nbsp;".Yii::t('actions', '{action} Reminders', array('{action}'=>Modules::displayName(false)))."</label>", '#', array('id' => 'reminder-link', 'style' => 'color:black;text-decoration:none;')); ?></span>
+        <div id="action-reminders">
+            <br>
+            <?php echo $form->checkBox($actionModel, 'reminder'); ?>
+            <?php
+            echo Yii::t('actions', 'Create a notification reminder for {user} {time} before this {action} is due', array(
+                '{user}' => CHtml::dropDownList('notificationUsers', !empty($notifType) ? $notifType : 'assigned', array(
+                    'me' => Yii::t('actions', 'me'),
+                    'assigned' => Yii::t('actions', 'the assigned user'),
+                    'both' => Yii::t('actions', 'me and the assigned user'),
+                )),
+                '{time}' => CHtml::dropDownList('notificationTime', !empty($notifTime) ? $notifTime : 15, array(
+                    1 => Yii::t('actions','1 minute'),
+                    5 => Yii::t('actions','5 minutes'),
+                    10 => Yii::t('actions','10 minutes'),
+                    15 => Yii::t('actions','15 minutes'),
+                    30 => Yii::t('actions','30 minutes'),
+                    60 => Yii::t('actions','1 hour'),
+                    1440 => Yii::t('actions','1 day'),
+                    10080 => Yii::t('actions','1 week')
+                )),
+                '{action}' => lcfirst(Modules::displayName(false)),
+            ));
+            ?>
+        </div>
     </div>
-</div>
-<div class="form">
-    <span><?php echo CHtml::link(CHtml::image($themeUrl . '/images/icons/Expand_Inverted.png', '', array('style' => 'float:left;')) . "<label style='cursor:pointer;'>&nbsp;Action Backdating</label>", '#', array('id' => 'backdating-link', 'style' => 'color:black;text-decoration:none;')); ?></span>
-    <div id="action-backdating" style="display:none;" class="row">
-        <br>
-        <div class="cell">
-            <?php echo $form->labelEx($actionModel, 'createDate'); ?>
+    <div class="form">
+        <span>
             <?php
-            $actionModel->createDate = Formatter::formatDateTime($actionModel->createDate);
-            $this->widget('CJuiDateTimePicker', array(
-                'model' => $actionModel, //Model object
-                'attribute' => 'createDate', //attribute name
-                'mode' => 'datetime', //use "time","date" or "datetime" (default)
-                'options' => array(
-                    'dateFormat' => ( (isset($this->controller)) ? Formatter::formatDatePicker('medium') : Formatter::formatDatePicker('medium') ),
-                    'timeFormat' => ( (isset($this->controller)) ? Formatter::formatTimePicker() : Formatter::formatTimePicker() ),
-                    'ampm' => ( (isset($this->controller)) ? Formatter::formatAMPM() : Formatter::formatAMPM() ),
-                    'changeMonth' => false,
-                    'changeYear' => true,
-                ), // jquery plugin options
-                'language' => (Yii::app()->language == 'en') ? '' : Yii::app()->getLanguage(),
-                'htmlOptions'=>array(
-                    'disabled'=>$backdating,
-                ),
-            ));
-            ?>
-        </div>
-        <div class="cell">
-            <?php echo $form->labelEx($actionModel, 'lastUpdated'); ?>
-            <?php
-            $actionModel->lastUpdated = Formatter::formatDateTime($actionModel->lastUpdated);
-            $this->widget('CJuiDateTimePicker', array(
-                'model' => $actionModel, //Model object
-                'attribute' => 'lastUpdated', //attribute name
-                'mode' => 'datetime', //use "time","date" or "datetime" (default)
-                'options' => array(
-                    'dateFormat' => ( (isset($this->controller)) ? Formatter::formatDatePicker('medium') : Formatter::formatDatePicker('medium') ),
-                    'timeFormat' => ( (isset($this->controller)) ? Formatter::formatTimePicker() : Formatter::formatTimePicker() ),
-                    'ampm' => ( (isset($this->controller)) ? Formatter::formatAMPM() : Formatter::formatAMPM() ),
-                    'changeMonth' => false,
-                    'changeYear' => true,
-                ), // jquery plugin options
-                'language' => (Yii::app()->language == 'en') ? '' : Yii::app()->getLanguage(),
-                'htmlOptions'=>array(
-                    'disabled'=>$backdating,
-                ),
-            ));
-            ?>
-        </div>
-        <?php if($actionModel->complete=='Yes'){ ?>
+            $linkContent = CHtml::image($themeUrl.'/images/icons/Expand_Inverted.png', '', array(
+                'style' => 'float:left;'
+            ))."<label style='cursor:pointer;'>&nbsp;".Yii::t('actions','{action} Backdating', array(
+                '{action}' => Modules::displayName(false),
+            ))."</label>";
+            echo CHtml::link($linkContent, '#', array(
+                'id' => 'backdating-link',
+                'style' => 'color:black;text-decoration:none;'
+            )); ?>
+        </span>
+        <div id="action-backdating" style="display:none;" class="row">
+            <br>
             <div class="cell">
-                <?php echo $form->labelEx($actionModel, 'completeDate'); ?>
+                <?php echo $form->labelEx($actionModel, 'createDate'); ?>
                 <?php
-                $actionModel->completeDate = Formatter::formatDateTime($actionModel->completeDate);
+                $actionModel->createDate = Formatter::formatDateTime($actionModel->createDate);
                 $this->widget('CJuiDateTimePicker', array(
                     'model' => $actionModel, //Model object
-                    'attribute' => 'completeDate', //attribute name
+                    'attribute' => 'createDate', //attribute name
                     'mode' => 'datetime', //use "time","date" or "datetime" (default)
                     'options' => array(
                         'dateFormat' => ( (isset($this->controller)) ? Formatter::formatDatePicker('medium') : Formatter::formatDatePicker('medium') ),
@@ -349,15 +313,98 @@ $backdating=!(Yii::app()->user->checkAccess('ActionsAdmin') || Yii::app()->param
                         'changeYear' => true,
                     ), // jquery plugin options
                     'language' => (Yii::app()->language == 'en') ? '' : Yii::app()->getLanguage(),
-                    'htmlOptions'=>array(
-                        'disabled'=>$backdating,
+                    'htmlOptions' => array(
+                        'disabled' => $backdating,
+                    ),
+                ));
+                ?>
+            </div><!-- .cell -->
+            <div class="cell">
+                <?php echo $form->labelEx($actionModel, 'lastUpdated'); ?>
+                <?php
+                $actionModel->lastUpdated = Formatter::formatDateTime($actionModel->lastUpdated);
+                $this->widget('CJuiDateTimePicker', array(
+                    'model' => $actionModel, //Model object
+                    'attribute' => 'lastUpdated', //attribute name
+                    'mode' => 'datetime', //use "time","date" or "datetime" (default)
+                    'options' => array(
+                        'dateFormat' => ( (isset($this->controller)) ? Formatter::formatDatePicker('medium') : Formatter::formatDatePicker('medium') ),
+                        'timeFormat' => ( (isset($this->controller)) ? Formatter::formatTimePicker() : Formatter::formatTimePicker() ),
+                        'ampm' => ( (isset($this->controller)) ? Formatter::formatAMPM() : Formatter::formatAMPM() ),
+                        'changeMonth' => false,
+                        'changeYear' => true,
+                    ), // jquery plugin options
+                    'language' => (Yii::app()->language == 'en') ? '' : Yii::app()->getLanguage(),
+                    'htmlOptions' => array(
+                        'disabled' => $backdating,
+                    ),
+                ));
+                ?>
+            </div><!-- .cell -->
+            <?php if($actionModel->isTimedType) { ?>
+            <div class="cell">
+                <?php echo $form->labelEx($actionModel, 'startDate'); ?>
+                <?php
+                $actionModel->dueDate = Formatter::formatDateTime($actionModel->dueDate);
+                $this->widget('CJuiDateTimePicker', array(
+                    'model' => $actionModel, //Model object
+                    'attribute' => 'dueDate', //attribute name
+                    'mode' => 'datetime', //use "time","date" or "datetime" (default)
+                    'options' => array(
+                        'dateFormat' => ( (isset($this->controller)) ? Formatter::formatDatePicker('medium') : Formatter::formatDatePicker('medium') ),
+                        'timeFormat' => ( (isset($this->controller)) ? Formatter::formatTimePicker() : Formatter::formatTimePicker() ),
+                        'ampm' => ( (isset($this->controller)) ? Formatter::formatAMPM() : Formatter::formatAMPM() ),
+                        'changeMonth' => false,
+                        'changeYear' => true,
+                    ), // jquery plugin options
+                    'language' => (Yii::app()->language == 'en') ? '' : Yii::app()->getLanguage(),
+                    'htmlOptions' => array(
+                        'disabled' => $backdating,
                     ),
                 ));
                 ?>
             </div>
-        <?php } ?>
-    </div>
-</div>
+            <?php } ?>
+
+            <?php if($actionModel->complete == 'Yes' || $actionModel->isTimedType){ ?>
+                <div class="cell">
+                    <?php echo $form->labelEx($actionModel, $actionModel->isTimedType ? 'endDate' : 'completeDate'); ?>
+                    <?php
+                    $actionModel->completeDate = Formatter::formatDateTime($actionModel->completeDate);
+                    $this->widget('CJuiDateTimePicker', array(
+                        'model' => $actionModel, //Model object
+                        'attribute' => 'completeDate', //attribute name
+                        'mode' => 'datetime', //use "time","date" or "datetime" (default)
+                        'options' => array(
+                            'dateFormat' => ( (isset($this->controller)) ? Formatter::formatDatePicker('medium') : Formatter::formatDatePicker('medium') ),
+                            'timeFormat' => ( (isset($this->controller)) ? Formatter::formatTimePicker() : Formatter::formatTimePicker() ),
+                            'ampm' => ( (isset($this->controller)) ? Formatter::formatAMPM() : Formatter::formatAMPM() ),
+                            'changeMonth' => false,
+                            'changeYear' => true,
+                        ), // jquery plugin options
+                        'language' => (Yii::app()->language == 'en') ? '' : Yii::app()->getLanguage(),
+                        'htmlOptions' => array(
+                            'disabled' => $backdating,
+                        ),
+                    ));
+                    ?>
+                </div>
+
+            <?php } 
+            ?>
+            
+        </div><!-- #action-backdating -->
+</div><!-- .form -->
+<?php if(!$backdating 
+         && file_exists(__DIR__.DIRECTORY_SEPARATOR.'_actionTimersForm.php')
+         && $actionModel->complete == 'Yes') { ?>
+    <?php
+    $this->renderPartial('_actionTimersForm',array(
+        'model' => $actionModel,
+        'form' => $form,
+    ));
+    ?>
+<?php } ?>
 </div>
 <?php $this->endWidget(); ?>
 <script>

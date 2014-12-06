@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -35,20 +35,35 @@
  *****************************************************************************************/
 
 /**
- * X2FlowTrigger 
- * 
- * @package X2CRM.components.x2flow.actions
+ * X2FlowTrigger
+ *
+ * @package application.components.x2flow.actions
  */
 class UserLoginTrigger extends X2FlowTrigger {
 	public $title = 'User Signed In';
-	public $info = 'Triggered when a user signs in to X2CRM.';
-	
+	public $info = 'Triggered when a user signs in to X2Engine.';
+
 	public function paramRules() {
 		return array(
 			'title' => Yii::t('studio',$this->title),
 			'info' => Yii::t('studio',$this->info),
 			'options' => array(
-				array('name'=>'user','label'=>'User','type'=>'dropdown','multiple'=>1,'options'=>X2Model::getAssignmentOptions(true,false),'operators'=>array('=','<>','list','notList'),'optional'=>1),
-			));
+				array(
+                    'name'=>'user',
+                    'label'=>Yii::t('studio','User'),
+                    'type'=>'dropdown',
+                    'multiple'=>1,
+                    'options'=>array ('' => Yii::t('x2flow', 'Anyone')) + 
+                        X2Model::getAssignmentOptions(false,false),
+                    'operators'=>array(
+                        '=',
+                        '<>',
+                        'list',
+                        'notList'
+                    ),
+                    'optional'=>1
+                ),
+            )
+        );
 	}
 }

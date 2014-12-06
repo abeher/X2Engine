@@ -1,6 +1,6 @@
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -33,25 +33,11 @@
  * "Powered by X2Engine".
  *****************************************************************************************/
 
-var debug = 0;
+(function () {
 
-function consoleLog (obj) {
-    if (console != undefined) {
-        if(console.log != undefined && debug) {
-            console.log(obj);
-        }
-    }
-}
+x2.profileSettings.debug = false && x2.DEBUG;
 
-function consoleDebug (obj) {
-    if (console != undefined) {
-        if(console.debug != undefined && debug) {
-            console.debug (obj);
-        }
-    }
-}
-
-function highlightSave() {
+x2.profileSettings.highlightSave = function () {
 	$('#save-changes').addClass('highlight'); 
 }
         
@@ -81,8 +67,9 @@ function setSound(sound, id, filename, uploadedBy) {
         }else{
             $('#'+sound).attr('src',yii.baseUrl+'/uploads/'+filename);
         }
+
         var soundFile = $("#"+sound)[0];
-        soundFile.play();
+        if (Modernizr.audio) soundFile.play();
     }
 }
 
@@ -101,13 +88,13 @@ function deleteSound(sound, id){
 change the background image
 */
 function setBackground(filename) {
-		if(filename=='') {
-				$('body').css('background-image','none').removeClass("no-borders");
-		} else {
-			$('body').css('background-image','url('+yii.baseUrl+'/uploads/'+filename+')').
-                toggleClass("no-borders",($('#backgroundTiling').val() === 'stretch'));
-			$(window).trigger('resize');
-		}
+    if(filename=='') {
+            $('body').css('background-image','none').removeClass("no-borders");
+    } else {
+        $('body').css('background-image','url("'+yii.baseUrl+'/uploads/'+filename+'")').
+            toggleClass("no-borders",($('#backgroundTiling').val() === 'stretch'));
+        $(window).trigger('resize');
+    }
 }
 
 function deleteBackground(id,filename) {
@@ -120,7 +107,7 @@ function deleteBackground(id,filename) {
 				$('#background_'+id).hide();
 
 		        // if this is the current background,
-				if($('#header').css('background-image').indexOf(filename) > -1) {
+				if($.inArray (filename, $('#header').css('background-image')) > -1) {
 
 					// remove it from the page
 					if($('#backgroundColor').val() === '') {
@@ -191,8 +178,9 @@ function checkSoundName(id) {
             break;
         }
     }
-    if(re==1){
-	    $(selector).parents ('.upload-box').find ('.submit-upload').removeAttr('disabled','disabled');
+    if(re == 1){
+	    $(selector).parents ('.upload-box').find ('.submit-upload').
+            removeAttr('disabled','disabled');
     } else { // delete the file name, disable Submit, Alert message
 	    $(selector).val('');
 	    $(selector).parents ('.upload-box').find ('.submit-upload').attr('disabled','disabled');
@@ -204,7 +192,7 @@ function checkSoundName(id) {
 Helper function which gets called when the user changes the predefined theme setting
 */
 function changeThemeAttr () {
-    consoleDebug ($(this));
+    x2.profileSettings.debug && console.log ($(this));
     if ($(this).attr ('id') === 'themeName') return;
     if (!checkPredefThemeEditPermissions ()) {
         $('#themeName').find (':selected').removeAttr ('selected');
@@ -230,7 +218,6 @@ function toggleUploadBox (boxId) {
     }
 }
 
-
 function setupPrefsEventListeners () {
 
     /*
@@ -238,7 +225,7 @@ function setupPrefsEventListeners () {
     Trigger change event when color is picked.
     */
     $('.color-picker-input').each (function (index, element) {
-        setupSpectrum ($(element), true);
+        x2.colorPicker.setUp ($(element), true);
     });
 
 	$('#menuBgColor').change(function() {
@@ -248,11 +235,10 @@ function setupPrefsEventListeners () {
         var text = $(this).val();
 		if(text === '') {
 			$('#header').css('background','').addClass('defaultBg');
-            //addCheckerImage ($(this));
 		} else {
 			$('#header').removeClass('defaultBg').css('background','#' + text);
 		}
-		highlightSave();
+		x2.profileSettings.highlightSave();
 	});
 
     function selectPreferredColor (CSSProperty, CSSdefault, colorInputElem, targetElem) {
@@ -261,12 +247,11 @@ function setupPrefsEventListeners () {
         }
 		var text = $(colorInputElem).val();
 		if(text === '') {
-            //addCheckerImage ($(colorInputElem));
 			$(targetElem).css(CSSProperty, CSSdefault);
 		} else {
 			$(targetElem).css(CSSProperty, '#' + text);
 		}
-		highlightSave();
+		x2.profileSettings.highlightSave();
     }
 
 	$('#backgroundColor').change(function() {
@@ -305,7 +290,7 @@ function setupPrefsEventListeners () {
 
         // make color picker color match input field without triggering change events
         if (text !== '') { 
-            removeCheckerImage ($(this));
+            x2.colorPicker.removeCheckerImage ($(this));
             $(this).next ('div.sp-replacer').find ('.sp-preview-inner').css (
                 'background', '#' + text);
         }
@@ -345,7 +330,7 @@ function setupPrefsEventListeners () {
 		}
 		$("body").toggleClass("no-borders",noBorders);
 
-		highlightSave();
+		x2.profileSettings.highlightSave();
 	}).change();
 
     /*
@@ -354,7 +339,8 @@ function setupPrefsEventListeners () {
     $('.unhide').mouseenter(function(){
         var tag=$(this).attr('tag-name');
         var elem=$(this);
-        var content='<span class="hide-link-span"><a href="#" class="hide-link" style="color:#06C;">[+]</a></span>';
+        var content='<span class="hide-link-span">'+
+            '<a href="#" class="hide-link" style="color:#06C;">[+]</a></span>';
         $(content).hide().delay(500).appendTo($(this)).fadeIn(500);
         $('.hide-link').click(function(e){
            e.preventDefault();
@@ -379,10 +365,23 @@ function setupPrefsEventListeners () {
             $(this).find ('.prefs-expand-arrow').show ();
             $(this).find ('.prefs-collapse-arrow').hide ();
             $body.slideUp ();
+            if ($(this).attr ('id') === 'tags-title-bar') {
+                auxlib.saveMiscLayoutSetting ('unhideTagsSectionExpanded', 0);
+            } else {
+                auxlib.saveMiscLayoutSetting ('themeSectionExpanded', 0);
+            }
         } else {
             $(this).find ('.prefs-expand-arrow').hide ();
             $(this).find ('.prefs-collapse-arrow').show ();
             $body.slideDown ();
+            /*$body.find ('.x2-select').each (function () {
+                $(this).data ('Select').reinitWidth (); 
+            });*/
+            if ($(this).attr ('id') === 'tags-title-bar') {
+                auxlib.saveMiscLayoutSetting ('unhideTagsSectionExpanded', 1);
+            } else {
+                auxlib.saveMiscLayoutSetting ('themeSectionExpanded', 1);
+            }
         }
     });
 
@@ -457,67 +456,46 @@ function setupThemeSaving () {
     Save theme via Ajax.
     */
     function saveTheme () {
+        if ($('prefs-save-theme-button').attr ('disabled')) return;
         var themeAttributes = {};
         $.each ($("#theme-attributes").find ('.theme-attr'), function () {
-            consoleDebug ($(this));
+            x2.profileSettings.debug && console.log ($(this));
             var themeAttrName = $(this).attr ('name').match (/\[(\w+)\]/)[1];
             themeAttributes[themeAttrName] = $(this).val ();
         });
         themeAttributes['owner'] = yii.profile.username;
         //themeAttributes['private'] = $('.prefs-theme-privacy-setting').val ();
-        consoleDebug (themeAttributes);
+        x2.profileSettings.debug && console.log (themeAttributes);
         $.ajax ({
             url: "saveTheme",
             data: {
                 'themeAttributes': JSON.stringify (themeAttributes)
             },
             success: function (data) {
-                consoleDebug (data);
-                var feedbackBox = createReqFeedbackBox (data);
-                $('#prefs-save-theme-hint').after (feedbackBox);
-                startFeedbackBoxFadeOut (
-                    feedbackBox, 3000, $('#prefs-save-theme-button'));
+                x2.profileSettings.debug && console.log (data);
+                auxlib.createReqFeedbackBox ({
+                    prevElem: $('#prefs-save-theme-hint'), 
+                    disableButton: $('#prefs-save-theme-button'), 
+                    message: data,
+                    delay: 3000
+                });
             }
         });
     }
     
     $('#prefs-save-theme-button').click (function () {
         saveTheme ();
+        $('#settings-form').submit();
     });
 
-}
-
-/*
-Returns a jQuery element corresponding to a feedback box containing the 
-specified message.
-messages.
-Parameters:
-    errorHeader - a string
-*/
-function createReqFeedbackBox (message) {
-    var feedbackBox = $('<div>', {'class': 'feedback-container'}).append (
-        $("<span>", { 
-            'class': "feedback-msg",
-            'text': message
-        })
-    );
-    return feedbackBox;
-}
-
-/*
-Removes a feedback box created by createReqFeedbackBox () after a specified delay.
-Specified button will be disabled until delay elapses.
-Parameters:
-    feedbackBox - a jQuery element created by createReqFeedbackBox ()
-    delay - in milliseconds
-*/
-function startFeedbackBoxFadeOut (feedbackBox, delay, button) {
-    $(button).attr ('disabled', 'disabled');
-    $(feedbackBox).children ().fadeOut (delay, function () {
-        $(feedbackBox).remove ();
-        $(button).removeAttr ('disabled');
+    $('#save-changes').click (function () {
+        saveTheme();
+        $('#settings-form').submit();
     });
+
+
 }
+
 
 /*
 Sets up behavior for theme creation sub-menu.
@@ -529,13 +507,14 @@ function setupThemeCreation () {
     */
     $('#create-theme-submit-button').click (function (event) {
         var themeName = $('#new-theme-name').val ();
-        consoleLog (themeName);
+        x2.profileSettings.debug && console.log (themeName);
         if (themeName === '') {
-            consoleLog ('error');
+            x2.profileSettings.debug && console.log ('error');
             $('#new-theme-name').addClass ('error');
         } else {
             $(this).attr ('disabled', 'disabled');
             createTheme (themeName); 
+            $('#settings-form').submit();
         }
     });
 
@@ -543,19 +522,20 @@ function setupThemeCreation () {
     Save new theme to server via Ajax. Reset current theme. Handle errors.
     */
     function createTheme (themeName) {
-        consoleLog (themeName);
+        x2.profileSettings.debug && console.log (themeName);
+        if ($('prefs-create-theme-button').attr ('disabled')) return;
 
         // build theme attribute dictionary to send to server
         var themeAttributes = {};
         $.each ($("#theme-attributes").find ('.theme-attr'), function () {
-            consoleLog ($(this).attr ('name'));
+            x2.profileSettings.debug && console.log ($(this).attr ('name'));
             var themeAttrName = $(this).attr ('name').match (/\[(\w+)\]/)[1];
             themeAttributes[themeAttrName] = $(this).val ();
         });
         themeAttributes['themeName'] = themeName;
         themeAttributes['owner'] = yii.profile.username;
         themeAttributes['private'] = $('.prefs-theme-privacy-setting').val ();
-        consoleDebug (themeAttributes);
+        x2.profileSettings.debug && console.log (themeAttributes);
 
         $.ajax ({
             url: "createTheme",
@@ -564,10 +544,10 @@ function setupThemeCreation () {
             },
             success: function (data) {
                 var respObj = JSON.parse (data);
-                consoleDebug (respObj);
+                x2.profileSettings.debug && console.log (respObj);
 
                 if (respObj['success']) {
-                    consoleLog ('success');
+                    x2.profileSettings.debug && console.log ('success');
                     destroyErrorBox ($('#create-theme-box'));
                     $('#create-theme-box').slideUp ();
 
@@ -575,23 +555,26 @@ function setupThemeCreation () {
                     $('#themeName').children ().removeAttr ('selected');
                     $('#themeName').append ($('<option>', {
                         'selected': 'selected',
-                        'value': themeName,
+                        'value': respObj['id'],
                         'text': themeName
                     }));
+                    //$('#themeName').data ('Select').reinit ();
 
                     // indicate successful creation
-                    var feedbackBox = createReqFeedbackBox (respObj['msg']);
-                    $('#prefs-save-theme-hint').after (feedbackBox);
-                    startFeedbackBoxFadeOut (
-                        feedbackBox, 3000, $('#prefs-create-theme-button'));
-                    x2.profileSettings.uploadedByAttrs[themeName] = 
+                    auxlib.createReqFeedbackBox ({
+                        prevElem: $('#theme-mgmt-buttons').children ('button').last (),
+                        message: respObj['msg'],
+                        delay: 3000,
+                        disableButton: $('#prefs-create-theme-button')
+                    });
+                    x2.profileSettings.uploadedByAttrs[respObj['id']] = 
                         yii.profile.username;
 
                     showHideThemeSaveButton ();
                     $('#new-theme-name').removeClass ('error');
 
                 } else {
-                    consoleLog ('failure');
+                    x2.profileSettings.debug && console.log ('failure');
 
                     // display error messages
                     destroyErrorBox ($('#create-theme-box'));
@@ -603,7 +586,7 @@ function setupThemeCreation () {
                 }
             },
             complete: function () {
-                consoleLog ('complete');
+                x2.profileSettings.debug && console.log ('complete');
                 $('#create-theme-submit-button').removeAttr ('disabled');
             }
         });
@@ -651,6 +634,9 @@ false otherwise.
 */
 function checkPredefThemeEditPermissions () {
     var currentPredefTheme = $('#themeName').val ();
+   x2.profileSettings.DEBUG && console.log ('x2.profileSettings.uploadedByAttrs[currentPredefTheme] = ');
+    x2.profileSettings.DEBUG && console.log (x2.profileSettings.uploadedByAttrs[currentPredefTheme]);
+
     if (x2.profileSettings.uploadedByAttrs[currentPredefTheme] === 
         yii.profile.username) {
 
@@ -666,16 +652,22 @@ predefined theme and hides it otherwise.
 */
 function showHideThemeSaveButton () {
     var currentPredefTheme = $('#themeName').val ();
-    consoleLog (x2.profileSettings.uploadedByAttrs[currentPredefTheme]);
-    consoleLog (yii.profile.username);
+    x2.profileSettings.DEBUG && console.log ('currentPredefTheme = ');
+    x2.profileSettings.DEBUG && console.log (currentPredefTheme);
+
+    x2.profileSettings.debug && console.log (x2.profileSettings.uploadedByAttrs[currentPredefTheme]);
+    x2.profileSettings.debug && console.log (yii.profile.username);
     if (currentPredefTheme === 'Custom') {
-        $('#prefs-save-theme-button').hide (); 
+        // $('#prefs-save-theme-button').hide (); 
+         
     } else if (checkPredefThemeEditPermissions ()) {
         $('#prefs-save-theme-button').show (); 
         $('#prefs-save-theme-hint').show (); 
+         
     } else {
-        $('#prefs-save-theme-button').hide (); 
-        $('#prefs-save-theme-hint').hide (); 
+         
+        // $('#prefs-save-theme-button').hide (); 
+        // $('#prefs-save-theme-hint').hide (); 
     }
 }
 
@@ -689,21 +681,22 @@ function setupThemeSelection () {
     Populate the theme form with values contained in the JSON object.
     */
     function requestTheme (themeName) {
-        consoleLog ('requestTheme, themeName = ' + themeName);
+        x2.profileSettings.debug && console.log ('requestTheme, themeName = ' + themeName);
         $.ajax ({
             url: "loadTheme",
-            data: {'themeName': themeName},
+            data: {'themeId': themeName},
             success: function (data) {
                 $('#themeName').unbind ('change', selectTheme);
                 $('.theme-attr').unbind ('change', changeThemeAttr);
-                consoleLog ('requestTheme ajax ret');
-                consoleDebug (data);
+                x2.profileSettings.debug && console.log ('requestTheme ajax ret');
+                x2.profileSettings.debug && console.log (data);
                 if (data === '') return;
                 var theme = JSON.parse (data);
-                consoleLog (theme);
+                x2.profileSettings.debug && console.log (theme);
                 for (var attrName in theme) {
-                    consoleLog (attrName);
-                    consoleLog ($('#' + attrName).length);
+                    x2.profileSettings.debug && console.log (attrName);
+                    x2.profileSettings.debug && console.log ($('#' + attrName).length);
+                    if (attrName === 'themeName') continue;
                     if ($('#' + attrName).length !== 0) {
                         if (attrName.match (/Color/)) {
                             theme[attrName] = theme[attrName];
@@ -722,6 +715,7 @@ function setupThemeSelection () {
     function selectTheme () {
         if ($(this).find (':selected').attr ('id') === 'custom-theme-option') {
             $('#prefs-save-theme-button').hide (); 
+             
             $('#prefs-save-theme-hint').hide (); 
             return;
         }
@@ -732,12 +726,39 @@ function setupThemeSelection () {
 
 }
 
+
+
+function setupDeleteThemeButton(){
+    $('#prefs-delete-theme-button').click(function() { 
+
+        var activeTheme = $('.scheme-container.active');
+
+        $.ajax( {
+            url: yii.scriptUrl+'/profile/deleteTheme',
+            data: {
+                themeName: activeTheme.attr('name')
+            },
+            success: function(data) {
+                console.log(data);
+                if(data == 'error') {
+                    return;
+                }
+
+                activeTheme.remove();
+            }
+        });
+
+    });
+}
+
 // main function
 $(document).ready(function profileSettingsMain () {
     setupPrefsEventListeners ();
     setupThemeSelection ();
     setupThemeCreation ();
     setupThemeSaving ();
+    setupDeleteThemeButton();
+     
 
     showHideThemeSaveButton ();
 
@@ -753,4 +774,4 @@ $(document).ready(function profileSettingsMain () {
 });
 
 
-
+}) ();

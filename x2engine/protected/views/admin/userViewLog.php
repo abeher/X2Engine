@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -46,33 +46,33 @@ $this->widget('zii.widgets.grid.CGridView', array(
 	'columns'=>array(
 		array(
             'name'=>'user',
-            'header'=>'User',
+            'header'=>Yii::t('admin','User'),
             'type'=>'raw',
             'value'=>'User::getUserLinks($data->user)',
         ),
          array(
             'name'=>'link',
-            'header'=>'Link',
+            'header'=>Yii::t('admin','Link'),
             'type'=>'raw',
             'value'=>'X2Model::getModelLink($data->recordId,X2Model::getModelName($data->recordType))',
         ),
         array(
             'name'=>'timestamp',
-            'header'=>'Timestamp',
+            'header'=>Yii::t('admin','Timestamp'),
             'type'=>'raw',
             'value'=>'Formatter::formatCompleteDate($data->timestamp)',
         ),
         array(
             'name'=>'recordType',
-            'header'=>'Record Type',
+            'header'=>Yii::t('admin','Record Type'),
             'type'=>'raw',
         ),
         array(
             'name'=>'recordId',
-            'header'=>'Record ID',
+            'header'=>Yii::t('admin','Record ID'),
             'type'=>'raw',
         ),
 	),
 ));
 echo "<br>";
-echo CHtml::link('Clear View History','clearViewHistory',array('class'=>'x2-button','confirm'=>'Are you sure you want to delete the user view history?'));
+echo CHtml::link(Yii::t('admin','Clear View History'),'clearViewHistory',array('class'=>'x2-button','confirm'=>'Are you sure you want to delete the user view history?'));

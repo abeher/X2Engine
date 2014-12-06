@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -34,34 +34,40 @@
  * "Powered by X2Engine".
  *****************************************************************************************/
 
-$menuItems = array(
-	array('label'=>Yii::t('contacts','All Contacts'),'url'=>array('index')),
-	array('label'=>Yii::t('contacts','Lists'),'url'=>array('lists')),
-	array('label'=>Yii::t('contacts','Create Contact')),
-);
-
 $opportunityModule = Modules::model()->findByAttributes(array('name'=>'opportunities'));
 $accountModule = Modules::model()->findByAttributes(array('name'=>'accounts'));
 
-if($opportunityModule->visible && $accountModule->visible)
-	$menuItems[] = 	array('label'=>Yii::t('app', 'Quick Create'), 'url'=>array('/site/createRecords', 'ret'=>'contacts'), 'linkOptions'=>array('id'=>'x2-create-multiple-records-button', 'class'=>'x2-hint', 'title'=>Yii::t('app', 'Create a Contact, Account, and Opportunity.')));
-
-$this->actionMenu = $this->formatMenu($menuItems);
+$menuOptions = array(
+    'all', 'lists', 'create',
+);
+if ($opportunityModule->visible && $accountModule->visible)
+    $menuOptions[] = 'quick';
+$this->insertMenu($menuOptions);
 
 ?>
 <div class="page-title icon contacts">
-	<h2><?php echo Yii::t('contacts','Create Contact'); ?></h2>
+	<h2><?php echo Yii::t('contacts','Create {module}', array('{module}'=>Modules::displayName(false))); ?></h2>
 </div>
-<?php echo $this->renderPartial('application.components.views._form', array('model'=>$model, 'users'=>$users,'modelName'=>'contacts')); ?>
+<?php 
 
-<?php
-$createAccountUrl = $this->createUrl('/accounts/create');
-Yii::app()->clientScript->registerScript('create-account', "
-	$(function() {
-		$('.create-account').data('createAccountUrl', '$createAccountUrl');
-		$('.create-account').qtip({content: 'Create a new Account for this Contact.'});
-		// init create action button
-		$('.create-account').initCreateAccountDialog();
-	});
-");
+echo $this->renderPartial(
+    'application.components.views._form', 
+    array(
+        'model'=>$model,
+        'users'=>$users,
+        'modelName'=>'contacts',
+        'defaultsByRelatedModelType' => array (
+            'Accounts' => array (
+                'phone' => 'js: $("div.formInputBox #Contacts_phone").val();',
+                'website' => 'js: $("div.formInputBox #Contacts_website").val();',
+                'assignedTo' => 'js: $("#Contacts_assignedTo_assignedToDropdown").val();'
+            )
+        )
+    )); 
+
+if(isset($_POST['x2ajax'])) {
+    echo "<script>\n";
+    Yii::app()->clientScript->echoScripts();
+    echo "\n</script>";
+}
 ?>

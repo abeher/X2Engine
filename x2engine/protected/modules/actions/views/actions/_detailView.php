@@ -1,7 +1,7 @@
 <?php
 /*****************************************************************************************
- * X2CRM Open Source Edition is a customer relationship management program developed by
- * X2Engine, Inc. Copyright (C) 2011-2013 X2Engine Inc.
+ * X2Engine Open Source Edition is a customer relationship management program developed by
+ * X2Engine, Inc. Copyright (C) 2011-2014 X2Engine Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
@@ -54,7 +54,7 @@ if($model->type=='note' || $model->type=='attachment') {
 		</td>
 		<td colspan="3" class="text-field">
 			<?php
-			echo $model->subject;
+			echo CHtml::encode($model->subject);
 			?>
 		</td>
 	</tr>
@@ -89,14 +89,14 @@ if($model->type=='note' || $model->type=='attachment') {
 		</td>
 		<td colspan="3" class="text-field">
 			<?php
-			echo $model->subject;
+			echo CHtml::encode($model->subject);
 			?>
 		</td>
 	</tr>
     <?php if($model->type=='email' || $model->type=='emailOpened') { ?>
         <tr>
             <td colspan="6" class="text-field">
-                <iframe style="width:100%;height:600px" src="actions/viewEmail/<?php echo $model->id ?>"></iframe>
+                <iframe style="width:100%;height:600px" src="<?php echo Yii::app()->controller->createAbsoluteUrl('/actions/actions/viewEmail',array('id'=>$model->id)); ?>"></iframe>
             </td>
         </tr>
     <?php } else { ?>
@@ -117,7 +117,12 @@ if ($model->associationType!="none") {
 			<?php echo $model->getAttributeLabel('associationName'); ?>
 		</td>
 		<td colspan="3">
-			<?php echo CHtml::link($model->associationName,array('/'.$model->associationType.'/'.$model->associationId)); ?>
+			<?php
+                            if ($model->associationType=="calendar")
+                                echo CHtml::link(Yii::t('calendar', "{calendar}", array('{calendar}' => Modules::displayName(false, "Calendar"))), array('/'.$model->associationType.'/'));
+                            else
+                                echo CHtml::link(CHtml::encode($model->associationName),array('/'.$model->associationType.'/'.$model->associationId));
+                        ?>
 		</td>
 	</tr>
 
@@ -130,7 +135,8 @@ if ($model->associationType!="none") {
 	</tr>
 	<tr>
 		<td class="label"><?php echo $model->getAttributeLabel('priority'); ?></td>
-		<td><b><?php echo Yii::t('actions',$model->priority); ?></b></td>
+		<td><b><?php
+        echo $model->getPriorityLabel(); ?></b></td>
 		<td class="label"><?php echo $attributeLabels['createDate']; ?></td>
 		<td><b><?php echo Formatter::formatLongDateTime($model->createDate); ?></b></td>
 	</tr>
